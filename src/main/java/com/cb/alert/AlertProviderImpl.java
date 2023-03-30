@@ -1,8 +1,5 @@
 package com.cb.alert;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import com.cb.property.CryptoPropertiesDecrypted;
 import com.cb.property.CryptoPropertiesDecryptedImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +8,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.util.Properties;
 
 @Slf4j
 public class AlertProviderImpl implements AlertProvider {

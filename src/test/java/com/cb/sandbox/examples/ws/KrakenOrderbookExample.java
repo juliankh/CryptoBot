@@ -1,10 +1,7 @@
 package com.cb.sandbox.examples.ws;
 
-import static org.knowm.xchange.currency.CurrencyPair.BTC_USD;
-
-import java.math.BigDecimal;
-import java.util.concurrent.TimeUnit;
-
+import com.cb.util.CryptoUtils;
+import com.google.common.collect.Lists;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;
@@ -13,19 +10,31 @@ import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.currency.CurrencyPair;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.knowm.xchange.currency.CurrencyPair.BTC_USD;
+
 @Slf4j
 public class KrakenOrderbookExample {
 
-    public static void main(String[] args) throws InterruptedException {
+    private static final List<CurrencyPair> CURRENCY_PAIRS = Lists.newArrayList(BTC_USD);
+
+    public static void main(String[] args) {
+        (new KrakenOrderbookExample()).engage();
+    }
+
+    private void engage() {
         ExchangeSpecification exchangeSpecification = new ExchangeSpecification(KrakenStreamingExchange.class);
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
         krakenExchange.connect().blockingAwait();
-        subscribe(krakenExchange, BTC_USD);
-        TimeUnit.SECONDS.sleep(Integer.MAX_VALUE);
+        CURRENCY_PAIRS.forEach(currencyPair -> subscribe(krakenExchange, currencyPair));
+        CryptoUtils.sleepQuietlyForMins(Integer.MAX_VALUE);
         krakenExchange.disconnect().subscribe(() -> log.info("Disconnected"));
     }
 
-    private static Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {
+    public Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {
+        log.info("Subscribing for [" + currencyPair + "]");
         return krakenExchange
                 .getStreamingMarketDataService()
                 .getOrderBook(currencyPair, 500)

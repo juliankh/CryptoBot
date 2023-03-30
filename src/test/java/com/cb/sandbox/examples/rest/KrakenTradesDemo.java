@@ -1,6 +1,5 @@
 package com.cb.sandbox.examples.rest;
 
-import java.io.IOException;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -9,6 +8,8 @@ import org.knowm.xchange.kraken.KrakenExchange;
 import org.knowm.xchange.kraken.dto.marketdata.KrakenPublicTrades;
 import org.knowm.xchange.kraken.service.KrakenMarketDataServiceRaw;
 import org.knowm.xchange.service.marketdata.MarketDataService;
+
+import java.io.IOException;
 
 public class KrakenTradesDemo {
 

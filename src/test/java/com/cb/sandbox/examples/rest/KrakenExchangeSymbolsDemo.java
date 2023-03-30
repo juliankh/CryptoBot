@@ -1,7 +1,5 @@
 package com.cb.sandbox.examples.rest;
 
-import java.io.IOException;
-import java.util.Map.Entry;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeFactory;
 import org.knowm.xchange.kraken.KrakenExchange;
@@ -9,6 +7,9 @@ import org.knowm.xchange.kraken.dto.marketdata.KrakenAssetPair;
 import org.knowm.xchange.kraken.dto.marketdata.KrakenAssetPairs;
 import org.knowm.xchange.kraken.service.KrakenMarketDataServiceRaw;
 import org.knowm.xchange.service.marketdata.MarketDataService;
+
+import java.io.IOException;
+import java.util.Map.Entry;
 
 public class KrakenExchangeSymbolsDemo {
 
