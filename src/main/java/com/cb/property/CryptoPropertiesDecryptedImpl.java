@@ -10,11 +10,18 @@ import java.util.Map;
 
 public class CryptoPropertiesDecryptedImpl extends CryptoPropertiesRawImpl implements CryptoPropertiesDecrypted {
 		
-	private EncryptionProvider encryptionProvider;
+	private final EncryptionProvider encryptionProvider;
 	
 	public static void main(String[] a) throws IOException {
 		CryptoPropertiesDecrypted properties = new CryptoPropertiesDecryptedImpl();
-		System.out.println(properties.getAlertTextNum());
+
+		System.out.println(properties.getWriteDbUser());
+		System.out.println(properties.getWriteDbPassword());
+
+		System.out.println(properties.getReadDbUser());
+		System.out.println(properties.getReadDbPassword());
+
+		System.out.println(properties.getDbConnectionUrl());
 	}
 	
 	public CryptoPropertiesDecryptedImpl() throws IOException {
@@ -27,25 +34,30 @@ public class CryptoPropertiesDecryptedImpl extends CryptoPropertiesRawImpl imple
 	}
 	
 	@Override
-	public String getDbUser() {
-		return getDecryptedProperty("encrypted.db.user");
+	public String getWriteDbUser() {
+		return getDecryptedProperty("encrypted.db.write.user");
 	}
 
 	@Override
-	public String getDbPassword() {
-		return getDecryptedProperty("encrypted.db.password");
-	}
-	
-	@Override
-	public String getReadDbConnectionUrl() {
-		return getDecryptedProperty("encrypted.db.connectionUrl.read");
+	public String getWriteDbPassword() {
+		return getDecryptedProperty("encrypted.db.write.password");
 	}
 
 	@Override
-	public String getWriteDbConnectionUrl() {
-		return getDecryptedProperty("encrypted.db.connectionUrl.write");
+	public String getReadDbUser() {
+		return getDecryptedProperty("encrypted.db.read.user");
 	}
-	
+
+	@Override
+	public String getReadDbPassword() {
+		return getDecryptedProperty("encrypted.db.read.password");
+	}
+
+	@Override
+	public String getDbConnectionUrl() {
+		return getDecryptedProperty("encrypted.db.connectionUrl");
+	}
+
 	@Override
 	public String getAlertTextNum() {
 		return getDecryptedProperty("encrypted.alert.textNum");

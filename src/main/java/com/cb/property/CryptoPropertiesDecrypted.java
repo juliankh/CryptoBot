@@ -3,11 +3,14 @@ package com.cb.property;
 import java.util.Map;
 
 public interface CryptoPropertiesDecrypted extends CryptoPropertiesRaw {
-	
-	String getDbUser();
-	String getDbPassword();
-	String getReadDbConnectionUrl();
-	String getWriteDbConnectionUrl();	
+
+	String getWriteDbUser();
+	String getWriteDbPassword();
+
+	String getReadDbUser();
+	String getReadDbPassword();
+
+	String getDbConnectionUrl();
 	
 	String getAlertTextNum();
 	String getAlertEmail();

@@ -2,6 +2,7 @@ package com.cb.alert;
 
 import com.cb.property.CryptoPropertiesDecrypted;
 import com.cb.property.CryptoPropertiesDecryptedImpl;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -35,11 +36,12 @@ public class AlertProviderImpl implements AlertProvider {
 		//(new AlertProviderImpl()).sendTextAlert("hey hello");
 	}
 
-	public AlertProviderImpl() throws IOException {
+	public AlertProviderImpl() {
 		this(DEFAULT_IS_ON);
 	}
 	
-	public AlertProviderImpl(boolean isOn) throws IOException {
+	@SneakyThrows
+	public AlertProviderImpl(boolean isOn) {
 		this.isOn = isOn;
 		this.cryptoProperties = new CryptoPropertiesDecryptedImpl();
 		this.emailProperties = new Properties();

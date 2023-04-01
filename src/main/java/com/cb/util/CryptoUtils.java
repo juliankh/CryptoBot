@@ -38,7 +38,7 @@ public class CryptoUtils {
     }
 
     public static String durationMessage(long millisDuration) {
-        return DurationFormatUtils.formatDuration(millisDuration, "d 'days' H:mm:ss");
+        return DurationFormatUtils.formatDuration(millisDuration, "d 'days' H:mm:ss.S");
     }
 
 }
