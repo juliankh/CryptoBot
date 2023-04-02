@@ -1,6 +1,6 @@
 package com.cb.sandbox.examples.ws;
 
-import com.cb.util.CryptoUtils;
+import com.cb.util.TimeUtils;
 import com.google.common.collect.Lists;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
@@ -29,8 +29,7 @@ public class KrakenOrderbookExample {
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
         krakenExchange.connect().blockingAwait();
         CURRENCY_PAIRS.forEach(currencyPair -> subscribe(krakenExchange, currencyPair));
-        CryptoUtils.sleepQuietlyForMins(Integer.MAX_VALUE);
-        krakenExchange.disconnect().subscribe(() -> log.info("Disconnected"));
+        TimeUtils.sleepQuietlyForMins(Integer.MAX_VALUE);
     }
 
     public Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {

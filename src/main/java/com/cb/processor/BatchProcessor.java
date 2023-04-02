@@ -1,12 +1,11 @@
 package com.cb.processor;
 
-import com.cb.util.CryptoUtils;
-import lombok.AllArgsConstructor;
+import com.cb.util.TimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.StopWatch;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +29,10 @@ public class BatchProcessor<T> {
         if (batch.size() >= batchSize) {
             Instant persistStart = Instant.now();
             processor.accept(batch);
-            log.debug("Batch of [" + batch.size() + "] [" + data.getClass() + "] items took [" + CryptoUtils.durationMessage(batchStart) + "] to aggregate and [" + CryptoUtils.durationMessage(persistStart) + "] to process");
+            Instant end = Instant.now();
+            long receiveRate = TimeUtils.ratePerSecond(batchStart, end, batch.size());
+            long processRate = TimeUtils.ratePerSecond(persistStart, end, batch.size());
+            log.debug("Batch of [" + batch.size() + "] [" + data.getClass() + "] items took [" + TimeUtils.durationMessage(batchStart) + "] at rate of [" + receiveRate + "/sec] to aggregate and [" + TimeUtils.durationMessage(persistStart) + "] at a rate of [" + processRate + " items/sec] to process");
             batch.clear();
             batchStart = null;
         }

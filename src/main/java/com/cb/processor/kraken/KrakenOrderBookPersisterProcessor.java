@@ -13,7 +13,7 @@ import java.util.Collection;
 @Slf4j
 public class KrakenOrderBookPersisterProcessor {
 
-    private static final int BATCH_SIZE = 200;
+    private static final int BATCH_SIZE = 300;
 
     private final BatchProcessor<OrderBook> batchProcessor;
 

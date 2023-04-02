@@ -4,9 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
-public class CryptoUtils {
+public class TimeUtils {
 
     public static final long SECOND = 1000;
     public static final long MINUTE = 60 * SECOND;
@@ -29,16 +30,25 @@ public class CryptoUtils {
         }
     }
 
+    // TODO: unit test
     public static String durationMessage(Instant start) {
         return durationMessage(start, Instant.now());
     }
 
+    // TODO: unit test
     public static String durationMessage(Instant start, Instant end) {
         return durationMessage(end.toEpochMilli() - start.toEpochMilli());
     }
 
+    // TODO: unit test
     public static String durationMessage(long millisDuration) {
         return DurationFormatUtils.formatDuration(millisDuration, "d 'days' H:mm:ss.S");
+    }
+
+    public static long ratePerSecond(Instant start, Instant end, long quantity) {
+        long millisDuration = ChronoUnit.MILLIS.between(start, end);
+        double d = (double)quantity / (double)millisDuration * 1000;
+        return Math.round(d);
     }
 
 }
