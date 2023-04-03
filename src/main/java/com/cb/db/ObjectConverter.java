@@ -16,17 +16,22 @@ import java.util.Map;
 
 public class ObjectConverter {
 
-    public List<DbKrakenOrderbook> convertToKrakenOrderBooks(Collection<OrderBook> orderBooks, CurrencyPair currencyPair, Connection connection) {
-        return orderBooks.parallelStream().map(orderBook -> convertToKrakenOrderBook(orderBook, currencyPair, connection)).toList();
+    public List<DbKrakenOrderbook> convertToKrakenOrderBooks(Collection<OrderBook> orderBooks, Connection connection, String process) {
+        return orderBooks.parallelStream().map(orderBook -> convertToKrakenOrderBook(orderBook, connection, process)).toList();
     }
 
-    // TODO: unit test; remove unneeded param
-    public DbKrakenOrderbook convertToKrakenOrderBook(OrderBook orderBook, CurrencyPair currencyPair, Connection connection) {
+    // TODO: unit test
+    public DbKrakenOrderbook convertToKrakenOrderBook(OrderBook orderBook, Connection connection, String process) {
         Array bids = sqlArray(orderBook.getBids(), DbProvider.TYPE_ORDER_BOOK_QUOTE, connection);
         Array asks = sqlArray(orderBook.getAsks(), DbProvider.TYPE_ORDER_BOOK_QUOTE, connection);
+        int bidsHash = orderBook.getBids().hashCode();
+        int asksHash = orderBook.getAsks().hashCode();
         DbKrakenOrderbook result = new DbKrakenOrderbook();
+        result.setProcess(process);
         result.setExchange_datetime(new Timestamp(orderBook.getTimeStamp().getTime()));
         result.setExchange_date(new java.sql.Date(orderBook.getTimeStamp().getTime()));
+        result.setBids_hash(bidsHash);
+        result.setAsks_hash(asksHash);
         result.setBids(bids);
         result.setAsks(asks);
         return result;
@@ -54,7 +59,15 @@ public class ObjectConverter {
             implementing the method as below because for some reason this doesn't work:
                 return orderbooks.parallelStream().map(orderbook -> new Object[] {orderbook.getExchange_datetime(), orderbook.getExchange_date(), orderbook.getBids(), orderbook.getAsks()}).toArray();
          */
-        List<Object[]> list = orderbooks.parallelStream().map(orderbook -> new Object[] {orderbook.getExchange_datetime(), orderbook.getExchange_date(), orderbook.getBids(), orderbook.getAsks()}).toList();
+        List<Object[]> list = orderbooks.parallelStream().map(orderbook -> new Object[] {
+                orderbook.getProcess(),
+                orderbook.getExchange_datetime(),
+                orderbook.getExchange_date(),
+                orderbook.getBids_hash(),
+                orderbook.getAsks_hash(),
+                orderbook.getBids(),
+                orderbook.getAsks()
+        }).toList();
         Object[][] result = new Object[orderbooks.size()][];
         for (int i = 0; i < list.size(); ++i) {
             result[i] = list.get(i);

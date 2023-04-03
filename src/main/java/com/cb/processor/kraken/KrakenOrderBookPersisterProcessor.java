@@ -27,7 +27,7 @@ public class KrakenOrderBookPersisterProcessor {
     // !!!!!!!!!!!!! TODO: check if there are any differences in time gaps b/w orderbook snapshots in order to deduce if while persisting some orderbooks get missed (do websocket updates that aren't processed right away get dropped?)
 
     // TODO: unit test
-    public void process(OrderBook orderBook, CurrencyPair currencyPair) {
+    public void process(OrderBook orderBook, CurrencyPair currencyPair, String process) {
         log.trace("Received book with {} bids and {} asks", orderBook.getBids().size(), orderBook.getAsks().size());
         if (CollectionUtils.isNotEmpty(orderBook.getBids()) && CollectionUtils.isNotEmpty(orderBook.getAsks())) {
             BigDecimal bestBid = orderBook.getBids().iterator().next().getLimitPrice();
@@ -35,7 +35,7 @@ public class KrakenOrderBookPersisterProcessor {
             if (bestBid.compareTo(bestAsk) > 0) {
                 log.warn("Crossed {} book, best bid {}, best ask {}", currencyPair, bestBid, bestAsk);
             }
-            batchProcessor.process(orderBook, (Collection<OrderBook> orderBooks) -> dbProvider.insertKrakenOrderBooks(orderBooks, currencyPair));
+            batchProcessor.process(orderBook, (Collection<OrderBook> orderBooks) -> dbProvider.insertKrakenOrderBooks(orderBooks, currencyPair, process));
         } else {
             log.warn("Received book with either empty {} bids or empty {} asks", orderBook.getBids().size(), orderBook.getAsks().size());
         }

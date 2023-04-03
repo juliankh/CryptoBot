@@ -83,7 +83,7 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
                 latestReceive.set(Instant.now());
             })
             .subscribe(
-                    orderBook -> processor.process(orderBook, currencyPair),
+                    orderBook -> processor.process(orderBook, currencyPair, getDriverName()),
                     throwable -> {
                         log.error("Failed to get OrderBook: {}", throwable.getMessage(), throwable);
                         this.throwable = throwable;
