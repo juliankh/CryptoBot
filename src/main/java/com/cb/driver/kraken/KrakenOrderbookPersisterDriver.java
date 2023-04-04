@@ -56,11 +56,14 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
         maintainConnectivity(krakenExchange, disposable);
     }
 
+    // TODO: perhaps refactor into AbstractKrakenPersisterDriver or something like that
     private void maintainConnectivity(StreamingExchange krakenExchange, Disposable disposable) {
         while (true) {
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());
             if (secsSinceLastUpdate > MAX_SECS_BETWEEN_UPDATES) {
-                log.warn("It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + MAX_SECS_BETWEEN_UPDATES + "] secs, so will try to reconnect");
+                String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + MAX_SECS_BETWEEN_UPDATES + "] secs, so will try to reconnect";
+                log.warn(msg);
+                alertProvider.sendEmailAlert(getDriverName() + " reconnecting", msg);
                 disconnect(krakenExchange);
                 TimeUtils.sleepQuietlyForSecs(15);
                 subscribe(krakenExchange, CurrencyPair.BTC_USDT);

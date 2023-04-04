@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+// TODO: copy code from original Driver
 @Slf4j
 public class KrakenOrderbookPersisterDriver2 extends AbstractDriver {
 
@@ -56,7 +57,6 @@ public class KrakenOrderbookPersisterDriver2 extends AbstractDriver {
         maintainConnection(krakenExchange, disposable);
     }
 
-    // TODO: perhaps refactor into AbstractKrakenPersisterDriver or something like that
     private void maintainConnection(StreamingExchange krakenExchange, Disposable disposable) {
         while (true) {
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());
