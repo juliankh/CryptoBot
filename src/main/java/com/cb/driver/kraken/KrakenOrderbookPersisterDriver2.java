@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-public class KrakenOrderbookPersisterDriver extends AbstractDriver {
+public class KrakenOrderbookPersisterDriver2 extends AbstractDriver {
 
     private static final int MAX_SECS_BETWEEN_UPDATES = 5;
 
@@ -34,18 +34,18 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
     private Throwable throwable;
 
     @SneakyThrows
-    public KrakenOrderbookPersisterDriver() {
+    public KrakenOrderbookPersisterDriver2() {
         super(new AlertProviderImpl());
         this.processor = new KrakenOrderBookPersisterProcessor();
     }
 
     public static void main(String[] args) throws IOException {
-        (new KrakenOrderbookPersisterDriver()).execute();
+        (new KrakenOrderbookPersisterDriver2()).execute();
     }
 
     @Override
     public String getDriverName() {
-        return "Kraken OrderBook Persister";
+        return "Kraken OrderBook Persister 2";
     }
 
     @Override
@@ -53,10 +53,11 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
         ExchangeSpecification exchangeSpecification = new ExchangeSpecification(KrakenStreamingExchange.class);
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
         Disposable disposable = subscribe(krakenExchange, CurrencyPair.BTC_USDT);
-        maintainConnectivity(krakenExchange, disposable);
+        maintainConnection(krakenExchange, disposable);
     }
 
-    private void maintainConnectivity(StreamingExchange krakenExchange, Disposable disposable) {
+    // TODO: perhaps refactor into AbstractKrakenPersisterDriver or something like that
+    private void maintainConnection(StreamingExchange krakenExchange, Disposable disposable) {
         while (true) {
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());
             if (secsSinceLastUpdate > MAX_SECS_BETWEEN_UPDATES) {
@@ -73,7 +74,7 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
         }
     }
 
-    private Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {
+    public Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {
         log.info("Subscribing for [" + currencyPair + "]");
         krakenExchange.connect().blockingAwait();
         latestReceive.set(Instant.now());

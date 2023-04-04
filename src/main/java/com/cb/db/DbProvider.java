@@ -20,7 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Getter
@@ -28,13 +29,13 @@ public class DbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
+    private static BeanListHandler<DbKrakenOrderbook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderbook.class);
+
     private QueryRunner queryRunner;
     private Connection readConnection;
     private Connection writeConnection;
     private ObjectConverter objectConverter;
     private TableNameResolver tableNameResolver;
-
-    private BeanListHandler<DbKrakenOrderbook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderbook.class);
 
     public static void main(String[] args) {
         DbProvider dbProvider = new DbProvider();
@@ -75,36 +76,13 @@ public class DbProvider {
         Object[][] payload = objectConverter.matrix(convertedBatch);
         String tableName = "cb.kraken_orderbook" + tableNameResolver.postfix(currencyPair);
         int[] rowCounts = queryRunner.batch(writeConnection,
-                "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, created, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, now(), ?, ?, ?, ?) ON CONFLICT(exchange_datetime, exchange_date, bids_hash, asks_hash) DO NOTHING;",
+                "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(exchange_datetime, exchange_date, bids_hash, asks_hash) DO NOTHING;",
                 payload);
-
-        // TODO: put into a separate method/class
-        // check that num of dupe OrderBooks received from upstream is the same as the number of rows skipped insertion into db, and that rowcounts are as expected
-        Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooksByHashes = dupeOrderBooks(convertedBatch);
-        int numDupes = numDupes(dupeOrderBooksByHashes.values()); // num of dupes received from upstream
-        int numSkipped = checkRowCounts(rowCounts); // num of rows that were skipped insertion into db
-        log.info("# dupe OrderBooks received from upstream [" + numDupes + "]; # of OrderBook rows skipped insertion [" + numSkipped + "]" + (numDupes == 0 && numSkipped == 0 ? " [NONE]" : "") + (numDupes != numSkipped ? " [DIFFERENT]; (probably due to multiple persisters running concurrently)": ""));
+        checkDupes(convertedBatch, rowCounts);
     }
 
-    // TODO: unit test; put into another class
-    private int numDupes(Collection<? extends Collection<?>> collections) {
-        return collections.stream().mapToInt(list -> list.size() - 1).sum(); // need to subtract because shouldn't count the original, but only the subsequent dupes
-    }
-
-    // TODO: unit test; put into another class
-    private Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooks(List<DbKrakenOrderbook> convertedBatch) {
-        Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> hashesToOrderBooksMap = convertedBatch
-                .parallelStream()
-                .collect(groupingBy(dbOrderBook -> Pair.of(dbOrderBook.getBids_hash(), dbOrderBook.getAsks_hash())));
-        Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooksByHashes = hashesToOrderBooksMap.entrySet()
-                .parallelStream()
-                .filter(entry -> entry.getValue().size() > 1)
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return dupeOrderBooksByHashes;
-    }
-
-    // TODO: add annotation to make this visible to tests; unit test
-    private int checkRowCounts(int[] rowCounts) {
+    // Returns how many rowcounts were 0 (in order to compare to num of dupes received from upstream data source).  If any rowcount > 1, exception is thrown.
+    int checkUpsertRowCounts(int[] rowCounts) {
         List<Integer> unexpectedRowCounts = Arrays.stream(rowCounts).filter(rowCount -> rowCount != 1).boxed().toList();
         if (CollectionUtils.isNotEmpty(unexpectedRowCounts)) {
             List<Integer> zeroRowCounts = unexpectedRowCounts.parallelStream().filter(rowCount -> rowCount == 0).toList();
@@ -116,6 +94,33 @@ public class DbProvider {
             return zeroRowCounts.size(); // the num of dupe rows that weren't inserted
         }
         return 0;
+    }
+
+    int numDupes(Collection<? extends Collection<?>> dupeCollections) {
+        return dupeCollections.stream().mapToInt(list -> list.size() - 1).sum(); // need to subtract because shouldn't count the original, but only the subsequent dupes
+    }
+
+    void checkDupes(List<DbKrakenOrderbook> convertedBatch, int[] rowCounts) {
+        // check that num of dupe OrderBooks received from upstream is the same as the number of rows skipped insertion into db, and that rowcounts are as expected
+        Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooksByHashes = dupeOrderBooks(convertedBatch);
+        int numDupes = numDupes(dupeOrderBooksByHashes.values()); // num of dupes received from upstream
+        int numSkipped = checkUpsertRowCounts(rowCounts); // num of rows that were skipped insertion into db
+        log.info(dupeDescription("OrderBook", numDupes, numSkipped));
+    }
+
+    String dupeDescription(String itemType, int numDupes, int numSkipped) {
+        return "# dupe " + itemType + " received from upstream [" + numDupes + "]; # of " + itemType + " rows skipped insertion [" + numSkipped + "]" + (numDupes == 0 && numSkipped == 0 ? " [NONE]" : "") + (numDupes != numSkipped ? " [DIFFERENT] (probably due to multiple persisters running concurrently)": "");
+    }
+
+    Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooks(List<DbKrakenOrderbook> convertedBatch) {
+        Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> hashesToOrderBooksMap = convertedBatch
+                .parallelStream()
+                .collect(groupingBy(dbOrderBook -> Pair.of(dbOrderBook.getBids_hash(), dbOrderBook.getAsks_hash())));
+        Map<Pair<Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooksByHashes = hashesToOrderBooksMap.entrySet()
+                .parallelStream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return dupeOrderBooksByHashes;
     }
 
 }

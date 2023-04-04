@@ -8,7 +8,6 @@ public class TableNameResolver {
         System.out.println((new TableNameResolver()).postfix(CurrencyPair.BTC_USDT));
     }
 
-    // TODO: unit test
     String postfix(CurrencyPair currencyPair) {
         return "_" + currencyPair.getBase().getCurrencyCode().toLowerCase() + "_" + currencyPair.getCounter().getCurrencyCode().toLowerCase();
     }

@@ -9,10 +9,14 @@ CREATE TABLE IF NOT EXISTS cb.kraken_orderbook_btc_usdt
     exchange_datetime timestamp with time zone NOT NULL,
     exchange_date date NOT NULL,
     created timestamp with time zone NOT NULL,
+    highest_bid_price numeric NOT NULL,
+    highest_bid_volume numeric NOT NULL,
+    lowest_ask_price numeric NOT NULL,
+    lowest_ask_volume numeric NOT NULL,
     bids_hash bigint NOT NULL,
     asks_hash bigint NOT NULL,
-    bids orderbook_quote[],
-    asks orderbook_quote[],
+    bids orderbook_quote[] NOT NULL,
+    asks orderbook_quote[] NOT NULL,
     CONSTRAINT kraken_orderbook_btc_usdt_pkey PRIMARY KEY (id)
 )
 

@@ -24,9 +24,6 @@ public class KrakenOrderBookPersisterProcessor {
         this.dbProvider = new DbProvider();
     }
 
-    // !!!!!!!!!!!!! TODO: check if there are any differences in time gaps b/w orderbook snapshots in order to deduce if while persisting some orderbooks get missed (do websocket updates that aren't processed right away get dropped?)
-
-    // TODO: unit test
     public void process(OrderBook orderBook, CurrencyPair currencyPair, String process) {
         log.trace("Received book with {} bids and {} asks", orderBook.getBids().size(), orderBook.getAsks().size());
         if (CollectionUtils.isNotEmpty(orderBook.getBids()) && CollectionUtils.isNotEmpty(orderBook.getAsks())) {

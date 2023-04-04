@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Slf4j
-public class TimeUtils {
+public final class TimeUtils {
 
     public static final long SECOND = 1000;
     public static final long MINUTE = 60 * SECOND;
@@ -30,17 +30,14 @@ public class TimeUtils {
         }
     }
 
-    // TODO: unit test
     public static String durationMessage(Instant start) {
         return durationMessage(start, Instant.now());
     }
 
-    // TODO: unit test
     public static String durationMessage(Instant start, Instant end) {
         return durationMessage(end.toEpochMilli() - start.toEpochMilli());
     }
 
-    // TODO: unit test
     public static String durationMessage(long millisDuration) {
         return DurationFormatUtils.formatDuration(millisDuration, "d 'days' H:mm:ss.S");
     }
