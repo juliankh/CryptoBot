@@ -27,22 +27,6 @@ public class BatchProcessorTest {
         Mockito.reset(function);
     }
 
-    /*
-    public synchronized void process(T data, Consumer<Collection<T>> processor) {
-        batchStart = batchStart == null ? Instant.now() : batchStart;
-        batch.add(data);
-        if (batch.size() >= batchSize) {
-            Instant persistStart = Instant.now();
-            processor.accept(batch);
-            Instant end = Instant.now();
-            long receiveRate = TimeUtils.ratePerSecond(batchStart, end, batch.size());
-            long processRate = TimeUtils.ratePerSecond(persistStart, end, batch.size());
-            log.debug("Batch of [" + batch.size() + "] [" + data.getClass() + "] items took [" + TimeUtils.durationMessage(batchStart) + "] at rate of [" + receiveRate + "/sec] to aggregate and [" + TimeUtils.durationMessage(persistStart) + "] at a rate of [" + processRate + " items/sec] to process");
-            batch.clear();
-            batchStart = null;
-        }
-    }
-     */
     @Test
     public void process() {
         BATCH_PROCESSOR.process("one", function);
@@ -53,7 +37,6 @@ public class BatchProcessorTest {
 
         BATCH_PROCESSOR.process("three", function);
         verify(function, times(1)).accept(Lists.newArrayList("one", "two", "three"));
-
     }
 
 }

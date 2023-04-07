@@ -1,7 +1,6 @@
 package com.cb.encryption;
 
 import com.cb.property.CryptoPropertiesRaw;
-import com.cb.property.CryptoPropertiesRawImpl;
 import org.apache.commons.io.FileUtils;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
@@ -29,7 +28,7 @@ public class EncryptionProvider {
 	}
 	
 	public EncryptionProvider() throws IOException {
-		CryptoPropertiesRaw properties = new CryptoPropertiesRawImpl();
+		CryptoPropertiesRaw properties = new CryptoPropertiesRaw();
 		String encryptionKey = FileUtils.readFileToString(new File(properties.getEncryptionKeyFilePath()), ISO_CHARSET);
 		this.encryptor = new StandardPBEStringEncryptor();
 		encryptor.setPassword(encryptionKey);            

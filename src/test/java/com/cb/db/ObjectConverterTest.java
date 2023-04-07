@@ -1,6 +1,7 @@
 package com.cb.db;
 
 import com.cb.model.orderbook.DbKrakenOrderbook;
+import com.cb.util.TimeUtils;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.postgresql.jdbc.PgArray;
@@ -24,6 +25,8 @@ public class ObjectConverterTest {
         Timestamp exchange_datetime2 = new Timestamp(System.currentTimeMillis() + 1);
         java.sql.Date exchange_date1 = new Date(System.currentTimeMillis() + 5);
         java.sql.Date exchange_date2 = new Date(System.currentTimeMillis() + 6);
+        long received_nanos1 = TimeUtils.currentNanos();
+        long received_nanos2 = TimeUtils.currentNanos();
         double highest_bid_price1 = 1.23;
         double highest_bid_price2 = 1.24;
         double highest_bid_volume1 = 2.34;
@@ -45,6 +48,7 @@ public class ObjectConverterTest {
         ob1.setProcess(process1);
         ob1.setExchange_datetime(exchange_datetime1);
         ob1.setExchange_date(exchange_date1);
+        ob1.setReceived_nanos(received_nanos1);
         ob1.setHighest_bid_price(highest_bid_price1);
         ob1.setHighest_bid_volume(highest_bid_volume1);
         ob1.setLowest_ask_price(lowest_ask_price1);
@@ -58,6 +62,7 @@ public class ObjectConverterTest {
         ob2.setProcess(process2);
         ob2.setExchange_datetime(exchange_datetime2);
         ob2.setExchange_date(exchange_date2);
+        ob2.setReceived_nanos(received_nanos2);
         ob2.setHighest_bid_price(highest_bid_price2);
         ob2.setHighest_bid_volume(highest_bid_volume2);
         ob2.setLowest_ask_price(lowest_ask_price2);
@@ -68,8 +73,8 @@ public class ObjectConverterTest {
         ob2.setAsks(asks2);
 
         Object[][] expected = new Object[][] {
-                {process1, exchange_datetime1, exchange_date1, highest_bid_price1, highest_bid_volume1, lowest_ask_price1, lowest_ask_volume1, bids_hash1, asks_hash1, bids1, asks1},
-                {process2, exchange_datetime2, exchange_date2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
+                {process1, exchange_datetime1, exchange_date1, received_nanos1, highest_bid_price1, highest_bid_volume1, lowest_ask_price1, lowest_ask_volume1, bids_hash1, asks_hash1, bids1, asks1},
+                {process2, exchange_datetime2, exchange_date2, received_nanos2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
         };
 
         assertArrayEquals(expected, OBJECT_CONVERTER.matrix(Lists.newArrayList(ob1, ob2)));

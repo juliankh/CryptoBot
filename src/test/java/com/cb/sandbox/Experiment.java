@@ -1,8 +1,7 @@
 package com.cb.sandbox;
 
 import com.cb.model.orderbook.DbKrakenOrderbook;
-import com.cb.property.CryptoPropertiesDecrypted;
-import com.cb.property.CryptoPropertiesDecryptedImpl;
+import com.cb.property.CryptoProperties;
 import com.google.common.collect.Lists;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -19,7 +18,7 @@ public class Experiment {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 
-        CryptoPropertiesDecrypted props = new CryptoPropertiesDecryptedImpl();
+        CryptoProperties props = new CryptoProperties();
         Connection readConnection = DriverManager.getConnection(props.getDbConnectionUrl(), props.getReadDbUser(), props.getReadDbPassword());
         Connection writeConnection = DriverManager.getConnection(props.getDbConnectionUrl(), props.getWriteDbUser(), props.getWriteDbPassword());
 

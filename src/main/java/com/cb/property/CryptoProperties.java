@@ -8,157 +8,120 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CryptoPropertiesDecryptedImpl extends CryptoPropertiesRawImpl implements CryptoPropertiesDecrypted {
-		
+public class CryptoProperties extends CryptoPropertiesRaw {
+
 	private final EncryptionProvider encryptionProvider;
 	
 	public static void main(String[] a) throws IOException {
-		CryptoPropertiesDecrypted properties = new CryptoPropertiesDecryptedImpl();
-
-		System.out.println(properties.getWriteDbUser());
-		System.out.println(properties.getWriteDbPassword());
-
-		System.out.println(properties.getReadDbUser());
-		System.out.println(properties.getReadDbPassword());
-
-		System.out.println(properties.getDbConnectionUrl());
+		CryptoProperties properties = new CryptoProperties();
+		System.out.println(properties.getJmsTopicOrderBookSnapshotBtcUsd());
 	}
 	
-	public CryptoPropertiesDecryptedImpl() throws IOException {
+	public CryptoProperties() throws IOException {
 		super();
 		this.encryptionProvider = new EncryptionProvider();
 	}
-	
-	private String getDecryptedProperty(String name) {
-		return encryptionProvider.decrypt(properties.getProperty(name));
-	}
-	
-	@Override
+
 	public String getWriteDbUser() {
 		return getDecryptedProperty("encrypted.db.write.user");
 	}
 
-	@Override
 	public String getWriteDbPassword() {
 		return getDecryptedProperty("encrypted.db.write.password");
 	}
 
-	@Override
 	public String getReadDbUser() {
 		return getDecryptedProperty("encrypted.db.read.user");
 	}
 
-	@Override
 	public String getReadDbPassword() {
 		return getDecryptedProperty("encrypted.db.read.password");
 	}
 
-	@Override
 	public String getDbConnectionUrl() {
 		return getDecryptedProperty("encrypted.db.connectionUrl");
 	}
 
-	@Override
 	public String getAlertTextNum() {
 		return getDecryptedProperty("encrypted.alert.textNum");
 	}
 	
-	@Override
 	public String getAlertEmail() {
 		return getDecryptedProperty("encrypted.alert.email");
 	}
 
-	@Override
 	public String getAlertPassword() {
 		return getDecryptedProperty("encrypted.alert.password");
 	}
 
-	@Override
 	public String getAlertSmtpHost() {
 		return getDecryptedProperty("encrypted.alert.smtp.host");
 	}
 
-	@Override
 	public String getAlertSmtpSocketFactoryPort() {
 		return getDecryptedProperty("encrypted.alert.smtp.socketFactory.port");
 	}
 
-	@Override
 	public String getAlertSmtpSocketFactoryClass() {
 		return getDecryptedProperty("encrypted.alert.smtp.socketFactory.class");
 	}
 
-	@Override
 	public String getAlertSmtpAuth() {
 		return getDecryptedProperty("encrypted.alert.smtp.auth");
 	}
 
-	@Override
 	public String getAlertSmtpPort() {
 		return getDecryptedProperty("encrypted.alert.smtp.port");
 	}
 
-	@Override
 	public String getBinanceApiKey() {
 		return getDecryptedProperty("encrypted.binance.apiKey");
 	}
 
-	@Override
 	public String getBinanceApiSecret() {
 		return getDecryptedProperty("encrypted.binance.apiSecret");
 	}
 
-	@Override
 	public String getJmsBrokerHost() {
 		return getDecryptedProperty("encrypted.jms.broker.host");
 	}
 	
-	@Override
-	public String getJmsBrokerUrl() {
-		return String.format(getDecryptedProperty("encrypted.jms.broker.url"), getJmsBrokerHost());
+	public int getJmsBrokerPort() {
+		return Integer.parseInt(getDecryptedProperty("encrypted.jms.broker.port"));
 	}
 	
-	@Override
-	public String getJmsTopicOrderBookSnapshotBtcUsdt() {
-		return getDecryptedProperty("encrypted.jms.topic.orderBook.snapshot.btcUsdt");
+	public String getJmsTopicOrderBookSnapshotBtcUsd() {
+		return getDecryptedProperty("encrypted.jms.queue.orderBook.snapshot.persist.kraken.btc_usd");
 	}
 	
-	@Override
 	public String getJmsTopicRecommendation() {
 		return getDecryptedProperty("encrypted.jms.topic.recommendation");
 	}
 	
-	@Override
 	public String getJmsTopicCandleBtcUsdt() {
 		return getDecryptedProperty("encrypted.jms.topic.candle.btcUsdt");
 	}
 	
-	@Override
 	public String getJmsTopicAggTradeBtcUsdt() {
 		return getDecryptedProperty("encrypted.jms.topic.aggTrade.btcUsdt");		
 	}
 	
-	@Override
 	public String getJmsUsername() {
 		return getDecryptedProperty("encrypted.jms.username");
 	}
 	
-	@Override
 	public String getJmsPassword() {
 		return getDecryptedProperty("encrypted.jms.password");
 	}
 
-	@Override
 	public String getJmsJettyUsername() {
 		return getDecryptedProperty("encrypted.jms.jetty.username");
 	}
 
-	@Override
 	public String getJmsJettyPassword() {
 		return getDecryptedProperty("encrypted.jms.jetty.password");
 	}
 
-	@Override
 	public Map<String, String> getJmsJettyTopicToSubscribersUrlMap() {
 		Map<String, String> result = new HashMap<>();
 		for (String topic : getTopicsToMonitor()) {
@@ -168,24 +131,27 @@ public class CryptoPropertiesDecryptedImpl extends CryptoPropertiesRawImpl imple
 	}
 	
 	private List<String> getTopicsToMonitor() {
-		return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsdt());
+		return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsd());
 		//return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsdt(), getJmsTopicAggTradeBtcUsdt());
 		//return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsdt(), getJmsTopicAggTradeBtcUsdt(), getJmsTopicCandleBtcUsdt());
 	}
 
-	@Override
 	public String getJmsJettySubscriberUrl(String subscriberObjectName) {
 		return String.format(getDecryptedProperty("encrypted.jms.jetty.subscriber.url"), getJmsBrokerHost(), subscriberObjectName);
 	}
 
-	@Override
 	public String getJmsTopicRecommendationAdHoc() {
 		return getDecryptedProperty("encrypted.jms.topic.recommendation.adHoc");
 	}
 
-	@Override
 	public String getJmsTopicRecommendationSwing() {
 		return getDecryptedProperty("encrypted.jms.topic.recommendation.swing");
+	}
+	
+	// private methods
+
+	private String getDecryptedProperty(String name) {
+		return encryptionProvider.decrypt(properties.getProperty(name));
 	}
 	
 }

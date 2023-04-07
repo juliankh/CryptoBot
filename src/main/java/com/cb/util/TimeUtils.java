@@ -14,6 +14,11 @@ public final class TimeUtils {
     public static final long HOUR = 60 * MINUTE;
     public static final long DAY = 24 * HOUR;
 
+    public static long currentNanos() {
+        Instant now = Instant.now();
+        return now.getEpochSecond() * 1_000_000_000 + now.getNano();
+    }
+
     public static void sleepQuietlyForSecs(int secs) {
         sleepQuietlyForMillis(secs * SECOND);
     }
