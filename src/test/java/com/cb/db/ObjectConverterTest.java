@@ -1,6 +1,6 @@
 package com.cb.db;
 
-import com.cb.model.orderbook.DbKrakenOrderbook;
+import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.util.TimeUtils;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class ObjectConverterTest {
         Array asks1 = new PgArray(null, 6, "field2");
         Array asks2 = new PgArray(null, 7, "field2");
 
-        DbKrakenOrderbook ob1 = new DbKrakenOrderbook();
+        DbKrakenOrderBook ob1 = new DbKrakenOrderBook();
         ob1.setProcess(process1);
         ob1.setExchange_datetime(exchange_datetime1);
         ob1.setExchange_date(exchange_date1);
@@ -58,7 +58,7 @@ public class ObjectConverterTest {
         ob1.setBids(bids1);
         ob1.setAsks(asks1);
 
-        DbKrakenOrderbook ob2 = new DbKrakenOrderbook();
+        DbKrakenOrderBook ob2 = new DbKrakenOrderBook();
         ob2.setProcess(process2);
         ob2.setExchange_datetime(exchange_datetime2);
         ob2.setExchange_date(exchange_date2);

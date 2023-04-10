@@ -12,7 +12,9 @@ public abstract class AbstractDriver {
 
 	public abstract String getDriverName();
 
-	protected abstract void executeCustom() throws Exception;
+	protected abstract void executeCustom();
+
+	protected abstract void cleanup();
 
 	public AbstractDriver(AlertProvider alertProvider) {
 		this.alertProvider = alertProvider;
@@ -27,6 +29,7 @@ public abstract class AbstractDriver {
 			log.error(errMsg, e);
 			alertProvider.sendEmailAlert(errMsg, errMsg, e);						
 			logProcessDuration(startTime);
+			cleanup();
 			throw new RuntimeException(errMsg, e);
 		}
 		logProcessDuration(startTime);

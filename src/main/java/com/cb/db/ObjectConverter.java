@@ -1,7 +1,7 @@
 package com.cb.db;
 
-import com.cb.model.orderbook.DbKrakenOrderbook;
-import com.cb.util.TimeUtils;
+import com.cb.model.kraken.db.DbKrakenOrderBook;
+import com.cb.model.kraken.jms.KrakenOrderBook;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.tuple.Pair;
 import org.knowm.xchange.dto.marketdata.OrderBook;
@@ -15,7 +15,9 @@ import java.util.List;
 
 public class ObjectConverter {
 
-    public DbKrakenOrderbook convertToKrakenOrderBook(OrderBook orderBook, Connection connection, String process) {
+    public DbKrakenOrderBook convertToKrakenOrderBook(KrakenOrderBook krakenOrderBook, Connection connection) {
+        OrderBook orderBook = krakenOrderBook.getOrderBook();
+
         List<LimitOrder> orderBookBids = orderBook.getBids();
         List<LimitOrder> orderBookAsks = orderBook.getAsks();
 
@@ -31,11 +33,11 @@ public class ObjectConverter {
         Array bidsArray = sqlArray(bids, DbProvider.TYPE_ORDER_BOOK_QUOTE, connection);
         Array asksArray = sqlArray(asks, DbProvider.TYPE_ORDER_BOOK_QUOTE, connection);
 
-        DbKrakenOrderbook result = new DbKrakenOrderbook();
-        result.setProcess(process);
+        DbKrakenOrderBook result = new DbKrakenOrderBook();
+        result.setProcess(krakenOrderBook.getProcess());
         result.setExchange_datetime(new Timestamp(orderBook.getTimeStamp().getTime()));
         result.setExchange_date(new java.sql.Date(orderBook.getTimeStamp().getTime()));
-        result.setReceived_nanos(TimeUtils.currentNanos());
+        result.setReceived_nanos(krakenOrderBook.getSecondNanos());
         result.setHighest_bid_price(highestBid.getLeft());
         result.setHighest_bid_volume(highestBid.getRight());
         result.setLowest_ask_price(lowestAsk.getLeft());
@@ -61,7 +63,7 @@ public class ObjectConverter {
         return Pair.of(limitOrder.getLimitPrice().doubleValue(), limitOrder.getOriginalAmount().doubleValue());
     }
 
-    public Object[][] matrix(Collection<DbKrakenOrderbook> orderbooks) {
+    public Object[][] matrix(Collection<DbKrakenOrderBook> orderbooks) {
         /*
             implementing the method as below because for some reason this doesn't work:
                 return orderbooks.parallelStream().map(orderbook -> new Object[] {orderbook.getExchange_datetime(), orderbook.getExchange_date(), orderbook.getBids(), orderbook.getAsks()}).toArray();

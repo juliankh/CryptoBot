@@ -1,11 +1,11 @@
 package com.cb.encryption;
 
 import com.cb.property.CryptoPropertiesRaw;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -19,7 +19,7 @@ public class EncryptionProvider {
 	public static void main(String[] a) throws Exception {
 		EncryptionProvider encryptionProvider = new EncryptionProvider();
 		
-		/*  TODO: erase string after using */ String rawString = ""; /*  TODO: erase string after using */
+		/*  TODO: erase string after using */ String rawString = "kraken_orderbook_snapshot"; /*  TODO: erase string after using */
 		
 		String encryptedText = encryptionProvider.encrypt(rawString);
     	System.out.println("Encrypted: " + encryptedText);
@@ -27,7 +27,8 @@ public class EncryptionProvider {
     	System.out.println("Decrypted (to ensure will decrypt fine in the future): " + decryptedText + " <== NOW ERASE THIS IN CODE");
 	}
 	
-	public EncryptionProvider() throws IOException {
+	@SneakyThrows
+	public EncryptionProvider() {
 		CryptoPropertiesRaw properties = new CryptoPropertiesRaw();
 		String encryptionKey = FileUtils.readFileToString(new File(properties.getEncryptionKeyFilePath()), ISO_CHARSET);
 		this.encryptor = new StandardPBEStringEncryptor();

@@ -1,7 +1,8 @@
 package com.cb.db;
 
-import com.cb.model.orderbook.DbKrakenOrderbook;
+import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
+import com.cb.util.CurrencyResolver;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +26,13 @@ public class DbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
-    private static final BeanListHandler<DbKrakenOrderbook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderbook.class);
+    private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
 
     private final QueryRunner queryRunner;
     private final Connection readConnection;
     private final Connection writeConnection;
     private final ObjectConverter objectConverter;
-    private final TableNameResolver tableNameResolver;
+    private final CurrencyResolver tokenResolver;
 
     @SneakyThrows
     public DbProvider() {
@@ -40,21 +41,20 @@ public class DbProvider {
         readConnection = DriverManager.getConnection(properties.getDbConnectionUrl(), properties.getReadDbUser(), properties.getReadDbPassword());
         writeConnection = DriverManager.getConnection(properties.getDbConnectionUrl(), properties.getWriteDbUser(), properties.getWriteDbPassword());
         objectConverter = new ObjectConverter();
-        tableNameResolver = new TableNameResolver();
+        tokenResolver = new CurrencyResolver();
     }
 
     @SneakyThrows
-    public List<DbKrakenOrderbook> retrieveKrakenOrderBooks(Collection<Long> ids) {
+    public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(Collection<Long> ids) {
         String questionMarks = String.join(",", Collections.nCopies(ids.size(), "?"));
         String sql = "SELECT id, exchange_datetime, exchange_date, created, bids, asks FROM cb.kraken_orderbook_btc_usdt WHERE id in (" + questionMarks + ")";
         return queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, ids.toArray());
     }
 
     @SneakyThrows
-    public void insertKrakenOrderBooks(Collection<DbKrakenOrderbook> orderBooks, CurrencyPair currencyPair) {
+    public void insertKrakenOrderBooks(Collection<DbKrakenOrderBook> orderBooks, CurrencyPair currencyPair) {
         Object[][] payload = objectConverter.matrix(orderBooks);
-        //String tableName = "cb.kraken_orderbook" + tableNameResolver.postfix(currencyPair); TODO: put back
-        String tableName = "cb.kraken_orderbook_btc_usd";
+        String tableName = "cb.kraken_orderbook" + "_" + tokenResolver.lowerCaseToken(currencyPair, "_");
         int[] rowCounts = queryRunner.batch(writeConnection,
                 "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_nanos, bids_hash, asks_hash) DO NOTHING;",
                 payload);
@@ -80,9 +80,9 @@ public class DbProvider {
         return dupeCollections.stream().mapToInt(list -> list.size() - 1).sum(); // need to subtract because shouldn't count the original, but only the subsequent dupes
     }
 
-    void checkDupes(Collection<DbKrakenOrderbook> convertedBatch, int[] rowCounts) {
+    void checkDupes(Collection<DbKrakenOrderBook> convertedBatch, int[] rowCounts) {
         // check that num of dupe OrderBooks received from upstream is the same as the number of rows skipped insertion into db, and that rowcounts are as expected
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooksByHashes = dupeOrderBooks(convertedBatch);
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> dupeOrderBooksByHashes = dupeOrderBooks(convertedBatch);
         int numDupes = numDupes(dupeOrderBooksByHashes.values()); // num of dupes received from upstream
         int numSkipped = checkUpsertRowCounts(rowCounts); // num of rows that were skipped insertion into db
         log.info(dupeDescription("OrderBook", numDupes, numSkipped));
@@ -92,11 +92,11 @@ public class DbProvider {
         return "# dupe " + itemType + " received from upstream [" + numDupes + "]; # of " + itemType + " rows skipped insertion [" + numSkipped + "]" + (numDupes == 0 && numSkipped == 0 ? " [NONE]" : "") + (numDupes != numSkipped ? " [DIFFERENT by (" + (numSkipped - numDupes) + ")] (probably due to multiple persisters running concurrently)": "");
     }
 
-    Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderbook>> dupeOrderBooks(Collection<DbKrakenOrderbook> orderbooks) {
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderbook>> buckets = orderbooks
+    Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> dupeOrderBooks(Collection<DbKrakenOrderBook> orderbooks) {
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> buckets = orderbooks
                 .parallelStream()
                 .collect(groupingBy(dbOrderBook -> Triple.of(dbOrderBook.getReceived_nanos(), dbOrderBook.getBids_hash(), dbOrderBook.getAsks_hash())));
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderbook>> bucketsWithMultipleItemsOnly = buckets.entrySet()
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> bucketsWithMultipleItemsOnly = buckets.entrySet()
                 .parallelStream()
                 .filter(entry -> entry.getValue().size() > 1)
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));

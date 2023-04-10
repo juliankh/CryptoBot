@@ -1,0 +1,4 @@
+Currency Pairs currently being tested:
+    CurrencyPair currencyPair = CurrencyPair.BTC_USD;
+    //CurrencyPair currencyPair = CurrencyPair.ATOM_USD;
+    //CurrencyPair currencyPair = new CurrencyPair(Currency.ADA, Currency.AUD);

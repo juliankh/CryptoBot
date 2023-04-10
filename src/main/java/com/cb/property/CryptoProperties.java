@@ -1,8 +1,8 @@
 package com.cb.property;
 
 import com.cb.encryption.EncryptionProvider;
+import lombok.SneakyThrows;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -12,12 +12,14 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 
 	private final EncryptionProvider encryptionProvider;
 	
-	public static void main(String[] a) throws IOException {
+	@SneakyThrows
+	public static void main(String[] a) {
 		CryptoProperties properties = new CryptoProperties();
-		System.out.println(properties.getJmsTopicOrderBookSnapshotBtcUsd());
+		System.out.println(properties.getJmsKrakenOrderBookSnapshotQueueName());
+		System.out.println(properties.getJmsKrakenOrderBookSnapshotQueueExchange());
 	}
 	
-	public CryptoProperties() throws IOException {
+	public CryptoProperties() {
 		super();
 		this.encryptionProvider = new EncryptionProvider();
 	}
@@ -90,10 +92,14 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 		return Integer.parseInt(getDecryptedProperty("encrypted.jms.broker.port"));
 	}
 	
-	public String getJmsTopicOrderBookSnapshotBtcUsd() {
-		return getDecryptedProperty("encrypted.jms.queue.orderBook.snapshot.persist.kraken.btc_usd");
+	public String getJmsKrakenOrderBookSnapshotQueueName() {
+		return getDecryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.name");
 	}
-	
+
+	public String getJmsKrakenOrderBookSnapshotQueueExchange() {
+		return getDecryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.exchange");
+	}
+
 	public String getJmsTopicRecommendation() {
 		return getDecryptedProperty("encrypted.jms.topic.recommendation");
 	}
@@ -131,7 +137,7 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 	}
 	
 	private List<String> getTopicsToMonitor() {
-		return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsd());
+		return Arrays.asList(getJmsKrakenOrderBookSnapshotQueueName());
 		//return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsdt(), getJmsTopicAggTradeBtcUsdt());
 		//return Arrays.asList(getJmsTopicOrderBookSnapshotBtcUsdt(), getJmsTopicAggTradeBtcUsdt(), getJmsTopicCandleBtcUsdt());
 	}

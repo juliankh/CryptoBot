@@ -2,7 +2,9 @@ package com.cb.driver.kraken;
 
 import com.cb.alert.AlertProvider;
 import com.cb.driver.AbstractDriver;
-import com.cb.processor.kraken.KrakenOrderBookPersisterProcessor;
+import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
+import com.cb.processor.kraken.KrakenOrderBookBridgeProcessor;
+import com.cb.util.CurrencyResolver;
 import com.cb.util.TimeUtils;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
@@ -14,13 +16,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.currency.CurrencyPair;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-public class KrakenOrderbookPersisterDriver extends AbstractDriver {
+public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int MAX_SECS_BETWEEN_UPDATES = 55; // TODO: put back to 5
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
@@ -28,29 +29,30 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
     private static final int ORDER_BOOK_DEPTH = 10; // TODO: put back to 500
     private static final int BATCH_SIZE = 20; // TODO: put back to 300
 
-    private final KrakenOrderBookPersisterProcessor processor;
+    private final KrakenOrderBookBridgeProcessor processor;
     private final CurrencyPair currencyPair;
     private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
     private final String driverName;
 
     private Throwable throwable;
 
+    public static void main(String[] args) {
+        KrakenOrderBookBridgeArgsConverter argsConverter = new KrakenOrderBookBridgeArgsConverter(args);
+        AlertProvider alertProvider = new AlertProvider();
+        KrakenOrderBookBridgeProcessor processor = new KrakenOrderBookBridgeProcessor(BATCH_SIZE, argsConverter.getCurrencyPair());
+        (new KrakenOrderBookBridgeDriver(alertProvider, argsConverter.getDriverToken(), argsConverter.getCurrencyPair(), processor)).execute();
+    }
+
     @SneakyThrows
-    public KrakenOrderbookPersisterDriver(AlertProvider alertProvider, String driverNamePostfix, CurrencyPair currencyPair, KrakenOrderBookPersisterProcessor processor) {
+    public KrakenOrderBookBridgeDriver(AlertProvider alertProvider, String driverNameToken, CurrencyPair currencyPair, KrakenOrderBookBridgeProcessor processor) {
         super(alertProvider);
         this.currencyPair = currencyPair;
         this.processor = processor;
-        this.driverName = "Kraken OrderBook Persister" + (StringUtils.isBlank(driverNamePostfix) ? "" : " " + driverNamePostfix);
-    }
 
-    public static void main(String[] args) throws IOException {
-        String postfix = args.length == 0 || StringUtils.isBlank(args[0]) ? "" : args[0];
-        AlertProvider alertProvider = new AlertProvider();
-        //CurrencyPair currencyPair = CurrencyPair.BTC_USD; // TODO: put back
-        CurrencyPair currencyPair = CurrencyPair.ATOM_USD;
-        //CurrencyPair currencyPair = new CurrencyPair(Currency.ADA, Currency.AUD); // TODO: remove
-        KrakenOrderBookPersisterProcessor processor = new KrakenOrderBookPersisterProcessor(BATCH_SIZE);
-        (new KrakenOrderbookPersisterDriver(alertProvider, postfix, currencyPair, processor)).execute();
+        CurrencyResolver tokenResolver = new CurrencyResolver();
+        String currencyToken = tokenResolver.upperCaseToken(currencyPair, "-");
+
+        this.driverName = "Kraken OrderBook Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverNameToken) ? "" : " " + driverNameToken);
     }
 
     @Override
@@ -66,7 +68,11 @@ public class KrakenOrderbookPersisterDriver extends AbstractDriver {
         maintainConnectivity(krakenExchange, disposable);
     }
 
-    // TODO: perhaps refactor into AbstractKrakenPersisterDriver or something like that
+    @Override
+    protected void cleanup() {
+        processor.cleanup();
+    }
+
     private void maintainConnectivity(StreamingExchange krakenExchange, Disposable disposable) {
         while (true) {
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());

@@ -1,6 +1,5 @@
-package com.cb.model.jms;
+package com.cb.model.kraken.jms;
 
-import com.cb.model.orderbook.DbKrakenOrderbook;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -15,6 +14,6 @@ import java.util.Collection;
 public class KrakenOrderBookBatch implements Serializable {
 
     private final CurrencyPair currencyPair;
-    private final Collection<DbKrakenOrderbook> orderbooks;
+    private final Collection<KrakenOrderBook> orderbooks;
 
 }

@@ -1,6 +1,6 @@
 package com.cb.sandbox;
 
-import com.cb.model.orderbook.DbKrakenOrderbook;
+import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
 import com.google.common.collect.Lists;
 import org.apache.commons.dbutils.QueryRunner;
@@ -54,8 +54,8 @@ public class Experiment {
                         {new Timestamp(System.currentTimeMillis() + 1), new java.sql.Date(System.currentTimeMillis()), bidsSqlArray, asksSqlArray}});
         System.out.println(Arrays.stream(rowCounts2).boxed().collect(Collectors.toList()));
 
-        BeanListHandler<DbKrakenOrderbook> krakenorderBookListHandler = new BeanListHandler<>(DbKrakenOrderbook.class);
-        List<DbKrakenOrderbook> krakenOrderbookBtcUsdList = runner.query(readConnection, "SELECT id, exchange_datetime, exchange_date, bids, asks, created FROM cb.kraken_orderbook_btc_usdt", krakenorderBookListHandler);
+        BeanListHandler<DbKrakenOrderBook> krakenorderBookListHandler = new BeanListHandler<>(DbKrakenOrderBook.class);
+        List<DbKrakenOrderBook> krakenOrderbookBtcUsdList = runner.query(readConnection, "SELECT id, exchange_datetime, exchange_date, bids, asks, created FROM cb.kraken_orderbook_btc_usdt", krakenorderBookListHandler);
         System.out.println(krakenOrderbookBtcUsdList.size());
     }
 

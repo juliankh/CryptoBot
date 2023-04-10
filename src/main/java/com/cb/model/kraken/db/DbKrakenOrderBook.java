@@ -1,4 +1,4 @@
-package com.cb.model.orderbook;
+package com.cb.model.kraken.db;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DbKrakenOrderbook implements Serializable {
+public class DbKrakenOrderBook implements Serializable {
 
     private Long id; // db field
     private String process;

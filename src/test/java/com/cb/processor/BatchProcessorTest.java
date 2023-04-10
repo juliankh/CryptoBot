@@ -1,6 +1,5 @@
 package com.cb.processor;
 
-import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,8 +7,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -17,26 +17,33 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class BatchProcessorTest {
 
-    private static final BatchProcessor<String> BATCH_PROCESSOR = new BatchProcessor<>(3);
+    private static final BatchProcessor<Integer, String> BATCH_PROCESSOR = new BatchProcessor<>(3);
 
     @Mock
-    private Consumer<Collection<String>> function;
+    private Function<List<Integer>, String> function;
+
+    @Mock
+    private Consumer<String> consumer;
 
     @Before
     public void beforeEachTest() {
         Mockito.reset(function);
+        Mockito.reset(consumer);
     }
 
     @Test
     public void process() {
-        BATCH_PROCESSOR.process("one", function);
-        verify(function, never()).accept(any());
+        BATCH_PROCESSOR.process(1, function, consumer);
+        verify(function, never()).apply(any());
+        verify(consumer, never()).accept(any());
 
-        BATCH_PROCESSOR.process("two", function);
-        verify(function, never()).accept(any());
+        BATCH_PROCESSOR.process(2, function, consumer);
+        verify(function, never()).apply(any());
+        verify(consumer, never()).accept(any());
 
-        BATCH_PROCESSOR.process("three", function);
-        verify(function, times(1)).accept(Lists.newArrayList("one", "two", "three"));
+        BATCH_PROCESSOR.process(3, function, consumer);
+        verify(function, times(1)).apply(any());
+        verify(consumer, times(1)).accept(any());
     }
 
 }
