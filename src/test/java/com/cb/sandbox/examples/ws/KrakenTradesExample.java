@@ -7,6 +7,7 @@ import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;
 import io.reactivex.disposables.Disposable;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.Instant;
@@ -17,8 +18,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class KrakenTradesExample {
 
     //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.ADA, Currency.AUD);
+    //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.ATOM, Currency.USD);
     //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.SOL, Currency.EUR);
-    private static CurrencyPair CURRENCY_PAIR = CurrencyPair.BTC_USD;
+    //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.SOL, Currency.USD);
+    //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.XRP, Currency.USD);
+    //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.BTC, Currency.USDC);
+    //private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.DAI, Currency.USD);
+    private static CurrencyPair CURRENCY_PAIR = new CurrencyPair(Currency.BTC, Currency.USDT);
+    //private static CurrencyPair CURRENCY_PAIR = CurrencyPair.BTC_USD;
 
   public static void main(String[] args) throws InterruptedException {
     AtomicReference<Long> numTrades = new AtomicReference<>(0L);

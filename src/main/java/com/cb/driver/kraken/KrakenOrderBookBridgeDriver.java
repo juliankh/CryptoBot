@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
-    private static final int MAX_SECS_BETWEEN_UPDATES = 55; // TODO: put back to 5
+    private static final int MAX_SECS_BETWEEN_UPDATES = 5;
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
     private static final int SLEEP_SECS_RECONNECT = 15;
-    private static final int ORDER_BOOK_DEPTH = 10; // TODO: put back to 500
-    private static final int BATCH_SIZE = 20; // TODO: put back to 300
+    private static final int ORDER_BOOK_DEPTH = 500;
+    private static final int BATCH_SIZE = 300;
 
     private final KrakenOrderBookBridgeProcessor processor;
     private final CurrencyPair currencyPair;
