@@ -1,5 +1,6 @@
 package com.cb.jms.kraken;
 
+import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;
 import com.cb.db.ObjectConverter;
 import com.cb.jms.common.AbstractJmsConsumer;
@@ -24,12 +25,12 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
     private final ObjectConverter objectConverter;
     private final DbProvider dbProvider;
 
-    public KrakenOrderBookPersistJmsConsumer() {
-        this(connectionFactory(), destination());
+    public KrakenOrderBookPersistJmsConsumer(AlertProvider alertProvider) {
+        this(connectionFactory(), destination(), alertProvider);
     }
 
-    public KrakenOrderBookPersistJmsConsumer(ConnectionFactory factory, String destination) {
-        super(factory, destination);
+    public KrakenOrderBookPersistJmsConsumer(ConnectionFactory factory, String destination, AlertProvider alertProvider) {
+        super(factory, destination, alertProvider);
         this.tokenResolver = new CurrencyResolver();
         this.objectConverter = new ObjectConverter();
         this.dbProvider = new DbProvider();

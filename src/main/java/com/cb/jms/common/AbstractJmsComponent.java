@@ -27,10 +27,18 @@ public abstract class AbstractJmsComponent {
     @SneakyThrows
     public void cleanup() {
         if (connection != null) {
-            connection.close();
+            try {
+                connection.close();
+            } catch (Exception e) {
+                log.error("Problem while closing JMS Connection.  Logging, but otherwise ignoring.");
+            }
         }
         if (channel != null) {
-            channel.close();
+            try {
+                channel.close();
+            } catch (Exception e) {
+                log.error("Problem while closing JMS Channel.  Logging, but otherwise ignoring.");
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.cb.jms.common;
 
+import com.cb.alert.AlertProvider;
 import com.cb.util.TimeUtils;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
@@ -13,10 +14,13 @@ import java.time.Instant;
 @Slf4j
 public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
 
+    private final AlertProvider alertProvider;
+
     private int numMessagesReceived = 0;
 
-    public AbstractJmsConsumer(ConnectionFactory factory, String destination) {
+    public AbstractJmsConsumer(ConnectionFactory factory, String destination, AlertProvider alertProvider) {
         super(factory, destination);
+        this.alertProvider = alertProvider;
     }
 
     @SneakyThrows
@@ -36,7 +40,6 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
                 channel.basicAck(deliveryTag, false);
             } catch (Exception e) {
                 log.error("Problem processing msg", e);
-                //TODO: perhaps send alert?
                 channel.basicNack(deliveryTag, false, false);
             }
         };
@@ -45,9 +48,11 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
     protected abstract void customProcess(byte[] paylod);
 
     protected ConsumerShutdownSignalCallback shutdownCallback() {
-        return (String consumerTag, ShutdownSignalException sig) -> {
-            log.info("Received Shutdown Signal for ConsumerTag [" + consumerTag + "]", sig);
+        return (String consumerTag, ShutdownSignalException e) -> {
+            log.info("Received Shutdown Signal for ConsumerTag [" + consumerTag + "]", e);
             cleanup();
+            String msg = "JMS listener shut down for [" + destination + "]";
+            alertProvider.sendEmailAlert(msg, msg, e);
         };
     }
 

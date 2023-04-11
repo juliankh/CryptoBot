@@ -17,7 +17,7 @@ public class KrakenOrderBookPersisterDriver extends AbstractDriver {
 
     public static void main(String[] args) throws IOException {
         AlertProvider alertProvider = new AlertProvider();
-        KrakenOrderBookPersistJmsConsumer consumer = new KrakenOrderBookPersistJmsConsumer();
+        KrakenOrderBookPersistJmsConsumer consumer = new KrakenOrderBookPersistJmsConsumer(alertProvider);
         (new KrakenOrderBookPersisterDriver(alertProvider, consumer)).execute();
     }
 
