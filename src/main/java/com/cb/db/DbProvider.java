@@ -4,6 +4,7 @@ import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
 import com.cb.util.CurrencyResolver;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -22,6 +23,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Getter
+@RequiredArgsConstructor
 public class DbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
