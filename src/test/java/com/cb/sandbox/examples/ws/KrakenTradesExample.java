@@ -1,6 +1,6 @@
 package com.cb.sandbox.examples.ws;
 
-import com.cb.util.TimeUtils;
+import com.cb.common.util.TimeUtils;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;

@@ -1,11 +1,11 @@
 package com.cb.processor.kraken;
 
+import com.cb.common.util.TimeUtils;
 import com.cb.jms.common.JmsPublisher;
 import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.processor.BatchProcessor;
 import com.cb.property.CryptoProperties;
-import com.cb.util.TimeUtils;
 import com.rabbitmq.client.ConnectionFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,7 @@
 package com.cb.driver;
 
 import com.cb.alert.AlertProvider;
-import com.cb.util.TimeUtils;
+import com.cb.common.util.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;

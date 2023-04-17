@@ -7,15 +7,17 @@
   <name>Archetype - CryptoBot</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <maven.compiler.source>19</maven.compiler.source>
-    <maven.compiler.target>19</maven.compiler.target>
+    <java.version>19</java.version>
+    <maven.assembly.plugin.version>3.5.0</maven.assembly.plugin.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
   </properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
       <resource>
         <directory>${project.basedir}/src/main/resources</directory>
-        <targetPath>properties</targetPath>
+        <!-- <targetPath>resources</targetPath> -->
         <includes>
           <include>**/*</include>
         </includes>
@@ -29,16 +31,16 @@
       </resource>
     </resources>
     <plugins>
-      <!--
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
-          <release>10</release>
+          <release>${java.version}</release>
         </configuration>
-      </plugin> -->
+      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven.assembly.plugin.version}</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -128,6 +130,21 @@
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
       <version>5.17.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.deeplearning4j</groupId>
+      <artifactId>deeplearning4j-core</artifactId>
+      <version>1.0.0-M2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.nd4j</groupId>
+      <artifactId>nd4j-native-platform</artifactId>
+      <version>1.0.0-M2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-assembly-plugin</artifactId>
+      <version>${maven.assembly.plugin.version}</version>
     </dependency>
   </dependencies>
   <repositories>

@@ -1,6 +1,6 @@
 package com.cb.sandbox.examples.ws;
 
-import com.cb.util.TimeUtils;
+import com.cb.common.util.TimeUtils;
 import com.google.common.collect.Lists;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;

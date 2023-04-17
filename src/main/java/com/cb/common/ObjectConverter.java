@@ -1,8 +1,13 @@
-package com.cb.db;
+package com.cb.common;
 
+import com.cb.db.DbProvider;
+import com.cb.db.DbUtils;
+import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
 import lombok.SneakyThrows;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.trade.LimitOrder;
@@ -12,8 +17,45 @@ import java.sql.Connection;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ObjectConverter {
+
+    public double[] primitiveArray(Collection<Double> collection) {
+        return ArrayUtils.toPrimitive(collection.toArray(new Double[0]));
+    }
+
+    public double[][] matrixOfDoubles(List<List<Double>> lists) {
+        if (CollectionUtils.isEmpty(lists)) {
+            throw new RuntimeException("Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + lists + "]");
+        }
+        if (lists.stream().map(CollectionUtils::isEmpty).collect(Collectors.toSet()).contains(true)) {
+            throw new RuntimeException("Tried to get matrix of doubles based on List of Lists that contains at least 1 inner List that's empty-equivalent");
+        }
+        long numUniqueInnerSizes = lists.stream().map(Collection::size).toList().stream().distinct().count();
+        if (numUniqueInnerSizes > 1) {
+            throw new RuntimeException("Tried to get matrix of doubles based on List of Lists where the inner Lists are not all of the same size.  The inner Lists are of " + numUniqueInnerSizes + " diff sizes");
+        }
+        double[][] matrix = new double[lists.size()][lists.get(0).size()];
+        for (int i = 0; i < lists.size(); ++i) {
+            List<Double> list = lists.get(i);
+            for (int j = 0; j < list.size(); ++j) {
+                Double value = list.get(j);
+                matrix[i][j] = value;
+            }
+        }
+        return matrix;
+    }
+
+    @SneakyThrows
+    public CbOrderBook convertToKrakenOrderBook(DbKrakenOrderBook input) {
+        return new CbOrderBook()
+                .setExchangeDatetime(input.getExchange_datetime().toInstant())
+                .setExchangeDate(input.getExchange_date().toLocalDate())
+                .setReceivedNanos(input.getReceived_nanos())
+                .setBids(DbUtils.doubleMapFromArray(input.getBids()))
+                .setAsks(DbUtils.doubleMapFromArray(input.getAsks()));
+    }
 
     public DbKrakenOrderBook convertToKrakenOrderBook(KrakenOrderBook krakenOrderBook, Connection connection) {
         OrderBook orderBook = krakenOrderBook.getOrderBook();

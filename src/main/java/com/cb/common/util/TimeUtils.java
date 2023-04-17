@@ -1,9 +1,9 @@
-package com.cb.util;
+package com.cb.common.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
-import java.time.Instant;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 @Slf4j
@@ -51,6 +51,14 @@ public final class TimeUtils {
         long millisDuration = ChronoUnit.MILLIS.between(start, end);
         double d = (double)quantity / (double)millisDuration * 1000;
         return Math.round(d);
+    }
+
+    public static Instant instant(int year, Month month, int dayOfMonth, int hour, int minute, int second) {
+        return instant(year, month, dayOfMonth, hour, minute, second, ZoneOffset.systemDefault());
+    }
+
+    public static Instant instant(int year, Month month, int dayOfMonth, int hour, int minute, int second, ZoneId zone) {
+        return LocalDateTime.of(year, month, dayOfMonth, hour, minute, second).atZone(zone).toInstant();
     }
 
 }

@@ -1,7 +1,7 @@
 package com.cb.jms.common;
 
 import com.cb.alert.AlertProvider;
-import com.cb.util.TimeUtils;
+import com.cb.common.util.TimeUtils;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;

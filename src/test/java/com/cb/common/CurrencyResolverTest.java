@@ -1,4 +1,4 @@
-package com.cb.util;
+package com.cb.common;
 
 import org.junit.Test;
 import org.knowm.xchange.currency.CurrencyPair;

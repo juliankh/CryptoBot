@@ -1,8 +1,8 @@
 package com.cb.sandbox.jms;
 
+import com.cb.common.util.TimeUtils;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
-import com.cb.util.TimeUtils;
 import com.google.common.collect.Lists;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

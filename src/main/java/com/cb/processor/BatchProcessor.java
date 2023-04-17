@@ -1,6 +1,6 @@
 package com.cb.processor;
 
-import com.cb.util.TimeUtils;
+import com.cb.common.util.TimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

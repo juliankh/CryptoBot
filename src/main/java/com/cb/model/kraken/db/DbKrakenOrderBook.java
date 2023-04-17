@@ -19,7 +19,7 @@ public class DbKrakenOrderBook implements Serializable {
     private String process;
     private Timestamp exchange_datetime;
     private java.sql.Date exchange_date;
-    long received_nanos;
+    private long received_nanos;
     private Timestamp created; // db field
     private double highest_bid_price;
     private double highest_bid_volume;

@@ -1,7 +1,7 @@
 package com.cb.db;
 
+import com.cb.common.util.TimeUtils;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
-import com.cb.util.TimeUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
@@ -84,6 +84,13 @@ public class DbProviderTest {
     @Test(expected = RuntimeException.class)
     public void checkUpsertRowCounts_Exception() {
         assertEquals(1, dbProvider.checkUpsertRowCounts(new int[]{1, 0, 2}));
+    }
+
+    @Test
+    public void questionMarks() {
+        assertEquals("?", dbProvider.questionMarks(1));
+        assertEquals("?,?", dbProvider.questionMarks(2));
+        assertEquals("?,?,?,?", dbProvider.questionMarks(4));
     }
 
 }

@@ -1,8 +1,13 @@
 package com.cb.db;
 
+import com.cb.common.CurrencyResolver;
+import com.cb.common.ObjectConverter;
+import com.cb.common.util.NumberUtils;
+import com.cb.common.util.TimeUtils;
+import com.cb.db.kraken.KrakenTableNameResolver;
+import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
-import com.cb.util.CurrencyResolver;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -15,7 +20,10 @@ import org.knowm.xchange.currency.CurrencyPair;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -34,7 +42,7 @@ public class DbProvider {
     private final Connection readConnection;
     private final Connection writeConnection;
     private final ObjectConverter objectConverter;
-    private final CurrencyResolver tokenResolver;
+    private final KrakenTableNameResolver krakenTableNameResolver;
 
     @SneakyThrows
     public DbProvider() {
@@ -43,20 +51,42 @@ public class DbProvider {
         readConnection = DriverManager.getConnection(properties.getDbConnectionUrl(), properties.getReadDbUser(), properties.getReadDbPassword());
         writeConnection = DriverManager.getConnection(properties.getDbConnectionUrl(), properties.getWriteDbUser(), properties.getWriteDbPassword());
         objectConverter = new ObjectConverter();
-        tokenResolver = new CurrencyResolver();
+        krakenTableNameResolver = new KrakenTableNameResolver(new CurrencyResolver());
+    }
+
+    public List<CbOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Instant from, Instant to) {
+        List<DbKrakenOrderBook> dbOrderBooks = retrieveKrakenOrderBooks(currencyPair, Timestamp.from(from), Timestamp.from(to));
+        return dbOrderBooks.stream().map(objectConverter::convertToKrakenOrderBook).toList();
     }
 
     @SneakyThrows
-    public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(Collection<Long> ids) {
-        String questionMarks = String.join(",", Collections.nCopies(ids.size(), "?"));
-        String sql = "SELECT id, exchange_datetime, exchange_date, created, bids, asks FROM cb.kraken_orderbook_btc_usdt WHERE id in (" + questionMarks + ")";
-        return queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, ids.toArray());
+    public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Timestamp from, Timestamp to) {
+        String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
+        String sql = " SELECT id, process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks " +
+                     " FROM " + tableName +
+                     " WHERE exchange_datetime between ? and ?" +
+                     " ORDER BY received_nanos";
+        return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), tableName);
+    }
+
+    @SneakyThrows
+    private <T> List<T> runTimedQuery(Callable<List<T>> queryRunner, String itemType) {
+        Instant start = Instant.now();
+        List<T> result = queryRunner.call();
+        Instant end = Instant.now();
+        long queryRate = TimeUtils.ratePerSecond(start, end, result.size());
+        log.debug("Retrieving [" + NumberUtils.NUMBER_FORMAT.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
+        return result;
+    }
+
+    public String questionMarks(int numQuestionMarks) {
+        return String.join(",", Collections.nCopies(numQuestionMarks, "?"));
     }
 
     @SneakyThrows
     public void insertKrakenOrderBooks(Collection<DbKrakenOrderBook> orderBooks, CurrencyPair currencyPair) {
         Object[][] payload = objectConverter.matrix(orderBooks);
-        String tableName = "cb.kraken_orderbook" + "_" + tokenResolver.lowerCaseToken(currencyPair, "_");
+        String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
         int[] rowCounts = queryRunner.batch(writeConnection,
                 "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_nanos, bids_hash, asks_hash) DO NOTHING;",
                 payload);

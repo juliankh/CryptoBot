@@ -1,0 +1,36 @@
+#!/bin/bash
+
+source ~/.bash_profile
+
+DEV_DIR=/Users/silky/projects/CryptoBot
+DEV_SCRIPT_DIR=$DEV_DIR/script
+DEV_TARGET_DIR=$DEV_DIR/target
+JAR_FILE=CryptoBot-1.0-SNAPSHOT-jar-with-dependencies.jar
+DEV_TARGET_JAR_FILE=$DEV_TARGET_DIR/$JAR_FILE
+CRYPTO_BOT_BIN_DIR=$CRYPTO_BOT_DIR/bin
+
+echo "================ Cleaning dev target dir $DEV_TARGET_DIR ================"
+rm -rf $DEV_TARGET_DIR/*
+
+echo "================ Changing to dev dir $DEV_DIR ================"
+cd $DEV_DIR
+
+echo "================ Building project ================"
+mvn clean compile assembly:single
+
+echo "================ Cleaning CryptoBot bin dir $CRYPTO_BOT_BIN_DIR ================"
+rm -rf $CRYPTO_BOT_BIN_DIR/*
+
+echo "================ Copying $DEV_TARGET_JAR_FILE to $CRYPTO_BOT_BIN_DIR ================"
+cp $DEV_TARGET_JAR_FILE $CRYPTO_BOT_BIN_DIR
+
+echo "================ Changing to CryptoBot bin dir $CRYPTO_BOT_BIN_DIR ================"
+cd $CRYPTO_BOT_BIN_DIR
+
+echo "================ Unjarring $JAR_FILE ================"
+jar xf $JAR_FILE
+
+echo "================ Setting required permissions on scripts ================"
+chmod u+rx script/*
+
+echo "================ Done ================"

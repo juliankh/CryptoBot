@@ -1,11 +1,11 @@
 package com.cb.driver.kraken;
 
 import com.cb.alert.AlertProvider;
+import com.cb.common.CurrencyResolver;
+import com.cb.common.util.TimeUtils;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.processor.kraken.KrakenOrderBookBridgeProcessor;
-import com.cb.util.CurrencyResolver;
-import com.cb.util.TimeUtils;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;

@@ -1,8 +1,11 @@
-package com.cb.util;
+package com.cb.common.util;
 
 import org.junit.Test;
 
 import java.time.Instant;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -31,6 +34,27 @@ public class TimeUtilsTest {
         Instant start = Instant.now();
         Instant end = start.plus(15 * TimeUtils.MINUTE + 6 * TimeUtils.SECOND + 543, ChronoUnit.MILLIS);
         assertEquals("0 days 0:15:06.543", TimeUtils.durationMessage(start, end));
+    }
+
+    @Test
+    public void instant() {
+        int year = 1995;
+        Month month = Month.APRIL;
+        int dayOfMonth = 25;
+        int hour = 8;
+        int minute = 30;
+        int seconds = 45;
+        ZoneId zoneId = ZoneOffset.systemDefault();
+
+        Instant result = TimeUtils.instant(year, month, dayOfMonth, hour, minute, seconds, zoneId);
+
+        assertEquals(year, result.atZone(zoneId).getYear());
+        assertEquals(month, result.atZone(zoneId).getMonth());
+        assertEquals(dayOfMonth, result.atZone(zoneId).getDayOfMonth());
+        assertEquals(hour, result.atZone(zoneId).getHour());
+        assertEquals(minute, result.atZone(zoneId).getMinute());
+        assertEquals(seconds, result.atZone(zoneId).getSecond());
+        assertEquals(zoneId, result.atZone(zoneId).getZone());
     }
 
 }

@@ -1,14 +1,14 @@
 package com.cb.jms.kraken;
 
 import com.cb.alert.AlertProvider;
+import com.cb.common.CurrencyResolver;
+import com.cb.common.ObjectConverter;
+import com.cb.common.util.TimeUtils;
 import com.cb.db.DbProvider;
-import com.cb.db.ObjectConverter;
 import com.cb.jms.common.AbstractJmsConsumer;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.property.CryptoProperties;
-import com.cb.util.CurrencyResolver;
-import com.cb.util.TimeUtils;
 import com.rabbitmq.client.ConnectionFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
