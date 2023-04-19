@@ -34,6 +34,7 @@ jar xf $JAR_FILE
 
 echo "================ Setting required permissions on scripts ================"
 chmod u+rx script/*
+chmod -R go-rwx *
 
 end=`date +%s`
 diff=$(($end - $start))
