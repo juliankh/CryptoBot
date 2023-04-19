@@ -2,6 +2,8 @@
 
 source ~/.bash_profile
 
+start=`date +%s`
+
 DEV_DIR=/Users/silky/projects/CryptoBot
 DEV_SCRIPT_DIR=$DEV_DIR/script
 DEV_TARGET_DIR=$DEV_DIR/target
@@ -33,4 +35,8 @@ jar xf $JAR_FILE
 echo "================ Setting required permissions on scripts ================"
 chmod u+rx script/*
 
-echo "================ Done ================"
+end=`date +%s`
+diff=$(($end - $start))
+duration="$(($diff/60)) mins $(($diff%60)) secs"
+
+echo "================ Done, duration: $duration ================"

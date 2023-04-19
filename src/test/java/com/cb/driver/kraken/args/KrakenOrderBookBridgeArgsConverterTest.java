@@ -29,7 +29,7 @@ public class KrakenOrderBookBridgeArgsConverterTest {
     @Test
     public void wrongNumOfArgs_TooMany() {
         expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Number of args [3] != 2");
+        expectedEx.expectMessage("Number of args [3] != 2: [one, two, three]");
         new KrakenOrderBookBridgeArgsConverter(new String[]{"one", "two", "three"});
     }
 

@@ -19,6 +19,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -51,8 +52,8 @@ public class ModelExp4 {
         // generate model
         Pair<MultiLayerNetwork, Long> result = generateAndPersistModel(orderBooks);
         MultiLayerNetwork multiLayerNetwork = result.getLeft();
-        long minsDuration = result.getRight();
-        log.info("Took " + minsDuration + " mins to generate");
+        long secsDuration = result.getRight();
+        log.info("Took " + secsDuration + " secs to generate");
 
         // test the model
         double[] inputArray = objectConverter.primitiveArray(orderBooks.get(100).getBids().values());
@@ -77,11 +78,20 @@ public class ModelExp4 {
         double[][] targetMatrix = objectConverter.matrixOfDoubles(targetLists);
         INDArray input = Nd4j.create(featureMatrix);
         INDArray output = Nd4j.create(targetMatrix);
-        DataSet dataSet = new DataSet(input, output);
 
-        // TODO: normalize using NormalizerMinMaxScaler
+        //DataSet dataSet = new DataSet(input, output);
 
-        List<DataSet> listDs = dataSet.asList();
+        DataSet dataSet2 = new DataSet();
+        dataSet2.setFeatures(input);
+
+        NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler();
+        normalizer.fit(dataSet2);
+        normalizer.transform(dataSet2);
+
+        dataSet2.setLabels(output);
+
+        //List<DataSet> listDs = dataSet.asList();
+        List<DataSet> listDs = dataSet2.asList();
         Collections.shuffle(listDs);
         return new ListDataSetIterator<>(listDs, batchSize);
     }
@@ -113,8 +123,8 @@ public class ModelExp4 {
         model.setListeners(new ScoreIterationListener(100));
         Instant before = Instant.now();
         model.fit(trainingIterator, modelParams.getEpochs());
-        long durationMins = ChronoUnit.MINUTES.between(before, Instant.now());
-        return Pair.of(model, durationMins);
+        long durationSecs = ChronoUnit.SECONDS.between(before, Instant.now());
+        return Pair.of(model, durationSecs);
     }
 
 }

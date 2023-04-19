@@ -8,18 +8,29 @@
   <url>http://maven.apache.org</url>
   <properties>
     <java.version>19</java.version>
+    <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
+    <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+    <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
     <maven.assembly.plugin.version>3.5.0</maven.assembly.plugin.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
+    <xchange.version>5.1.0</xchange.version>
+    <deeplearning4j_and_nd4j.version>1.0.0-M2.1</deeplearning4j_and_nd4j.version>
   </properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
       <resource>
-        <directory>${project.basedir}/src/main/resources</directory>
-        <!-- <targetPath>resources</targetPath> -->
+        <directory>${project.basedir}/property</directory>
         <includes>
-          <include>**/*</include>
+          <include>**/log4j.properties</include> <!-- needs to be in the default dir because otherwise log4j needs to be told explicitly where to find it -->
+        </includes>
+      </resource>
+      <resource>
+        <directory>${project.basedir}/property</directory>
+        <targetPath>property</targetPath>
+        <includes>
+          <include>**/crypto.properties</include>
         </includes>
       </resource>
       <resource>
@@ -33,7 +44,21 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.7.0</version>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+          <release>${java.version}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>${maven.clean.plugin.version}</version>
+        <configuration>
+          <release>${java.version}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${maven.resources.plugin.version}</version>
         <configuration>
           <release>${java.version}</release>
         </configuration>
@@ -62,17 +87,17 @@
     <dependency>
       <groupId>org.knowm.xchange</groupId>
       <artifactId>xchange-stream-core</artifactId>
-      <version>5.1.0</version>
+      <version>${xchange.version}</version>
     </dependency>
     <dependency>
       <groupId>org.knowm.xchange</groupId>
       <artifactId>xchange-kraken</artifactId>
-      <version>5.1.0</version>
+      <version>${xchange.version}</version>
     </dependency>
     <dependency>
       <groupId>org.knowm.xchange</groupId>
       <artifactId>xchange-stream-kraken</artifactId>
-      <version>5.1.0</version>
+      <version>${xchange.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -134,12 +159,12 @@
     <dependency>
       <groupId>org.deeplearning4j</groupId>
       <artifactId>deeplearning4j-core</artifactId>
-      <version>1.0.0-M2</version>
+      <version>${deeplearning4j_and_nd4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.nd4j</groupId>
       <artifactId>nd4j-native-platform</artifactId>
-      <version>1.0.0-M2</version>
+      <version>${deeplearning4j_and_nd4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>

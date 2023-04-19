@@ -12,7 +12,7 @@ public class CryptoPropertiesRaw {
 	@SneakyThrows
 	public CryptoPropertiesRaw() {
 		this.properties = new Properties();
-		this.properties.load(new FileInputStream(Thread.currentThread().getContextClassLoader().getResource("crypto.properties").getPath()));
+		this.properties.load(new FileInputStream("property/crypto.properties"));
 	}
 
 	public String getMainDirectory() {

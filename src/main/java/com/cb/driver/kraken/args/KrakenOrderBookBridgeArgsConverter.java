@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
+import java.util.Arrays;
+
 @Getter
 public class KrakenOrderBookBridgeArgsConverter {
 
@@ -18,7 +20,7 @@ public class KrakenOrderBookBridgeArgsConverter {
             throw new RuntimeException("Args are empty");
         }
         if (args.length != 2) {
-            throw new RuntimeException("Number of args [" + args.length + "] != 2");
+            throw new RuntimeException("Number of args [" + args.length + "] != 2: " + Arrays.asList(args));
         }
         if (!args[0].contains(CURRENCY_DELIMITER)) {
             throw new RuntimeException("1st arg [" + args[0] + "] should be split into 2 currency parts using delimiter [" + CURRENCY_DELIMITER + "]");
