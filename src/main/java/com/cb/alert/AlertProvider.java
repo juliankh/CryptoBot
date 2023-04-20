@@ -19,7 +19,8 @@ public class AlertProvider {
 	private final CryptoProperties cryptoProperties;
 	private final Properties emailProperties;
 	private final boolean isOn;
-	
+
+	/* // for manual testing
 	public static void main(String[] args) throws IOException {
 		Throwable t = null;
 		try {
@@ -33,6 +34,11 @@ public class AlertProvider {
 		}
 		(new AlertProvider()).sendEmailAlert("subj", "bodbod", t);
 		//(new AlertProviderImpl()).sendTextAlert("hey hello");
+	}*/
+
+	// DO NOT MODIFY/DELETE -- this is used by safety net driver wrapper scripts
+	public static void main(String[] args) throws IOException {
+		(new AlertProvider()).sendEmailAlert(args[0], args[1]);
 	}
 
 	public AlertProvider() {

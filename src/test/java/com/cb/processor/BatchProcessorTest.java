@@ -1,10 +1,8 @@
 package com.cb.processor;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
@@ -24,12 +22,6 @@ public class BatchProcessorTest {
 
     @Mock
     private Consumer<String> consumer;
-
-    @Before
-    public void beforeEachTest() {
-        Mockito.reset(function);
-        Mockito.reset(consumer);
-    }
 
     @Test
     public void process() {

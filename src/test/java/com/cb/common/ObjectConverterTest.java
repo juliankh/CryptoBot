@@ -5,9 +5,7 @@ import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.postgresql.jdbc.PgArray;
 
 import java.sql.Array;
@@ -20,11 +18,9 @@ import java.util.List;
 
 import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThrows;
 
 public class ObjectConverterTest {
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     private static final ObjectConverter OBJECT_CONVERTER = new ObjectConverter();
 
@@ -55,30 +51,34 @@ public class ObjectConverterTest {
 
     @Test
     public void matrixOfDoubles_exception_emptyOuterListNull() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + null + "]");
-        OBJECT_CONVERTER.matrixOfDoubles(null);
+        assertThrows(
+                "Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + null + "]",
+                RuntimeException.class,
+                () -> OBJECT_CONVERTER.matrixOfDoubles(null));
     }
 
     @Test
     public void matrixOfDoubles_exception_emptyOuterListEmpty() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + Collections.emptyList() + "]");
-        OBJECT_CONVERTER.matrixOfDoubles(Collections.emptyList());
+        assertThrows(
+                "Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + Collections.emptyList() + "]",
+                RuntimeException.class,
+                () -> OBJECT_CONVERTER.matrixOfDoubles(Collections.emptyList()));
     }
 
     @Test
     public void matrixOfDoubles_exception_emptyInnerList() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Tried to get matrix of doubles based on List of Lists that contains at least 1 inner List that's empty-equivalent");
-        OBJECT_CONVERTER.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Collections.emptyList()));
+        assertThrows(
+                "Tried to get matrix of doubles based on List of Lists that contains at least 1 inner List that's empty-equivalent",
+                RuntimeException.class,
+                () -> OBJECT_CONVERTER.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Collections.emptyList())));
     }
 
     @Test
     public void matrixOfDoubles_exception_nonUniformLengths() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Tried to get matrix of doubles based on List of Lists where the inner Lists are not all of the same size.  The inner Lists are of 3 diff sizes");
-        OBJECT_CONVERTER.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Arrays.asList(1.1, 2.2, 3.3), Arrays.asList(11.4, 22.5, 33.6, 4.7, 5.8, 6.9)));
+        assertThrows(
+                "Tried to get matrix of doubles based on List of Lists where the inner Lists are not all of the same size.  The inner Lists are of 3 diff sizes",
+                RuntimeException.class,
+                () -> OBJECT_CONVERTER.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Arrays.asList(1.1, 2.2, 3.3), Arrays.asList(11.4, 22.5, 33.6, 4.7, 5.8, 6.9))));
     }
 
     @Test

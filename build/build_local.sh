@@ -9,7 +9,6 @@ DEV_SCRIPT_DIR=$DEV_DIR/script
 DEV_TARGET_DIR=$DEV_DIR/target
 JAR_FILE=CryptoBot-1.0-SNAPSHOT-jar-with-dependencies.jar
 DEV_TARGET_JAR_FILE=$DEV_TARGET_DIR/$JAR_FILE
-CRYPTO_BOT_BIN_DIR=$CRYPTO_BOT_DIR/bin
 
 echo "================ Cleaning dev target dir $DEV_TARGET_DIR ================"
 rm -rf $DEV_TARGET_DIR/*
@@ -32,12 +31,11 @@ cd $CRYPTO_BOT_BIN_DIR
 echo "================ Unjarring $JAR_FILE ================"
 jar xf $JAR_FILE
 
-echo "================ Setting required permissions on scripts ================"
+echo "================ Setting required permissions ================"
 chmod u+rx script/*
 chmod -R go-rwx *
 
 end=`date +%s`
 diff=$(($end - $start))
-duration="$(($diff/60)) mins $(($diff%60)) secs"
-
+duration="$(($diff / 60)) mins $(($diff % 60)) secs"
 echo "================ Done, duration: $duration ================"

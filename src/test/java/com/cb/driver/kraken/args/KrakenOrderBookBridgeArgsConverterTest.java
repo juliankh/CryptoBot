@@ -1,57 +1,41 @@
 package com.cb.driver.kraken.args;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class KrakenOrderBookBridgeArgsConverterTest {
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Test
     public void emptyArgs() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Args are empty");
-        new KrakenOrderBookBridgeArgsConverter(new String[]{});
+        assertThrows("Args are empty", RuntimeException.class, () -> new KrakenOrderBookBridgeArgsConverter(new String[]{}));
     }
 
     @Test
     public void wrongNumOfArgs_TooFew() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Number of args [1] != 2");
-        new KrakenOrderBookBridgeArgsConverter(new String[]{"one"});
+        assertThrows("Number of args [1] != 2", RuntimeException.class, () -> new KrakenOrderBookBridgeArgsConverter(new String[]{"one"}));
     }
 
     @Test
     public void wrongNumOfArgs_TooMany() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Number of args [3] != 2: [one, two, three]");
-        new KrakenOrderBookBridgeArgsConverter(new String[]{"one", "two", "three"});
+        assertThrows("Number of args [3] != 2: [one, two, three]", RuntimeException.class, () -> new KrakenOrderBookBridgeArgsConverter(new String[]{"one", "two", "three"}));
     }
 
     @Test
     public void currencyArgHasWrongDelimiter() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("1st arg [BTC_USD] should be split into 2 currency parts using delimiter [-]");
-        new KrakenOrderBookBridgeArgsConverter(new String[]{"BTC_USD", "1"});
+        assertThrows("1st arg [BTC_USD] should be split into 2 currency parts using delimiter [-]", RuntimeException.class, () -> new KrakenOrderBookBridgeArgsConverter(new String[]{"BTC_USD", "1"}));
     }
 
     @Test
     public void currency1NotExist() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Currency Code [DoesntExist] doesn't exist");
-        new KrakenOrderBookBridgeArgsConverter(new String[]{"DoesntExist-USD", "1"});
+        assertThrows("Currency Code [DoesntExist] doesn't exist", RuntimeException.class, () -> new KrakenOrderBookBridgeArgsConverter(new String[]{"DoesntExist-USD", "1"}));
     }
 
     @Test
     public void currency2NotExist() {
-        expectedEx.expect(RuntimeException.class);
-        expectedEx.expectMessage("Currency Code [DoesntExist2] doesn't exist");
-        new KrakenOrderBookBridgeArgsConverter(new String[]{"BTC-DoesntExist2", "1"});
+        assertThrows("Currency Code [DoesntExist2] doesn't exist", RuntimeException.class, () -> new KrakenOrderBookBridgeArgsConverter(new String[]{"BTC-DoesntExist2", "1"}));
     }
 
     @Test

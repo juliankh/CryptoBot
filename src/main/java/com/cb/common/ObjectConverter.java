@@ -97,7 +97,8 @@ public class ObjectConverter {
 
     @SneakyThrows
     Array sqlArray(List<Pair<Double, Double>> quotes, String arrayName, Connection connection) {
-        Pair<Double, Double>[] pairArray = quotes.toArray(new Pair[quotes.size()]);
+        @SuppressWarnings("unchecked")
+        Pair<Double, Double>[] pairArray = quotes.toArray(new Pair[0]);
         return connection.createArrayOf(arrayName, pairArray);
     }
 

@@ -1,11 +1,7 @@
 #!/bin/bash
 
-if [ -f ~/.bash_profile ]; then
-    source ~/.bash_profile
-fi
+source ./common_profile.sh
 
-CRYPTO_BOT_BIN_DIR="${CRYPTO_BOT_DIR}/bin"
-CRYPTO_BOT_LOG_DIR="${CRYPTO_BOT_DIR}/log"
 DATETIME=`date +%Y-%m-%d_%H-%M-%S`
 
 if ps -ef | grep -v grep | grep java | grep CryptoBot | grep "${1}" ; then
