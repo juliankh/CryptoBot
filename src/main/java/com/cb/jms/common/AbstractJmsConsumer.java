@@ -2,7 +2,6 @@ package com.cb.jms.common;
 
 import com.cb.alert.AlertProvider;
 import com.cb.common.util.TimeUtils;
-import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ShutdownSignalException;
@@ -18,9 +17,9 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
 
     private int numMessagesReceived = 0;
 
-    public AbstractJmsConsumer(ConnectionFactory factory, String destination, AlertProvider alertProvider) {
-        super(factory, destination);
-        this.alertProvider = alertProvider;
+    public AbstractJmsConsumer(String destination) {
+        super(destination);
+        this.alertProvider = new AlertProvider();
     }
 
     @SneakyThrows
@@ -28,6 +27,8 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
         channel.basicConsume(destination, false, deliverCallback(), shutdownCallback());
         log.info("Started listening to destination [" + destination + "]");
     }
+
+    protected abstract void customProcess(byte[] paylod);
 
     protected DeliverCallback deliverCallback() {
         return (consumerTag, delivery) -> {
@@ -44,8 +45,6 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
             }
         };
     }
-
-    protected abstract void customProcess(byte[] paylod);
 
     protected ConsumerShutdownSignalCallback shutdownCallback() {
         return (String consumerTag, ShutdownSignalException e) -> {

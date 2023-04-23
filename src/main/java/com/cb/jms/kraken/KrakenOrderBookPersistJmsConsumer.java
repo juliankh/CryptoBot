@@ -1,6 +1,5 @@
 package com.cb.jms.kraken;
 
-import com.cb.alert.AlertProvider;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.TimeUtils;
@@ -9,8 +8,6 @@ import com.cb.jms.common.AbstractJmsConsumer;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.property.CryptoProperties;
-import com.rabbitmq.client.ConnectionFactory;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -25,35 +22,16 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
     private final ObjectConverter objectConverter;
     private final DbProvider dbProvider;
 
-    public KrakenOrderBookPersistJmsConsumer(AlertProvider alertProvider) {
-        this(connectionFactory(), destination(), alertProvider);
-    }
-
-    public KrakenOrderBookPersistJmsConsumer(ConnectionFactory factory, String destination, AlertProvider alertProvider) {
-        super(factory, destination, alertProvider);
+    public KrakenOrderBookPersistJmsConsumer() {
+        super(destination());
         this.tokenResolver = new CurrencyResolver();
         this.objectConverter = new ObjectConverter();
         this.dbProvider = new DbProvider();
     }
 
-    private static ConnectionFactory connectionFactory() {
-        CryptoProperties properties = properties();
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.getJmsBrokerHost());
-        factory.setPort(properties.getJmsBrokerPort());
-        factory.setUsername(properties.getJmsUsername());
-        factory.setPassword(properties.getJmsPassword());
-        return factory;
-    }
-
     private static String destination() {
-        CryptoProperties properties = properties();
+        CryptoProperties properties = new CryptoProperties();
         return properties.getJmsKrakenOrderBookSnapshotQueueName();
-    }
-
-    @SneakyThrows
-    private static CryptoProperties properties() {
-        return new CryptoProperties();
     }
 
     @Override

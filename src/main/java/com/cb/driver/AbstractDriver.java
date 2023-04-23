@@ -8,17 +8,17 @@ import java.time.Instant;
 
 @Slf4j
 public abstract class AbstractDriver {
+
 	protected AlertProvider alertProvider;
 
-	public abstract String getDriverName();
-
+	protected abstract String getDriverName();
 	protected abstract void executeCustom();
-
 	protected abstract void cleanup();
 
-	public AbstractDriver(AlertProvider alertProvider) {
-		this.alertProvider = alertProvider;
+	public AbstractDriver() {
+		this.alertProvider = new AlertProvider();
 	}
+
 	public void execute() {
 		Instant startTime = Instant.now();
 		try {

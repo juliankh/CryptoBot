@@ -6,7 +6,6 @@ import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.processor.BatchProcessor;
 import com.cb.property.CryptoProperties;
-import com.rabbitmq.client.ConnectionFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -23,22 +22,17 @@ public class KrakenOrderBookBridgeProcessor {
     private final JmsPublisher<KrakenOrderBookBatch> jmsPublisher;
 
     @SneakyThrows
-    public KrakenOrderBookBridgeProcessor(int batchSize, CurrencyPair currencyPair) {
+    public KrakenOrderBookBridgeProcessor(int batchSize) {
         this.batchProcessor = new BatchProcessor<>(batchSize);
-        this.jmsPublisher = jmsPublisher(currencyPair);
+        this.jmsPublisher = jmsPublisher();
     }
 
     @SneakyThrows
-    private JmsPublisher<KrakenOrderBookBatch> jmsPublisher(CurrencyPair currencyPair) {
+    private JmsPublisher<KrakenOrderBookBatch> jmsPublisher() {
         CryptoProperties properties = new CryptoProperties();
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.getJmsBrokerHost());
-        factory.setPort(properties.getJmsBrokerPort());
-        factory.setUsername(properties.getJmsUsername());
-        factory.setPassword(properties.getJmsPassword());
         String jmsDestination = properties.getJmsKrakenOrderBookSnapshotQueueName();
         String jmsExchange = properties.getJmsKrakenOrderBookSnapshotQueueExchange();
-        return new JmsPublisher<>(factory, jmsDestination, jmsExchange);
+        return new JmsPublisher<>(jmsDestination, jmsExchange);
     }
 
     public void process(OrderBook orderBook, CurrencyPair currencyPair, String process) {

@@ -1,6 +1,5 @@
 package com.cb.driver.kraken;
 
-import com.cb.alert.AlertProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
 import lombok.SneakyThrows;
@@ -16,14 +15,13 @@ public class KrakenOrderBookPersisterDriver extends AbstractDriver {
     private final KrakenOrderBookPersistJmsConsumer consumer;
 
     public static void main(String[] args) throws IOException {
-        AlertProvider alertProvider = new AlertProvider();
-        KrakenOrderBookPersistJmsConsumer consumer = new KrakenOrderBookPersistJmsConsumer(alertProvider);
-        (new KrakenOrderBookPersisterDriver(alertProvider, consumer)).execute();
+        KrakenOrderBookPersistJmsConsumer consumer = new KrakenOrderBookPersistJmsConsumer();
+        (new KrakenOrderBookPersisterDriver(consumer)).execute();
     }
 
     @SneakyThrows
-    public KrakenOrderBookPersisterDriver(AlertProvider alertProvider, KrakenOrderBookPersistJmsConsumer consumer) {
-        super(alertProvider);
+    public KrakenOrderBookPersisterDriver(KrakenOrderBookPersistJmsConsumer consumer) {
+        super();
         this.consumer = consumer;
     }
 

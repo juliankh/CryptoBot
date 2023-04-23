@@ -1,0 +1,2 @@
+# restart all
+14 */5 * * *  sleep 12; source ~/.crypto_bot_profile;cd $CRYPTO_BOT_BIN_SCRIPT_DIR;./restart_processes.sh   # at minute 14 past every 5th hour
