@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./common_profile.sh
+source ~/.crypto_bot_profile
 
 DATETIME=`date "+%Y-%m-%d %H:%M:%S"`
 SAFETY_NET_LOG=${CRYPTO_BOT_LOG_DIR}/safety_nets.log

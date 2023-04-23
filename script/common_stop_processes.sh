@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./common_profile.sh
+source ~/.crypto_bot_profile
 
 cd ${CRYPTO_BOT_BIN_SCRIPT_DIR}
 

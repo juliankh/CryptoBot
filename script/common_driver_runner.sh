@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./common_profile.sh
+source ~/.crypto_bot_profile
 
 DATETIME=`date +%Y-%m-%d_%H-%M-%S`
 
