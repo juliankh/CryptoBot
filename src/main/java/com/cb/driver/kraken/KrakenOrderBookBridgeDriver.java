@@ -1,5 +1,6 @@
 package com.cb.driver.kraken;
 
+import com.cb.alert.AlertProvider;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.util.TimeUtils;
 import com.cb.driver.AbstractDriver;
@@ -38,12 +39,13 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     public static void main(String[] args) {
         KrakenOrderBookBridgeArgsConverter argsConverter = new KrakenOrderBookBridgeArgsConverter(args);
         KrakenOrderBookBridgeProcessor processor = new KrakenOrderBookBridgeProcessor(BATCH_SIZE);
-        (new KrakenOrderBookBridgeDriver(argsConverter.getDriverToken(), argsConverter.getCurrencyPair(), processor)).execute();
+        AlertProvider alertProvider = new AlertProvider();
+        (new KrakenOrderBookBridgeDriver(argsConverter.getDriverToken(), argsConverter.getCurrencyPair(), processor, alertProvider)).execute();
     }
 
     @SneakyThrows
-    public KrakenOrderBookBridgeDriver(String driverNameToken, CurrencyPair currencyPair, KrakenOrderBookBridgeProcessor processor) {
-        super();
+    public KrakenOrderBookBridgeDriver(String driverNameToken, CurrencyPair currencyPair, KrakenOrderBookBridgeProcessor processor, AlertProvider alertProvider) {
+        super(alertProvider);
         this.currencyPair = currencyPair;
         this.processor = processor;
 

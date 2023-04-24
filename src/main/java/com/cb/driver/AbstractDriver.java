@@ -15,8 +15,8 @@ public abstract class AbstractDriver {
 	protected abstract void executeCustom();
 	protected abstract void cleanup();
 
-	public AbstractDriver() {
-		this.alertProvider = new AlertProvider();
+	public AbstractDriver(AlertProvider alertProvider) {
+		this.alertProvider = alertProvider;
 	}
 
 	public void execute() {

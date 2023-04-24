@@ -7,7 +7,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO: change this so that connection and channel aren't created here but are passed in
+// TODO: if there's ever a use case where a process will use more then 1 instance of this class, then change this so that connection and channel aren't created here but are passed in
 @Slf4j
 public abstract class AbstractJmsComponent {
 

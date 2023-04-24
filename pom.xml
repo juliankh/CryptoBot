@@ -78,6 +78,7 @@
     </plugins>
   </build>
   <dependencies>
+    <!-- TODO: see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster -->
     <dependency>
       <groupId>org.knowm.xchange</groupId>
       <artifactId>xchange-stream-core</artifactId>

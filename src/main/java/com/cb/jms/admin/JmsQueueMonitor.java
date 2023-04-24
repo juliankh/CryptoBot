@@ -1,5 +1,6 @@
 package com.cb.jms.admin;
 
+import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;
 import com.cb.property.CryptoProperties;
 import com.rabbitmq.client.AMQP;
@@ -10,15 +11,17 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.Map;
 
 @Slf4j
-public class JmsQueueTracker {
+public class JmsQueueMonitor {
 
     private final DbProvider dbProvider;
+    private final AlertProvider alertProvider;
 
-    public JmsQueueTracker(DbProvider dbProvider) {
+    public JmsQueueMonitor(DbProvider dbProvider, AlertProvider alertProvider) {
         this.dbProvider = dbProvider;
+        this.alertProvider = alertProvider;
     }
 
     @SneakyThrows
@@ -29,18 +32,24 @@ public class JmsQueueTracker {
         factory.setPort(properties.jmsBrokerPort());
         factory.setUsername(properties.jmsUsername());
         factory.setPassword(properties.jmsPassword());
-        Set<String> queuesToMonitor = properties.queuesToMonitor();
+        Map<String, Integer> queueToMaxNumMessagesMap = properties.queueToMaxNumMessagesMap();
         try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
-            queuesToMonitor.parallelStream().forEach(queue -> trackQueue(channel, queue));
+            queueToMaxNumMessagesMap.entrySet().parallelStream().forEach(entry -> monitorQueue(channel, entry.getKey(), entry.getValue()));
         }
     }
 
     @SneakyThrows
-    private void trackQueue(Channel channel, String queue) {
+    private void monitorQueue(Channel channel, String queue, int maxNumMessages) {
         AMQP.Queue.DeclareOk result = channel.queueDeclarePassive(queue);
         int messages = result.getMessageCount();
         int consumers = result.getConsumerCount();
-        log.info("Queue [" + queue + "]: Messages [" + messages + "], Consumers [" + consumers + "]");
+        if (messages > maxNumMessages) {
+            String msg = "For queue [" + queue + "] the current num of messages [" + messages + "] is > limit of [" + maxNumMessages + "]";
+            log.warn(msg);
+            alertProvider.sendEmailAlert(msg, msg);
+        } else {
+            log.info("For queue [" + queue + "] the current num of messages [" + messages + "] is within limit of [" + maxNumMessages + "]");
+        }
         dbProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
     }
 

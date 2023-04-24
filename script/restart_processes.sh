@@ -10,7 +10,7 @@ eval "${COMMAND_PROCESSES_RUNNING}"
 echo "stopping processes"
 ./stop_processes.sh
 echo "stopped processes"
-sleep 1
+sleep 3
 
 echo "processes currently running after stopping (there should be none)"
 eval "${COMMAND_PROCESSES_RUNNING} | grep -v AlertProvider"

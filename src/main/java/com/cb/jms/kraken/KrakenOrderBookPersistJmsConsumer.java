@@ -18,15 +18,15 @@ import java.util.Collection;
 @Slf4j
 public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
 
-    private final CurrencyResolver tokenResolver;
+    private final CurrencyResolver currencyResolver;
     private final ObjectConverter objectConverter;
     private final DbProvider dbProvider;
 
-    public KrakenOrderBookPersistJmsConsumer() {
+    public KrakenOrderBookPersistJmsConsumer(CurrencyResolver currencyResolver, ObjectConverter objectConverter, DbProvider dbProvider) {
         super(destination());
-        this.tokenResolver = new CurrencyResolver();
-        this.objectConverter = new ObjectConverter();
-        this.dbProvider = new DbProvider();
+        this.currencyResolver = currencyResolver;
+        this.objectConverter = objectConverter;
+        this.dbProvider = dbProvider;
     }
 
     private static String destination() {
@@ -43,7 +43,7 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
         dbProvider.insertKrakenOrderBooks(orderBooks, batchCurrencyPair);
         Instant end = Instant.now();
         long insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size());
-        String currencyPairToken = tokenResolver.upperCaseToken(batchCurrencyPair, "-");
+        String currencyPairToken = currencyResolver.upperCaseToken(batchCurrencyPair, "-");
         log.info("Inserting [" + orderBooks.size() + "] [" + currencyPairToken + "] OrderBooks into db took [" + TimeUtils.durationMessage(start) + "] at a rate of [" + insertRate + "] items/sec");
     }
 
