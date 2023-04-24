@@ -82,13 +82,28 @@ public class DbProvider {
     }
 
     @SneakyThrows
+    public int prune(String table, String column, int daysLimit) {
+        return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + daysLimit + " days';"), table);
+    }
+
+    @SneakyThrows
     private <T> List<T> runTimedQuery(Callable<List<T>> queryRunner, String itemType) {
         Instant start = Instant.now();
         List<T> result = queryRunner.call();
         Instant end = Instant.now();
         long queryRate = TimeUtils.ratePerSecond(start, end, result.size());
-        log.debug("Retrieving [" + NumberUtils.NUMBER_FORMAT.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
+        log.info("Retrieving [" + NumberUtils.NUMBER_FORMAT.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
         return result;
+    }
+
+    @SneakyThrows
+    private int runTimedUpdate(Callable<Integer> queryRunner, String itemType) {
+        Instant start = Instant.now();
+        int rowcount = queryRunner.call();
+        Instant end = Instant.now();
+        long queryRate = TimeUtils.ratePerSecond(start, end, rowcount);
+        log.info("Updating/Deleting [" + NumberUtils.NUMBER_FORMAT.format(rowcount) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
+        return rowcount;
     }
 
     public String questionMarks(int numQuestionMarks) {

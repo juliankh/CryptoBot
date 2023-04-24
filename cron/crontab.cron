@@ -26,6 +26,7 @@
 # cleanup
 ###################################################################################
 
+*/2 * * * *  sleep 51;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_cleaner.sh                 # every 2 minutes
 */32 * * * *  sleep 57; source ~/.crypto_bot_profile;find $CRYPTO_BOT_LOG_DIR/* -mtime +7 -type f -delete       # prune logs older than 7 days - every 32 mins
 
 ###################################################################################
