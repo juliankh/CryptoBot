@@ -1,2 +1,6 @@
+# safety nets (processes are up)
+*/3 * * * *  sleep 1;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_1_safety_net.sh    # every 3 minutes
+*/3 * * * *  sleep 22;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_persister_orderbook_safety_net.sh            # every 3 minutes
+
 # restart all
 14 */5 * * *  sleep 12; source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/restart_processes.sh   # at minute 14 past every 5th hour
