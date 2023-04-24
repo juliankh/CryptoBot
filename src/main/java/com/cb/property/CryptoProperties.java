@@ -3,6 +3,11 @@ package com.cb.property;
 import com.cb.encryption.EncryptionProvider;
 import lombok.SneakyThrows;
 
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Map.entry;
+
 public class CryptoProperties extends CryptoPropertiesRaw {
 
 	private final EncryptionProvider encryptionProvider;
@@ -10,8 +15,8 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 	@SneakyThrows
 	public static void main(String[] a) {
 		CryptoProperties properties = new CryptoProperties();
-		System.out.println(properties.getJmsKrakenOrderBookSnapshotQueueName());
-		System.out.println(properties.getJmsKrakenOrderBookSnapshotQueueExchange());
+		System.out.println(properties.jmsKrakenOrderBookSnapshotQueueName());
+		System.out.println(properties.jmsKrakenOrderBookSnapshotQueueExchange());
 	}
 	
 	public CryptoProperties() {
@@ -19,85 +24,93 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 		this.encryptionProvider = new EncryptionProvider();
 	}
 
-	public String getWriteDbUser() {
-		return getDecryptedProperty("encrypted.db.write.user");
+	public String writeDbUser() {
+		return decryptedProperty("encrypted.db.write.user");
 	}
 
-	public String getWriteDbPassword() {
-		return getDecryptedProperty("encrypted.db.write.password");
+	public String writeDbPassword() {
+		return decryptedProperty("encrypted.db.write.password");
 	}
 
-	public String getReadDbUser() {
-		return getDecryptedProperty("encrypted.db.read.user");
+	public String readDbUser() {
+		return decryptedProperty("encrypted.db.read.user");
 	}
 
-	public String getReadDbPassword() {
-		return getDecryptedProperty("encrypted.db.read.password");
+	public String readDbPassword() {
+		return decryptedProperty("encrypted.db.read.password");
 	}
 
-	public String getDbConnectionUrl() {
-		return getDecryptedProperty("encrypted.db.connectionUrl");
+	public String dbConnectionUrl() {
+		return decryptedProperty("encrypted.db.connectionUrl");
 	}
 
-	public String getAlertTextNum() {
-		return getDecryptedProperty("encrypted.alert.textNum");
+	public String alertTextNum() {
+		return decryptedProperty("encrypted.alert.textNum");
 	}
 	
-	public String getAlertEmail() {
-		return getDecryptedProperty("encrypted.alert.email");
+	public String alertEmail() {
+		return decryptedProperty("encrypted.alert.email");
 	}
 
-	public String getAlertPassword() {
-		return getDecryptedProperty("encrypted.alert.password");
+	public String alertPassword() {
+		return decryptedProperty("encrypted.alert.password");
 	}
 
-	public String getAlertSmtpHost() {
-		return getDecryptedProperty("encrypted.alert.smtp.host");
+	public String alertSmtpHost() {
+		return decryptedProperty("encrypted.alert.smtp.host");
 	}
 
-	public String getAlertSmtpSocketFactoryPort() {
-		return getDecryptedProperty("encrypted.alert.smtp.socketFactory.port");
+	public String alertSmtpSocketFactoryPort() {
+		return decryptedProperty("encrypted.alert.smtp.socketFactory.port");
 	}
 
-	public String getAlertSmtpSocketFactoryClass() {
-		return getDecryptedProperty("encrypted.alert.smtp.socketFactory.class");
+	public String alertSmtpSocketFactoryClass() {
+		return decryptedProperty("encrypted.alert.smtp.socketFactory.class");
 	}
 
-	public String getAlertSmtpAuth() {
-		return getDecryptedProperty("encrypted.alert.smtp.auth");
+	public String alertSmtpAuth() {
+		return decryptedProperty("encrypted.alert.smtp.auth");
 	}
 
-	public String getAlertSmtpPort() {
-		return getDecryptedProperty("encrypted.alert.smtp.port");
+	public String alertSmtpPort() {
+		return decryptedProperty("encrypted.alert.smtp.port");
 	}
 
-	public String getJmsBrokerHost() {
-		return getDecryptedProperty("encrypted.jms.broker.host");
+	public String jmsBrokerHost() {
+		return decryptedProperty("encrypted.jms.broker.host");
 	}
 	
-	public int getJmsBrokerPort() {
-		return Integer.parseInt(getDecryptedProperty("encrypted.jms.broker.port"));
-	}
-	
-	public String getJmsKrakenOrderBookSnapshotQueueName() {
-		return getDecryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.name");
+	public int jmsBrokerPort() {
+		return Integer.parseInt(decryptedProperty("encrypted.jms.broker.port"));
 	}
 
-	public String getJmsKrakenOrderBookSnapshotQueueExchange() {
-		return getDecryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.exchange");
+	public String jmsUsername() {
+		return decryptedProperty("encrypted.jms.username");
 	}
 
-	public String getJmsUsername() {
-		return getDecryptedProperty("encrypted.jms.username");
+	public String jmsPassword() {
+		return decryptedProperty("encrypted.jms.password");
 	}
 	
-	public String getJmsPassword() {
-		return getDecryptedProperty("encrypted.jms.password");
+	public String jmsKrakenOrderBookSnapshotQueueName() {
+		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.name");
+	}
+
+	public String jmsKrakenOrderBookSnapshotQueueExchange() {
+		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.exchange");
+	}
+
+	public Set<String> queuesToMonitor() {
+		return queueToMaxNumMessagesMap().keySet();
+	}
+
+	public Map<String, Integer> queueToMaxNumMessagesMap() {
+		return Map.ofEntries(entry(jmsKrakenOrderBookSnapshotQueueName(), 30));
 	}
 
 	// private methods
 
-	private String getDecryptedProperty(String name) {
+	private String decryptedProperty(String name) {
 		return encryptionProvider.decrypt(properties.getProperty(name));
 	}
 	

@@ -14,10 +14,10 @@ public class JmsConsumerSandbox {
 
         CryptoProperties properties = new CryptoProperties();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.getJmsBrokerHost());
-        factory.setPort(properties.getJmsBrokerPort());
-        factory.setUsername(properties.getJmsUsername());
-        factory.setPassword(properties.getJmsPassword());
+        factory.setHost(properties.jmsBrokerHost());
+        factory.setPort(properties.jmsBrokerPort());
+        factory.setUsername(properties.jmsUsername());
+        factory.setPassword(properties.jmsPassword());
 
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();

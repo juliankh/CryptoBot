@@ -31,7 +31,7 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
 
     private static String destination() {
         CryptoProperties properties = new CryptoProperties();
-        return properties.getJmsKrakenOrderBookSnapshotQueueName();
+        return properties.jmsKrakenOrderBookSnapshotQueueName();
     }
 
     @Override

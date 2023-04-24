@@ -7,6 +7,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO: change this so that connection and channel aren't created here but are passed in
 @Slf4j
 public abstract class AbstractJmsComponent {
 
@@ -46,10 +47,10 @@ public abstract class AbstractJmsComponent {
     private ConnectionFactory connectionFactory() {
         CryptoProperties properties = new CryptoProperties();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.getJmsBrokerHost());
-        factory.setPort(properties.getJmsBrokerPort());
-        factory.setUsername(properties.getJmsUsername());
-        factory.setPassword(properties.getJmsPassword());
+        factory.setHost(properties.jmsBrokerHost());
+        factory.setPort(properties.jmsBrokerPort());
+        factory.setUsername(properties.jmsUsername());
+        factory.setPassword(properties.jmsPassword());
         return factory;
     }
 

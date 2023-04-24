@@ -18,10 +18,10 @@ public class JmsSenderSandbox {
         CryptoProperties props = new CryptoProperties();
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(props.getJmsBrokerHost());
-        factory.setPort(props.getJmsBrokerPort());
-        factory.setUsername(props.getJmsUsername());
-        factory.setPassword(props.getJmsPassword());
+        factory.setHost(props.jmsBrokerHost());
+        factory.setPort(props.jmsBrokerPort());
+        factory.setUsername(props.jmsUsername());
+        factory.setPassword(props.jmsPassword());
 
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();

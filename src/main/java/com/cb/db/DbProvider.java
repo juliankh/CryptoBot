@@ -6,6 +6,7 @@ import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.CbOrderBook;
+import com.cb.model.admin.jms.db.DbJmsDestinationStats;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.lang3.tuple.Triple;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -37,6 +39,7 @@ public class DbProvider {
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
+    private static final BeanHandler<DbJmsDestinationStats> BEAN_HANDLER_JMS_DESTINATION_STATS = new BeanHandler<>(DbJmsDestinationStats.class);
 
     private final QueryRunner queryRunner;
     private final Connection readConnection;
@@ -48,8 +51,8 @@ public class DbProvider {
     public DbProvider() {
         queryRunner = new QueryRunner();
         CryptoProperties properties = new CryptoProperties();
-        readConnection = DriverManager.getConnection(properties.getDbConnectionUrl(), properties.getReadDbUser(), properties.getReadDbPassword());
-        writeConnection = DriverManager.getConnection(properties.getDbConnectionUrl(), properties.getWriteDbUser(), properties.getWriteDbPassword());
+        readConnection = DriverManager.getConnection(properties.dbConnectionUrl(), properties.readDbUser(), properties.readDbPassword());
+        writeConnection = DriverManager.getConnection(properties.dbConnectionUrl(), properties.writeDbUser(), properties.writeDbPassword());
         objectConverter = new ObjectConverter();
         krakenTableNameResolver = new KrakenTableNameResolver(new CurrencyResolver());
     }
@@ -91,6 +94,11 @@ public class DbProvider {
                 "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_nanos, bids_hash, asks_hash) DO NOTHING;",
                 payload);
         checkDupes(orderBooks, rowCounts);
+    }
+
+    @SneakyThrows
+    public DbJmsDestinationStats insertJmsDestinationStats(String destinationName, Instant measured, int messages, int consumers) {
+        return queryRunner.insert(writeConnection,"INSERT INTO cb.jms_destination_stats(name, measured, messages, consumers, created) VALUES (?, ?, ?, ?, now());", BEAN_HANDLER_JMS_DESTINATION_STATS, destinationName, Timestamp.from(measured), messages, consumers);
     }
 
     // Returns how many rowcounts were 0 (in order to compare to num of dupes received from upstream data source).  If any rowcount > 1, exception is thrown.

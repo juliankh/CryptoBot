@@ -13,7 +13,7 @@ echo "stopped processes"
 sleep 1
 
 echo "processes currently running after stopping (there should be none)"
-eval "${COMMAND_PROCESSES_RUNNING}"
+eval "${COMMAND_PROCESSES_RUNNING} | grep -v AlertProvider"
 
 echo "starting processes"
 ./start_processes.sh

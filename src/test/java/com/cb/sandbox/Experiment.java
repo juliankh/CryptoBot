@@ -19,8 +19,8 @@ public class Experiment {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 
         CryptoProperties props = new CryptoProperties();
-        Connection readConnection = DriverManager.getConnection(props.getDbConnectionUrl(), props.getReadDbUser(), props.getReadDbPassword());
-        Connection writeConnection = DriverManager.getConnection(props.getDbConnectionUrl(), props.getWriteDbUser(), props.getWriteDbPassword());
+        Connection readConnection = DriverManager.getConnection(props.dbConnectionUrl(), props.readDbUser(), props.readDbPassword());
+        Connection writeConnection = DriverManager.getConnection(props.dbConnectionUrl(), props.writeDbUser(), props.writeDbPassword());
 
         QueryRunner runner = new QueryRunner();
 /*

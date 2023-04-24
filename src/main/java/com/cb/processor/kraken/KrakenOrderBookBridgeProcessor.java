@@ -30,8 +30,8 @@ public class KrakenOrderBookBridgeProcessor {
     @SneakyThrows
     private JmsPublisher<KrakenOrderBookBatch> jmsPublisher() {
         CryptoProperties properties = new CryptoProperties();
-        String jmsDestination = properties.getJmsKrakenOrderBookSnapshotQueueName();
-        String jmsExchange = properties.getJmsKrakenOrderBookSnapshotQueueExchange();
+        String jmsDestination = properties.jmsKrakenOrderBookSnapshotQueueName();
+        String jmsExchange = properties.jmsKrakenOrderBookSnapshotQueueExchange();
         return new JmsPublisher<>(jmsDestination, jmsExchange);
     }
 

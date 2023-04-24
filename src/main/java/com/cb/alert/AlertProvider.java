@@ -50,11 +50,11 @@ public class AlertProvider {
 		this.isOn = isOn;
 		this.cryptoProperties = new CryptoProperties();
 		this.emailProperties = new Properties();
-		this.emailProperties.put("mail.smtp.host", cryptoProperties.getAlertSmtpHost());
-		this.emailProperties.put("mail.smtp.socketFactory.port", cryptoProperties.getAlertSmtpSocketFactoryPort());
-		this.emailProperties.put("mail.smtp.socketFactory.class", cryptoProperties.getAlertSmtpSocketFactoryClass());
-		this.emailProperties.put("mail.smtp.auth", cryptoProperties.getAlertSmtpAuth());
-		this.emailProperties.put("mail.smtp.port", cryptoProperties.getAlertSmtpPort());
+		this.emailProperties.put("mail.smtp.host", cryptoProperties.alertSmtpHost());
+		this.emailProperties.put("mail.smtp.socketFactory.port", cryptoProperties.alertSmtpSocketFactoryPort());
+		this.emailProperties.put("mail.smtp.socketFactory.class", cryptoProperties.alertSmtpSocketFactoryClass());
+		this.emailProperties.put("mail.smtp.auth", cryptoProperties.alertSmtpAuth());
+		this.emailProperties.put("mail.smtp.port", cryptoProperties.alertSmtpPort());
 	}
 	
 	public void sendEmailAlert(String subject, String body, Throwable t) {
@@ -62,11 +62,11 @@ public class AlertProvider {
 	}
 	
 	public void sendEmailAlert(String subject, String body) {
-		sendAlert(subject, body, cryptoProperties.getAlertEmail());
+		sendAlert(subject, body, cryptoProperties.alertEmail());
 	}
 	
 	public void sendTextAlert(String msg) {
-		sendAlert(msg, msg, cryptoProperties.getAlertTextNum());
+		sendAlert(msg, msg, cryptoProperties.alertTextNum());
 	}
 
 	public void sendAlert(String subject, String body, String recipient) {
@@ -78,12 +78,12 @@ public class AlertProvider {
 		Session session = Session.getDefaultInstance(emailProperties,
 			new Authenticator() {
 				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(cryptoProperties.getAlertEmail(), cryptoProperties.getAlertPassword()); 
+					return new PasswordAuthentication(cryptoProperties.alertEmail(), cryptoProperties.alertPassword());
 				}
 			});
 		try {
 			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(cryptoProperties.getAlertEmail()));
+			message.setFrom(new InternetAddress(cryptoProperties.alertEmail()));
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
 			message.setSubject(subject);
 			message.setText(body);
