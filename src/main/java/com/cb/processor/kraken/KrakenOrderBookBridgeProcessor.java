@@ -5,7 +5,6 @@ import com.cb.jms.common.JmsPublisher;
 import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.processor.BatchProcessor;
-import com.cb.property.CryptoProperties;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -22,17 +21,9 @@ public class KrakenOrderBookBridgeProcessor {
     private final JmsPublisher<KrakenOrderBookBatch> jmsPublisher;
 
     @SneakyThrows
-    public KrakenOrderBookBridgeProcessor(int batchSize) {
-        this.batchProcessor = new BatchProcessor<>(batchSize);
-        this.jmsPublisher = jmsPublisher();
-    }
-
-    @SneakyThrows
-    private JmsPublisher<KrakenOrderBookBatch> jmsPublisher() {
-        CryptoProperties properties = new CryptoProperties();
-        String jmsDestination = properties.jmsKrakenOrderBookSnapshotQueueName();
-        String jmsExchange = properties.jmsKrakenOrderBookSnapshotQueueExchange();
-        return new JmsPublisher<>(jmsDestination, jmsExchange);
+    public KrakenOrderBookBridgeProcessor(BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor, JmsPublisher<KrakenOrderBookBatch> jmsPublisher) {
+        this.batchProcessor = batchProcessor;
+        this.jmsPublisher = jmsPublisher;
     }
 
     public void process(OrderBook orderBook, CurrencyPair currencyPair, String process) {

@@ -25,7 +25,7 @@ public class JmsQueueMonitor {
     }
 
     @SneakyThrows
-    public void track() {
+    public void monitor() {
         CryptoProperties properties = new CryptoProperties();
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(properties.jmsBrokerHost());
@@ -39,8 +39,14 @@ public class JmsQueueMonitor {
     }
 
     @SneakyThrows
-    private void monitorQueue(Channel channel, String queue, int maxNumMessages) {
+    public void monitorQueue(Channel channel, String queue, int maxNumMessages) {
         AMQP.Queue.DeclareOk result = channel.queueDeclarePassive(queue);
+        monitorQueue(result, queue, maxNumMessages);
+    }
+
+    // TODO: unit test
+    @SneakyThrows
+    public void monitorQueue(AMQP.Queue.DeclareOk result, String queue, int maxNumMessages) {
         int messages = result.getMessageCount();
         int consumers = result.getConsumerCount();
         if (messages > maxNumMessages) {
@@ -51,6 +57,10 @@ public class JmsQueueMonitor {
             log.info("For queue [" + queue + "] the current num of messages [" + messages + "] is within limit of [" + maxNumMessages + "]");
         }
         dbProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
+    }
+
+    public void cleanup() {
+        dbProvider.cleanup();
     }
 
 }

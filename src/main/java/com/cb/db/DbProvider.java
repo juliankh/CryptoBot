@@ -14,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.tuple.Triple;
 import org.knowm.xchange.currency.CurrencyPair;
 
@@ -40,6 +42,7 @@ public class DbProvider {
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanHandler<DbJmsDestinationStats> BEAN_HANDLER_JMS_DESTINATION_STATS = new BeanHandler<>(DbJmsDestinationStats.class);
+    private static final ScalarHandler<Timestamp> TIMESTAMP_SCALAR_HANDLER = new ScalarHandler<>();
 
     private final QueryRunner queryRunner;
     private final Connection readConnection;
@@ -70,6 +73,12 @@ public class DbProvider {
                      " WHERE exchange_datetime between ? and ?" +
                      " ORDER BY received_nanos";
         return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), tableName);
+    }
+
+    @SneakyThrows
+    public Instant timeOfLastItem(String table, String column) {
+        Timestamp result = queryRunner.query(readConnection, "SELECT max(" + column + ") FROM " + table + ";", TIMESTAMP_SCALAR_HANDLER);
+        return result.toInstant();
     }
 
     @SneakyThrows
@@ -141,6 +150,12 @@ public class DbProvider {
                 .filter(entry -> entry.getValue().size() > 1)
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
         return bucketsWithMultipleItemsOnly;
+    }
+
+    @SneakyThrows
+    public void cleanup() {
+        DbUtils.closeQuietly(readConnection);
+        DbUtils.closeQuietly(writeConnection);
     }
 
 }

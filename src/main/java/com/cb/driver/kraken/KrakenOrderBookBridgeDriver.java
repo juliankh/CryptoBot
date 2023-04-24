@@ -5,7 +5,12 @@ import com.cb.common.CurrencyResolver;
 import com.cb.common.util.TimeUtils;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
+import com.cb.jms.common.JmsPublisher;
+import com.cb.model.kraken.jms.KrakenOrderBook;
+import com.cb.model.kraken.jms.KrakenOrderBookBatch;
+import com.cb.processor.BatchProcessor;
 import com.cb.processor.kraken.KrakenOrderBookBridgeProcessor;
+import com.cb.property.CryptoProperties;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;
@@ -38,7 +43,12 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     public static void main(String[] args) {
         KrakenOrderBookBridgeArgsConverter argsConverter = new KrakenOrderBookBridgeArgsConverter(args);
-        KrakenOrderBookBridgeProcessor processor = new KrakenOrderBookBridgeProcessor(BATCH_SIZE);
+        BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor = new BatchProcessor<>(BATCH_SIZE);
+        CryptoProperties properties = new CryptoProperties();
+        String jmsDestination = properties.jmsKrakenOrderBookSnapshotQueueName();
+        String jmsExchange = properties.jmsKrakenOrderBookSnapshotQueueExchange();
+        JmsPublisher<KrakenOrderBookBatch> jmsPublisher = new JmsPublisher<>(jmsDestination, jmsExchange);
+        KrakenOrderBookBridgeProcessor processor = new KrakenOrderBookBridgeProcessor(batchProcessor, jmsPublisher);
         AlertProvider alertProvider = new AlertProvider();
         (new KrakenOrderBookBridgeDriver(argsConverter.getDriverToken(), argsConverter.getCurrencyPair(), processor, alertProvider)).execute();
     }

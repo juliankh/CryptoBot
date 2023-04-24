@@ -16,13 +16,20 @@
 */4 * * * *  sleep 22;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_persister_orderbook_safety_net.sh            # every 4 minutes
 
 ###################################################################################
-# safety nets (monitoring)
+# monitoring
 ###################################################################################
 
-*/1 * * * *  sleep 5;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/jms_queue_monitor.sh    # every minute
+*/1 * * * *  sleep 7;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/jms_queue_monitor.sh            # every minute
+*/5 * * * *  sleep 41;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_age_monitor.sh             # every 5 minutes
+
+###################################################################################
+# cleanup
+###################################################################################
+
+*/32 * * * *  sleep 57; source ~/.crypto_bot_profile;find $CRYPTO_BOT_LOG_DIR/* -mtime +7 -type f -delete       # prune logs older than 7 days - every 32 mins
 
 ###################################################################################
 # restart all daemons
 ###################################################################################
 
-14 */5 * * *  sleep 12; source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/restart_processes.sh   # at minute 14 past every 5th hour
+# 14 */5 * * *  sleep 12; source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/restart_processes.sh   # at minute 14 past every 5th hour

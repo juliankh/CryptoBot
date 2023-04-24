@@ -47,4 +47,8 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
         log.info("Inserting [" + orderBooks.size() + "] [" + currencyPairToken + "] OrderBooks into db took [" + TimeUtils.durationMessage(start) + "] at a rate of [" + insertRate + "] items/sec");
     }
 
+    public void cleanup() {
+        dbProvider.cleanup();
+    }
+
 }

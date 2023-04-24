@@ -30,12 +30,12 @@ public class JmsQueueMonitorDriver extends AbstractDriver  {
 
     @Override
     protected void executeCustom() {
-        jmsQueueMonitor.track();
+        jmsQueueMonitor.monitor();
     }
 
     @Override
     protected void cleanup() {
-        // nothing
+        jmsQueueMonitor.cleanup();
     }
 
 }
