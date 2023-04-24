@@ -19,7 +19,7 @@ public class EncryptionProvider {
 	public static void main(String[] a) throws Exception {
 		EncryptionProvider encryptionProvider = new EncryptionProvider();
 		
-		/*  TODO: erase string after using */ String rawString = "kraken_orderbook_snapshot"; /*  TODO: erase string after using */
+		/*  TODO: erase string after using */ String rawString = ""; /*  TODO: erase string after using */
 		
 		String encryptedText = encryptionProvider.encrypt(rawString);
     	System.out.println("Encrypted: " + encryptedText);

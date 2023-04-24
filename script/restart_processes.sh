@@ -18,7 +18,7 @@ eval "${COMMAND_PROCESSES_RUNNING}"
 echo "starting processes"
 ./start_processes.sh
 echo "started processes"
-sleep 1
+sleep 5
 
 echo "currently running after restart"
 eval "${COMMAND_PROCESSES_RUNNING}"
