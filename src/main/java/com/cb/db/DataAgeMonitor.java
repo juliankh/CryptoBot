@@ -30,14 +30,14 @@ public class DataAgeMonitor {
             String table = config.getLeft();
             String column = config.getMiddle();
             int ageLimit = config.getRight();
-            monitorTable(table, column, ageLimit);
+            Instant timeOfLastItem = dbProvider.timeOfLastItem(table, column);
+            Instant timeToCompare = Instant.now();
+            monitorTable(table, timeOfLastItem, timeToCompare, ageLimit);
         });
     }
 
-    // TODO: unit test
-    public void monitorTable(String table, String column, int ageLimit) {
-        Instant timeOfLastItem = dbProvider.timeOfLastItem(table, column);
-        long minsAge = ChronoUnit.MINUTES.between(timeOfLastItem, Instant.now());
+    public void monitorTable(String table, Instant timeOfLastItem, Instant timeToCompare, int ageLimit) {
+        long minsAge = ChronoUnit.MINUTES.between(timeOfLastItem, timeToCompare);
         if (minsAge > ageLimit) {
             String msg = "For table [" + table + "] the last item is [" + minsAge + "] mins old, which is > limit of [" + ageLimit + "] mins";
             log.warn(msg);

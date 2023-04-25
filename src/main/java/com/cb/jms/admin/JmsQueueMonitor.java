@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.Map;
 
+import static java.util.Map.entry;
+
 @Slf4j
 public class JmsQueueMonitor {
 
@@ -26,29 +28,34 @@ public class JmsQueueMonitor {
 
     @SneakyThrows
     public void monitor() {
+        ConnectionFactory connectionFactory = connectionFactory();
+        Map<String, Integer> queueToMaxNumMessagesMap = queueMonitoringConfig();
+        try (Connection connection = connectionFactory.newConnection(); Channel channel = connection.createChannel()) {
+            queueToMaxNumMessagesMap.entrySet().parallelStream().forEach(entry -> monitorQueue(channel, entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private ConnectionFactory connectionFactory() {
         CryptoProperties properties = new CryptoProperties();
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(properties.jmsBrokerHost());
         factory.setPort(properties.jmsBrokerPort());
         factory.setUsername(properties.jmsUsername());
         factory.setPassword(properties.jmsPassword());
-        Map<String, Integer> queueToMaxNumMessagesMap = properties.queueToMaxNumMessagesMap();
-        try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
-            queueToMaxNumMessagesMap.entrySet().parallelStream().forEach(entry -> monitorQueue(channel, entry.getKey(), entry.getValue()));
-        }
+        return factory;
     }
 
     @SneakyThrows
     public void monitorQueue(Channel channel, String queue, int maxNumMessages) {
         AMQP.Queue.DeclareOk result = channel.queueDeclarePassive(queue);
-        monitorQueue(result, queue, maxNumMessages);
-    }
-
-    // TODO: unit test
-    @SneakyThrows
-    public void monitorQueue(AMQP.Queue.DeclareOk result, String queue, int maxNumMessages) {
         int messages = result.getMessageCount();
         int consumers = result.getConsumerCount();
+        monitorQueue(queue, messages, maxNumMessages);
+        dbProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
+    }
+
+    @SneakyThrows
+    public void monitorQueue(String queue, int messages, int maxNumMessages) {
         if (messages > maxNumMessages) {
             String msg = "For queue [" + queue + "] the current num of messages [" + messages + "] is > limit of [" + maxNumMessages + "]";
             log.warn(msg);
@@ -56,7 +63,15 @@ public class JmsQueueMonitor {
         } else {
             log.info("For queue [" + queue + "] the current num of messages [" + messages + "] is within limit of [" + maxNumMessages + "]");
         }
-        dbProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
+    }
+
+    // Queue name -> Max # of messages
+    public Map<String, Integer> queueMonitoringConfig() {
+        CryptoProperties properties = new CryptoProperties();
+        return Map.ofEntries(
+                entry(properties.jmsKrakenOrderBookSnapshotQueueName(), 30),
+                entry(properties.jmsKrakenOrderBookSnapshotErrorQueueName(), 0)
+        );
     }
 
     public void cleanup() {

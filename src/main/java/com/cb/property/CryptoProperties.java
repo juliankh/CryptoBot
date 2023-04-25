@@ -3,11 +3,6 @@ package com.cb.property;
 import com.cb.encryption.EncryptionProvider;
 import lombok.SneakyThrows;
 
-import java.util.Map;
-import java.util.Set;
-
-import static java.util.Map.entry;
-
 public class CryptoProperties extends CryptoPropertiesRaw {
 
 	private final EncryptionProvider encryptionProvider;
@@ -15,8 +10,7 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 	@SneakyThrows
 	public static void main(String[] a) {
 		CryptoProperties properties = new CryptoProperties();
-		System.out.println(properties.jmsKrakenOrderBookSnapshotQueueName());
-		System.out.println(properties.jmsKrakenOrderBookSnapshotQueueExchange());
+		System.out.println(properties.jmsKrakenOrderBookSnapshotErrorQueueName());
 	}
 	
 	public CryptoProperties() {
@@ -96,16 +90,12 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.name");
 	}
 
+	public String jmsKrakenOrderBookSnapshotErrorQueueName() {
+		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.error_queue.name");
+	}
+
 	public String jmsKrakenOrderBookSnapshotQueueExchange() {
 		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.exchange");
-	}
-
-	public Set<String> queuesToMonitor() {
-		return queueToMaxNumMessagesMap().keySet();
-	}
-
-	public Map<String, Integer> queueToMaxNumMessagesMap() {
-		return Map.ofEntries(entry(jmsKrakenOrderBookSnapshotQueueName(), 30));
 	}
 
 	// private methods

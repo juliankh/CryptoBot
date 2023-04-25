@@ -2,3 +2,7 @@ Currency Pairs currently being tested:
     CurrencyPair currencyPair = CurrencyPair.BTC_USD;
     //CurrencyPair currencyPair = CurrencyPair.ATOM_USD;
     //CurrencyPair currencyPair = new CurrencyPair(Currency.ADA, Currency.AUD);
+
+
+TODO:
+-make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions

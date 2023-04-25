@@ -38,7 +38,7 @@ public class DataCleaner {
     // Triple: table - column - age in days beyond which to delete
     private List<Triple<String, String, Integer>> tableCleanupConfig() {
         return Lists.newArrayList(
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT), "exchange_datetime", 12)
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT), "exchange_datetime", 2)
         );
     }
 
