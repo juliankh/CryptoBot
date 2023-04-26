@@ -32,7 +32,6 @@ GRANT ALL ON TABLE cb.kraken_orderbook_btc_usdt TO postgres;
 -- DROP INDEX IF EXISTS cb.kraken_orderbook_btc_usdt_exchange_date_index;
 
 CREATE INDEX IF NOT EXISTS kraken_orderbook_btc_usdt_exchange_date_index ON cb.kraken_orderbook_btc_usdt USING btree (exchange_date DESC NULLS FIRST) TABLESPACE pg_default;
-
 ALTER TABLE IF EXISTS cb.kraken_orderbook_btc_usdt CLUSTER ON kraken_orderbook_btc_usdt_exchange_date_index;
 -- Index: kraken_orderbook_btc_usdt_exchange_datetime_index
 

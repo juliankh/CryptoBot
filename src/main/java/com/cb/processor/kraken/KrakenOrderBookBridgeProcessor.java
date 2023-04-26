@@ -44,6 +44,7 @@ public class KrakenOrderBookBridgeProcessor {
     }
 
     public void cleanup() {
+        log.info("Cleaning up");
         jmsPublisher.cleanup();
     }
 

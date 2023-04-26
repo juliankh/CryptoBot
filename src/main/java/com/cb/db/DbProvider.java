@@ -169,6 +169,7 @@ public class DbProvider {
 
     @SneakyThrows
     public void cleanup() {
+        log.info("Cleaning up");
         DbUtils.closeQuietly(readConnection);
         DbUtils.closeQuietly(writeConnection);
     }

@@ -4,7 +4,9 @@ import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.jms.admin.JmsQueueMonitor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JmsQueueMonitorDriver extends AbstractDriver  {
 
     private static final String DRIVER_NAME = "JMS Queue Monitor";
@@ -35,6 +37,7 @@ public class JmsQueueMonitorDriver extends AbstractDriver  {
 
     @Override
     protected void cleanup() {
+        log.info("Cleaning up");
         jmsQueueMonitor.cleanup();
     }
 

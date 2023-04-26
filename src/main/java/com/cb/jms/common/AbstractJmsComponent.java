@@ -28,6 +28,7 @@ public abstract class AbstractJmsComponent {
 
     @SneakyThrows
     public void cleanup() {
+        log.info("Cleaning up");
         if (connection != null) {
             try {
                 connection.close();

@@ -2,18 +2,40 @@
 # safety nets (checking that processes are up)
 ###################################################################################
 
-*/3 * * * *  sleep 1;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_1_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 3;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_2_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 6;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_3_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 9;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_4_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 12;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_5_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 15;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_6_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 18;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_7_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 21;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_8_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 24;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_9_safety_net.sh    # every 3 minutes
-*/3 * * * *  sleep 27;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook_btc_usdt_10_safety_net.sh   # every 3 minutes
+*/10 * * * *  sleep  1;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/1_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  2;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/2_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  3;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/3_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  4;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/4_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  5;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/5_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  6;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/6_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  7;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/7_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  8;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/8_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep  9;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/9_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 10;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/btc_usdt/10_safety_net.sh   # every 10 minutes
 
-*/4 * * * *  sleep 22;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_persister_orderbook_safety_net.sh            # every 4 minutes
+*/10 * * * *  sleep 11;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/1_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 12;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/2_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 13;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/3_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 14;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/4_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 15;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/5_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 16;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/6_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 17;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/7_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 18;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/8_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 19;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/9_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 20;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/atom_usd/10_safety_net.sh   # every 10 minutes
+
+*/10 * * * *  sleep 21;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/1_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 22;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/2_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 23;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/3_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 24;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/4_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 25;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/5_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 26;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/6_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 27;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/7_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 28;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/8_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 29;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/9_safety_net.sh    # every 10 minutes
+*/10 * * * *  sleep 30;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/mxc_usd/10_safety_net.sh   # every 10 minutes
+
+*/8 * * * *   sleep 31;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_persister_orderbook_safety_net.sh            # every 8 minutes
 
 ###################################################################################
 # monitoring

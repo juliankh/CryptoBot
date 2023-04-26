@@ -6,7 +6,9 @@ import com.cb.db.DataCleaner;
 import com.cb.db.DbProvider;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.driver.AbstractDriver;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DataCleanerDriver extends AbstractDriver  {
 
     private static final String DRIVER_NAME = "Data Cleaner";
@@ -39,6 +41,7 @@ public class DataCleanerDriver extends AbstractDriver  {
 
     @Override
     protected void cleanup() {
+        log.info("Cleaning up");
         dataCleaner.cleanup();
     }
 

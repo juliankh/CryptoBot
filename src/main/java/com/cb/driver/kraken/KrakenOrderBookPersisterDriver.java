@@ -43,6 +43,7 @@ public class KrakenOrderBookPersisterDriver extends AbstractDriver {
 
     @Override
     protected void cleanup() {
+        log.info("Cleaning up");
         consumer.cleanup();
     }
 

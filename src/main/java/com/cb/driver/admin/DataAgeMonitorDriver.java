@@ -6,7 +6,9 @@ import com.cb.db.DataAgeMonitor;
 import com.cb.db.DbProvider;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.driver.AbstractDriver;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DataAgeMonitorDriver extends AbstractDriver  {
 
     private static final String DRIVER_NAME = "Data Age Monitor";
@@ -39,6 +41,7 @@ public class DataAgeMonitorDriver extends AbstractDriver  {
 
     @Override
     protected void cleanup() {
+        log.info("Cleaning up");
         dataAgeMonitor.cleanup();
     }
 

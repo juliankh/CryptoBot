@@ -38,9 +38,13 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
                 log.info("Received msg [" + ++numMessagesReceived + "] with Delivery Tag [" + deliveryTag + "]");
                 customProcess(delivery.getBody());
                 log.info("Processing msg took [" + TimeUtils.durationMessage(start) + "] ------------------------");
+
+                // TODO: resolve com.rabbitmq.client.AlreadyClosedException
                 channel.basicAck(deliveryTag, false);
             } catch (Exception e) {
                 log.error("Problem processing msg", e);
+
+                // TODO: resolve com.rabbitmq.client.AlreadyClosedException
                 channel.basicNack(deliveryTag, false, false);
             }
         };

@@ -48,7 +48,7 @@ public class JmsQueueMonitor {
     @SneakyThrows
     public void monitorQueue(Channel channel, String queue, int maxNumMessages) {
         AMQP.Queue.DeclareOk result = channel.queueDeclarePassive(queue);
-        int messages = result.getMessageCount();
+        int messages = result.getMessageCount(); // TODO: this is inaccurate, so figure out a different way of getting this
         int consumers = result.getConsumerCount();
         monitorQueue(queue, messages, maxNumMessages);
         dbProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
@@ -75,6 +75,7 @@ public class JmsQueueMonitor {
     }
 
     public void cleanup() {
+        log.info("Cleaning up");
         dbProvider.cleanup();
     }
 

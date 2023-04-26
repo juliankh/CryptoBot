@@ -56,6 +56,7 @@ public class DataAgeMonitor {
     }
 
     public void cleanup() {
+        log.info("Cleaning up");
         dbProvider.cleanup();
     }
 

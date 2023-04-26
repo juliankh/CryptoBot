@@ -1,0 +1,10 @@
+CRYPTO_BOT_DIR=/usr/local/var/crypto_bot
+CRYPTO_BOT_BIN_DIR="${CRYPTO_BOT_DIR}/bin"
+CRYPTO_BOT_BIN_SCRIPT_DIR="${CRYPTO_BOT_BIN_DIR}/script"
+CRYPTO_BOT_LOG_DIR="${CRYPTO_BOT_DIR}/log"
+
+# this var is set to similar as "j" alias in .bash_profile, but not reusing the "j" alias so as to prevent this profile from depending on anything outside of itself
+COMMAND_PROCESSES_RUNNING="ps -ef | grep -i java | grep -v grep | grep CryptoBot | grep jar-with-dependencies | sort -k11,12 -k13n"
+
+alias cdl="cd ${CRYPTO_BOT_LOG_DIR}"
+alias cds="cd ${CRYPTO_BOT_BIN_SCRIPT_DIR}"
