@@ -38,13 +38,9 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
                 log.info("Received msg [" + ++numMessagesReceived + "] with Delivery Tag [" + deliveryTag + "]");
                 customProcess(delivery.getBody());
                 log.info("Processing msg took [" + TimeUtils.durationMessage(start) + "] ------------------------");
-
-                // TODO: resolve com.rabbitmq.client.AlreadyClosedException
                 channel.basicAck(deliveryTag, false);
             } catch (Exception e) {
                 log.error("Problem processing msg", e);
-
-                // TODO: resolve com.rabbitmq.client.AlreadyClosedException
                 channel.basicNack(deliveryTag, false, false);
             }
         };
@@ -55,7 +51,7 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
             log.info("Received Shutdown Signal for ConsumerTag [" + consumerTag + "]", e);
             cleanup();
             String msg = "JMS listener shut down for [" + destination + "]";
-            alertProvider.sendEmailAlert(msg, msg, e); // TODO: sent alert "quietly" without propagating exception
+            alertProvider.sendEmailAlertQuietly(msg, msg, e);
         };
     }
 

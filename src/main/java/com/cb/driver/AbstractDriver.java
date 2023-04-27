@@ -29,7 +29,7 @@ public abstract class AbstractDriver {
 			log.error(errMsg, e);
 			logProcessDuration(startTime);
 			cleanup();
-			alertProvider.sendEmailAlert(errMsg, errMsg, e);  // TODO: sent alert "quietly" without propagating exception
+			alertProvider.sendEmailAlertQuietly(errMsg, errMsg, e);
 			throw new RuntimeException(errMsg, e);
 		}
 		logProcessDuration(startTime);

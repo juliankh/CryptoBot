@@ -56,40 +56,72 @@ public class AlertProvider {
 		this.emailProperties.put("mail.smtp.auth", cryptoProperties.alertSmtpAuth());
 		this.emailProperties.put("mail.smtp.port", cryptoProperties.alertSmtpPort());
 	}
-	
+
 	public void sendEmailAlert(String subject, String body, Throwable t) {
-		sendEmailAlert(subject, body + "\n\n" + ExceptionUtils.getStackTrace(t));
-	}
-	
-	public void sendEmailAlert(String subject, String body) {
-		sendAlert(subject, body, cryptoProperties.alertEmail());
-	}
-	
-	public void sendTextAlert(String msg) {
-		sendAlert(msg, msg, cryptoProperties.alertTextNum());
+		sendEmailAlert(subject, body, t, false);
 	}
 
-	public void sendAlert(String subject, String body, String recipient) {
-		if (!isOn) {
-			log.info("NOT Sending alert with subject [" + subject + "] because the Alert system is OFF");	
-			return;
-		}
-		log.info("Sending alert with subject [" + subject + "]");
-		Session session = Session.getDefaultInstance(emailProperties,
-			new Authenticator() {
-				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(cryptoProperties.alertEmail(), cryptoProperties.alertPassword());
-				}
-			});
+	public void sendEmailAlertQuietly(String subject, String body, Throwable t) {
+		sendEmailAlert(subject, body, t, true);
+	}
+
+	public void sendEmailAlert(String subject, String body, Throwable t, boolean quietly) {
+		sendEmailAlert(subject, body + "\n\n" + ExceptionUtils.getStackTrace(t), quietly);
+	}
+
+	public void sendEmailAlert(String subject, String body) {
+		sendEmailAlert(subject, body, false);
+	}
+
+	public void sendEmailAlertQuietly(String subject, String body) {
+		sendEmailAlert(subject, body, true);
+	}
+
+	public void sendEmailAlert(String subject, String body, boolean quietly) {
+		sendAlert(subject, body, cryptoProperties.alertEmail(), quietly);
+	}
+
+	public void sendTextAlert(String msg) {
+		sendTextAlert(msg, false);
+	}
+
+	public void sendTextAlertQuietly(String msg) {
+		sendTextAlert(msg, true);
+	}
+
+	public void sendTextAlert(String msg, boolean quietly) {
+		sendAlert(msg, msg, cryptoProperties.alertTextNum(), quietly);
+	}
+
+	public void sendAlert(String subject, String body, String recipient, boolean quietly) {
 		try {
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(cryptoProperties.alertEmail()));
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-			message.setSubject(subject);
-			message.setText(body);
-			Transport.send(message);
-		} catch (MessagingException e) {
-			throw new RuntimeException("Problem sending alert with subject [" + subject + "]", e);
+			if (!isOn) {
+				log.info("NOT Sending alert with subject [" + subject + "] because the Alert system is OFF");
+				return;
+			}
+			log.info("Sending alert with subject [" + subject + "]");
+			Session session = Session.getDefaultInstance(emailProperties,
+					new Authenticator() {
+						protected PasswordAuthentication getPasswordAuthentication() {
+							return new PasswordAuthentication(cryptoProperties.alertEmail(), cryptoProperties.alertPassword());
+						}
+					});
+			try {
+				Message message = new MimeMessage(session);
+				message.setFrom(new InternetAddress(cryptoProperties.alertEmail()));
+				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+				message.setSubject(subject);
+				message.setText(body);
+				Transport.send(message);
+			} catch (MessagingException e) {
+				throw new RuntimeException("Problem sending alert with subject [" + subject + "]", e);
+			}
+		} catch (Exception e) {
+			if (quietly) {
+				log.error("Problem sending alert with subject [" + subject + "].  Logging, but otherwise ignoring because the quietly flag is ON.", e);
+			} else {
+				throw e;
+			}
 		}
 	}
 	
