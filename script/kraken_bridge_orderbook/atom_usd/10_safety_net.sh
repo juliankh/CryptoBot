@@ -2,5 +2,4 @@
 
 source ~/.crypto_bot_profile
 
-cd ${CRYPTO_BOT_BIN_SCRIPT_DIR}
-./common_safety_net.sh "KrakenOrderBookBridgeDriver ATOM-USD 10"
+${CRYPTO_BOT_BIN_SCRIPT_DIR}/kraken_bridge_orderbook/atom_usd/atom_usd_safety_net.sh 10

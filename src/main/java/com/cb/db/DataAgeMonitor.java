@@ -5,6 +5,7 @@ import com.cb.db.kraken.KrakenTableNameResolver;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.Instant;
@@ -50,7 +51,12 @@ public class DataAgeMonitor {
     // Triple: table - column - age in mins beyond which to alert
     private List<Triple<String, String, Integer>> tableMonitorConfig() {
         return Lists.newArrayList(
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT), "exchange_datetime", 5),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT),                          "exchange_datetime", 5),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.SOL, Currency.USD)),   "exchange_datetime", 5),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.ATOM_USD),                          "exchange_datetime", 5),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.LINK_USD),                          "exchange_datetime", 5),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.MXC, Currency.USD)),   "exchange_datetime", 5),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.CHR, Currency.USD)),   "exchange_datetime", 5),
             Triple.of("cb.jms_destination_stats", "measured", 5)
         );
     }

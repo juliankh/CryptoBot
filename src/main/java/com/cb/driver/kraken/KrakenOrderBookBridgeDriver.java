@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Map.entry;
 
+// TODO: make a single process be able to have multiple connections/bridges to Kraken (instead of 1 bridge per process) - similar to KrakenOrderBookPersisterDriver
 @Slf4j
 public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
@@ -38,9 +39,17 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     private static final int ORDER_BOOK_DEPTH = 500; // TODO: confirm that all currency pairs have this much depth
 
     private static final Map<CurrencyPair, Pair<Integer, Integer>> CURRENCY_PAIR_CONFIG = Map.ofEntries(
-            entry(CurrencyPair.BTC_USDT, Pair.of(300, 5)),                          // high volume
-            entry(CurrencyPair.ATOM_USD, Pair.of(100, 30)),                         // medium volume
-            entry(new CurrencyPair(Currency.MXC, Currency.USD), Pair.of(10, 120))   // low volume
+            // high volume
+            entry(CurrencyPair.BTC_USDT, Pair.of(300, 15)),
+            entry(new CurrencyPair(Currency.SOL, Currency.USD), Pair.of(300, 15)),
+
+            // medium volume
+            entry(CurrencyPair.ATOM_USD, Pair.of(100, 60)),
+            entry(CurrencyPair.LINK_USD, Pair.of(100, 60)),
+
+            // low volume
+            entry(new CurrencyPair(Currency.MXC, Currency.USD), Pair.of(10, 120)),
+            entry(new CurrencyPair(Currency.CHR, Currency.USD), Pair.of(10, 120))
     );
 
     private final KrakenOrderBookBridgeProcessor processor;

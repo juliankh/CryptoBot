@@ -9,26 +9,32 @@ import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 @Slf4j
 public class KrakenOrderBookPersisterDriver extends AbstractDriver {
 
     private static final String DRIVER_NAME = "Kraken OrderBook Persister";
+    private static final int NUM_CONSUMERS = 20;
 
-    private final KrakenOrderBookPersistJmsConsumer consumer;
+    private final List<KrakenOrderBookPersistJmsConsumer> consumers;
 
     public static void main(String[] args) {
         CurrencyResolver currencyResolver = new CurrencyResolver();
         ObjectConverter objectConverter = new ObjectConverter();
-        DbProvider dbProvider = new DbProvider();
-        KrakenOrderBookPersistJmsConsumer consumer = new KrakenOrderBookPersistJmsConsumer(currencyResolver, objectConverter, dbProvider);
+        List<KrakenOrderBookPersistJmsConsumer> consumers = new ArrayList<>();
+        log.info("Number of consumers: " + NUM_CONSUMERS);
+        IntStream.range(0, NUM_CONSUMERS).forEach(i -> consumers.add(new KrakenOrderBookPersistJmsConsumer(currencyResolver, objectConverter, new DbProvider())));
         AlertProvider alertProvider = new AlertProvider();
-        (new KrakenOrderBookPersisterDriver(consumer, alertProvider)).execute();
+        (new KrakenOrderBookPersisterDriver(consumers, alertProvider)).execute();
     }
 
     @SneakyThrows
-    public KrakenOrderBookPersisterDriver(KrakenOrderBookPersistJmsConsumer consumer, AlertProvider alertProvider) {
+    public KrakenOrderBookPersisterDriver(List<KrakenOrderBookPersistJmsConsumer> consumers, AlertProvider alertProvider) {
         super(alertProvider);
-        this.consumer = consumer;
+        this.consumers = consumers;
     }
 
     @Override
@@ -38,13 +44,13 @@ public class KrakenOrderBookPersisterDriver extends AbstractDriver {
 
     @Override
     protected void executeCustom() {
-        consumer.engageConsumption();
+        consumers.parallelStream().forEach(KrakenOrderBookPersistJmsConsumer::engageConsumption);
     }
 
     @Override
     protected void cleanup() {
         log.info("Cleaning up");
-        consumer.cleanup();
+        consumers.parallelStream().forEach(KrakenOrderBookPersistJmsConsumer::cleanup);
     }
 
 }

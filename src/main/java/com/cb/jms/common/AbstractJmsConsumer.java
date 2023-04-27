@@ -55,7 +55,7 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
             log.info("Received Shutdown Signal for ConsumerTag [" + consumerTag + "]", e);
             cleanup();
             String msg = "JMS listener shut down for [" + destination + "]";
-            alertProvider.sendEmailAlert(msg, msg, e);
+            alertProvider.sendEmailAlert(msg, msg, e); // TODO: sent alert "quietly" without propagating exception
         };
     }
 

@@ -9,7 +9,7 @@ eval "${COMMAND_PROCESSES_RUNNING}"
 
 echo "stopping processes"
 ./stop_processes.sh
-sleep 5
+sleep 15
 echo "stopped processes"
 
 echo "processes currently running after stopping (there should be none or only the cron-triggered ones)"
@@ -17,7 +17,7 @@ eval "${COMMAND_PROCESSES_RUNNING} | grep -v AlertProvider | grep -v com.cb.driv
 
 echo "starting processes"
 ./start_processes.sh
-sleep 40
+sleep 60
 echo "started processes"
 
 echo "currently running after restart"

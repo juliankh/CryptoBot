@@ -65,25 +65,35 @@ public class DbProvider {
         return dbOrderBooks.stream().map(objectConverter::convertToKrakenOrderBook).toList();
     }
 
-    @SneakyThrows
     public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Timestamp from, Timestamp to) {
-        String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
-        String sql = " SELECT id, process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks " +
-                     " FROM " + tableName +
-                     " WHERE exchange_datetime between ? and ?" +
-                     " ORDER BY received_nanos";
-        return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), tableName);
+        try {
+            String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
+            String sql = " SELECT id, process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks " +
+                         " FROM " + tableName +
+                         " WHERE exchange_datetime between ? and ?" +
+                         " ORDER BY received_nanos";
+            return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), tableName);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Kraken OrderBooks for CurrencyPair [" + currencyPair + "] between [" + from + "] and [" + to + "]", e);
+        }
     }
 
     @SneakyThrows
     public Instant timeOfLastItem(String table, String column) {
-        Timestamp result = queryRunner.query(readConnection, "SELECT max(" + column + ") FROM " + table + ";", TIMESTAMP_SCALAR_HANDLER);
-        return result.toInstant();
+        try {
+            Timestamp result = queryRunner.query(readConnection, "SELECT max(" + column + ") FROM " + table + ";", TIMESTAMP_SCALAR_HANDLER);
+            return result.toInstant();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem getting the time of last item in table [" + table + "] using column [" + column + "]", e);
+        }
     }
 
-    @SneakyThrows
     public int prune(String table, String column, int daysLimit) {
-        return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + daysLimit + " days';"), table);
+        try {
+            return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + daysLimit + " days';"), table);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem pruning table [" + table + "] using column [" + column + "] older than [" + daysLimit + "] days", e);
+        }
     }
 
     @SneakyThrows
@@ -110,19 +120,25 @@ public class DbProvider {
         return String.join(",", Collections.nCopies(numQuestionMarks, "?"));
     }
 
-    @SneakyThrows
     public void insertKrakenOrderBooks(Collection<DbKrakenOrderBook> orderBooks, CurrencyPair currencyPair) {
-        Object[][] payload = objectConverter.matrix(orderBooks);
-        String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
-        int[] rowCounts = queryRunner.batch(writeConnection,
-                "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_nanos, bids_hash, asks_hash) DO NOTHING;",
-                payload);
-        checkDupes(orderBooks, rowCounts);
+        try {
+            Object[][] payload = objectConverter.matrix(orderBooks);
+            String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
+            int[] rowCounts = queryRunner.batch(writeConnection,
+                    "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_nanos, bids_hash, asks_hash) DO NOTHING;",
+                    payload);
+            checkDupes(orderBooks, rowCounts);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem inserting [" + orderBooks.size() + "] DbKrakenOrderBooks for Currency Pair [" + currencyPair + "]", e);
+        }
     }
 
-    @SneakyThrows
     public DbJmsDestinationStats insertJmsDestinationStats(String destinationName, Instant measured, int messages, int consumers) {
-        return queryRunner.insert(writeConnection,"INSERT INTO cb.jms_destination_stats(name, measured, messages, consumers, created) VALUES (?, ?, ?, ?, now());", BEAN_HANDLER_JMS_DESTINATION_STATS, destinationName, Timestamp.from(measured), messages, consumers);
+        try {
+            return queryRunner.insert(writeConnection, "INSERT INTO cb.jms_destination_stats(name, measured, messages, consumers, created) VALUES (?, ?, ?, ?, now());", BEAN_HANDLER_JMS_DESTINATION_STATS, destinationName, Timestamp.from(measured), messages, consumers);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem inserting destination [" + destinationName + "], measured [" + measured + "], messages [" + messages + "], consumers [" + consumers + "]", e);
+        }
     }
 
     // Returns how many rowcounts were 0 (in order to compare to num of dupes received from upstream data source).  If any rowcount > 1, exception is thrown.

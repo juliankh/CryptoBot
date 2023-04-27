@@ -27,9 +27,9 @@ public abstract class AbstractDriver {
 		} catch (Throwable e) {
 			String errMsg = "Problem executing [" + getDriverName() + "] process";
 			log.error(errMsg, e);
-			alertProvider.sendEmailAlert(errMsg, errMsg, e);						
 			logProcessDuration(startTime);
 			cleanup();
+			alertProvider.sendEmailAlert(errMsg, errMsg, e);  // TODO: sent alert "quietly" without propagating exception
 			throw new RuntimeException(errMsg, e);
 		}
 		logProcessDuration(startTime);

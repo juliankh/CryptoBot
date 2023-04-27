@@ -4,13 +4,13 @@ source ~/.crypto_bot_profile
 
 cd ${CRYPTO_BOT_BIN_SCRIPT_DIR}/kraken_bridge_orderbook/mxc_usd
 
-./1.sh &
-./2.sh &
-./3.sh &
-./4.sh &
-./5.sh &
-./6.sh &
-./7.sh &
-./8.sh &
-./9.sh &
+./01.sh &
+./02.sh &
+./03.sh &
+./04.sh &
+./05.sh &
+./06.sh &
+./07.sh &
+./08.sh &
+./09.sh &
 ./10.sh &

@@ -5,7 +5,7 @@ source ~/.crypto_bot_profile
 DATETIME=`date +%Y-%m-%d_%H-%M-%S`
 
 #
-# $1: token to search for when checking if the process is already running
+# $1: token to search for when checking if the process is already running (used by internal common scripts)
 # $2: the log file name prefix
 # $3: the class to run
 # $4: the args to the class (may contain multiple args) -- OPTIONAL
