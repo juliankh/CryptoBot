@@ -6,7 +6,6 @@ import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.CbOrderBook;
-import com.cb.model.admin.jms.db.DbJmsDestinationStats;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
 import lombok.Getter;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.tuple.Triple;
@@ -41,7 +39,6 @@ public class DbProvider {
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
-    private static final BeanHandler<DbJmsDestinationStats> BEAN_HANDLER_JMS_DESTINATION_STATS = new BeanHandler<>(DbJmsDestinationStats.class);
     private static final ScalarHandler<Timestamp> TIMESTAMP_SCALAR_HANDLER = new ScalarHandler<>();
 
     private final QueryRunner queryRunner;
@@ -133,9 +130,9 @@ public class DbProvider {
         }
     }
 
-    public DbJmsDestinationStats insertJmsDestinationStats(String destinationName, Instant measured, int messages, int consumers) {
+    public void insertJmsDestinationStats(String destinationName, Instant measured, long messages, long consumers) {
         try {
-            return queryRunner.insert(writeConnection, "INSERT INTO cb.jms_destination_stats(name, measured, messages, consumers, created) VALUES (?, ?, ?, ?, now());", BEAN_HANDLER_JMS_DESTINATION_STATS, destinationName, Timestamp.from(measured), messages, consumers);
+            queryRunner.update(writeConnection, "INSERT INTO cb.jms_destination_stats(name, measured, messages, consumers, created) VALUES (?, ?, ?, ?, now());", destinationName, Timestamp.from(measured), messages, consumers);
         } catch (Exception e) {
             throw new RuntimeException("Problem inserting destination [" + destinationName + "], measured [" + measured + "], messages [" + messages + "], consumers [" + consumers + "]", e);
         }

@@ -19,7 +19,7 @@ public class JmsSenderSandbox {
 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(props.jmsBrokerHost());
-        factory.setPort(props.jmsBrokerPort());
+        factory.setPort(props.jmsBrokerPortAmqp());
         factory.setUsername(props.jmsUsername());
         factory.setPassword(props.jmsPassword());
 

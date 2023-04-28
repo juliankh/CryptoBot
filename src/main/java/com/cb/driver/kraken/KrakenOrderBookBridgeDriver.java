@@ -43,8 +43,8 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
             entry(new CurrencyPair(Currency.SOL, Currency.USD), Pair.of(300, 30)),
 
             // medium volume
-            entry(CurrencyPair.ATOM_USD, Pair.of(100, 60)),
-            entry(CurrencyPair.LINK_USD, Pair.of(100, 60)),
+            entry(CurrencyPair.ATOM_USD, Pair.of(100, 120)),
+            entry(CurrencyPair.LINK_USD, Pair.of(100, 120)),
 
             // low volume
             entry(new CurrencyPair(Currency.MXC, Currency.USD), Pair.of(10, 120)),
@@ -147,7 +147,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
             if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
                 String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
                 log.warn(msg);
-                alertProvider.sendEmailAlert(getDriverName() + " reconnecting", msg);
+                alertProvider.sendEmailAlertQuietly(getDriverName() + " reconnecting", msg);
                 disconnect(krakenExchange);
                 TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_RECONNECT);
                 subscribe(krakenExchange, currencyPair);

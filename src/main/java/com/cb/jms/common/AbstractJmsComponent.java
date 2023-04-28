@@ -49,7 +49,7 @@ public abstract class AbstractJmsComponent {
         CryptoProperties properties = new CryptoProperties();
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(properties.jmsBrokerHost());
-        factory.setPort(properties.jmsBrokerPort());
+        factory.setPort(properties.jmsBrokerPortAmqp());
         factory.setUsername(properties.jmsUsername());
         factory.setPassword(properties.jmsPassword());
         return factory;

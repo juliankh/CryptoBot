@@ -4,6 +4,7 @@ import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.jms.admin.JmsQueueMonitor;
+import com.cb.property.CryptoProperties;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,9 +15,10 @@ public class JmsQueueMonitorDriver extends AbstractDriver  {
     private final JmsQueueMonitor jmsQueueMonitor;
 
     public static void main(String[] args) {
+        CryptoProperties properties = new CryptoProperties();
         DbProvider dbProvider = new DbProvider();
         AlertProvider alertProvider = new AlertProvider();
-        JmsQueueMonitor jmsQueueMonitor = new JmsQueueMonitor(dbProvider, alertProvider);
+        JmsQueueMonitor jmsQueueMonitor = new JmsQueueMonitor(properties, dbProvider, alertProvider);
         (new JmsQueueMonitorDriver(jmsQueueMonitor, alertProvider)).execute();
     }
 

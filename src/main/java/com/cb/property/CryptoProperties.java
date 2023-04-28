@@ -3,6 +3,10 @@ package com.cb.property;
 import com.cb.encryption.EncryptionProvider;
 import lombok.SneakyThrows;
 
+import javax.inject.Singleton;
+
+// TODO: make into a singleton
+@Singleton
 public class CryptoProperties extends CryptoPropertiesRaw {
 
 	private final EncryptionProvider encryptionProvider;
@@ -10,6 +14,10 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 	@SneakyThrows
 	public static void main(String[] a) {
 		CryptoProperties properties = new CryptoProperties();
+		System.out.println(properties.jmsBrokerHost());
+		System.out.println(properties.jmsBrokerVhost());
+		System.out.println(properties.jmsBrokerPortAmqp());
+		System.out.println(properties.jmsBrokerPortHttp());
 		System.out.println(properties.jmsKrakenOrderBookSnapshotErrorQueueName());
 	}
 	
@@ -73,9 +81,17 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 	public String jmsBrokerHost() {
 		return decryptedProperty("encrypted.jms.broker.host");
 	}
-	
-	public int jmsBrokerPort() {
-		return Integer.parseInt(decryptedProperty("encrypted.jms.broker.port"));
+
+	public String jmsBrokerVhost() {
+		return decryptedProperty("encrypted.jms.broker.vhost");
+	}
+
+	public int jmsBrokerPortAmqp() {
+		return Integer.parseInt(decryptedProperty("encrypted.jms.broker.port.amqp"));
+	}
+
+	public int jmsBrokerPortHttp() {
+		return Integer.parseInt(decryptedProperty("encrypted.jms.broker.port.http"));
 	}
 
 	public String jmsUsername() {

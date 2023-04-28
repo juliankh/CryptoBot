@@ -152,6 +152,11 @@
       <version>5.17.0</version>
     </dependency>
     <dependency>
+      <groupId>com.rabbitmq</groupId>
+      <artifactId>http-client</artifactId>
+      <version>5.0.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.deeplearning4j</groupId>
       <artifactId>deeplearning4j-core</artifactId>
       <version>${deeplearning4j_and_nd4j.version}</version>
