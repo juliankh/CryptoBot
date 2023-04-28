@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
+import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.assertEquals;
 
 public class TimeUtilsTest {
@@ -15,8 +16,8 @@ public class TimeUtilsTest {
     @Test
     public void ratePerSecond() {
         Instant start = Instant.now();
-        assertEquals(52L, TimeUtils.ratePerSecond(start, start.plus(5_725, ChronoUnit.MILLIS), 300L));
-        assertEquals(414L, TimeUtils.ratePerSecond(start, start.plus(725, ChronoUnit.MILLIS), 300L));
+        assertEquals(0.45, TimeUtils.ratePerSecond(start, start.plus(100_000, ChronoUnit.MILLIS), 45L), DOUBLE_COMPARE_DELTA);
+        assertEquals(45L, TimeUtils.ratePerSecond(start, start.plus(1_000, ChronoUnit.MILLIS), 45L), DOUBLE_COMPARE_DELTA);
     }
 
     @Test

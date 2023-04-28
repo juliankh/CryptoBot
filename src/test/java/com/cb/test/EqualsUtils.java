@@ -1,7 +1,5 @@
 package com.cb.test;
 
-import org.junit.Assert;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -78,12 +76,8 @@ public class EqualsUtils {
 	public static void assertCollectionOfDoublesEquals(List<Double> expected, List<Double> actual) {
 		assertEquals(expected.size(), actual.size());
 		for (int i = 0; i < expected.size(); ++i) {
-			assertDoubleEquals(expected.get(i), actual.get(i));
+			assertEquals(expected.get(i), actual.get(i), DOUBLE_COMPARE_DELTA);
 		}
-	}
-	
-	public static void assertDoubleEquals(double d1, double d2) {
-		Assert.assertEquals(d1, d2, DOUBLE_COMPARE_DELTA);
 	}
 
 	public static boolean equals(double d1, double d2) {

@@ -40,13 +40,13 @@ public class DataCleaner {
     // Triple: table - column - age in days beyond which to delete
     private List<Triple<String, String, Integer>> tableCleanupConfig() {
         return Lists.newArrayList(
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT),                          "exchange_datetime", 40),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.SOL, Currency.USD)),   "exchange_datetime", 40),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.ATOM_USD),                          "exchange_datetime", 40),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.LINK_USD),                          "exchange_datetime", 40),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.MXC, Currency.USD)),   "exchange_datetime", 40),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.CHR, Currency.USD)),   "exchange_datetime", 40),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.MXC, Currency.USD)),   "exchange_datetime", 40)
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT),                          "exchange_datetime", 35),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.SOL, Currency.USD)),   "exchange_datetime", 35),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.ATOM_USD),                          "exchange_datetime", 35),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.LINK_USD),                          "exchange_datetime", 35),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.MXC, Currency.USD)),   "exchange_datetime", 35),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.CHR, Currency.USD)),   "exchange_datetime", 35),
+            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.MXC, Currency.USD)),   "exchange_datetime", 35)
         );
     }
 

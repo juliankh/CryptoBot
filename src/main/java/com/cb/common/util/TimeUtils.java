@@ -47,10 +47,10 @@ public final class TimeUtils {
         return DurationFormatUtils.formatDuration(millisDuration, "d 'days' H:mm:ss.S");
     }
 
-    public static long ratePerSecond(Instant start, Instant end, long quantity) {
+    public static double ratePerSecond(Instant start, Instant end, long quantity) {
         long millisDuration = ChronoUnit.MILLIS.between(start, end);
         double d = (double)quantity / (double)millisDuration * 1000;
-        return Math.round(d);
+        return d;
     }
 
     public static Instant instant(int year, Month month, int dayOfMonth, int hour, int minute, int second) {

@@ -2,6 +2,7 @@ package com.cb.jms.kraken;
 
 import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
+import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.DbProvider;
 import com.cb.jms.common.AbstractJmsConsumer;
@@ -42,9 +43,9 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
         Instant start = Instant.now();
         dbProvider.insertKrakenOrderBooks(orderBooks, batchCurrencyPair);
         Instant end = Instant.now();
-        long insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size()); // TODO: make this a double (and format when logging)
+        double insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size());
         String currencyPairToken = currencyResolver.upperCaseToken(batchCurrencyPair, "-");
-        log.info("Inserting [" + orderBooks.size() + "] [" + currencyPairToken + "] OrderBooks into db took [" + TimeUtils.durationMessage(start) + "] at a rate of [" + insertRate + "] items/sec");
+        log.info("Inserting [" + orderBooks.size() + "] [" + currencyPairToken + "] OrderBooks into db took [" + TimeUtils.durationMessage(start) + "] at a rate of [" + NumberUtils.NUMBER_FORMAT.format(insertRate) + "] items/sec");
     }
 
     public void cleanup() {

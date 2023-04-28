@@ -99,7 +99,7 @@ public class DbProvider {
         Instant start = Instant.now();
         List<T> result = queryRunner.call();
         Instant end = Instant.now();
-        long queryRate = TimeUtils.ratePerSecond(start, end, result.size());
+        double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
         log.info("Retrieving [" + NumberUtils.NUMBER_FORMAT.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
         return result;
     }
@@ -109,7 +109,7 @@ public class DbProvider {
         Instant start = Instant.now();
         int rowcount = queryRunner.call();
         Instant end = Instant.now();
-        long queryRate = TimeUtils.ratePerSecond(start, end, rowcount);
+        double queryRate = TimeUtils.ratePerSecond(start, end, rowcount);
         log.info("Updating/Deleting [" + NumberUtils.NUMBER_FORMAT.format(rowcount) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
         return rowcount;
     }
