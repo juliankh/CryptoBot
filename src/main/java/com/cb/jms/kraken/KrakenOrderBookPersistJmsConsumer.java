@@ -42,7 +42,7 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
         Instant start = Instant.now();
         dbProvider.insertKrakenOrderBooks(orderBooks, batchCurrencyPair);
         Instant end = Instant.now();
-        long insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size());
+        long insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size()); // TODO: make this a double (and format when logging)
         String currencyPairToken = currencyResolver.upperCaseToken(batchCurrencyPair, "-");
         log.info("Inserting [" + orderBooks.size() + "] [" + currencyPairToken + "] OrderBooks into db took [" + TimeUtils.durationMessage(start) + "] at a rate of [" + insertRate + "] items/sec");
     }

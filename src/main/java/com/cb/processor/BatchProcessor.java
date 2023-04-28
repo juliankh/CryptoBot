@@ -29,8 +29,8 @@ public class BatchProcessor<T,P> {
             processor.accept(convertedBatch);
             Instant end = Instant.now();
             ++numBatchesProcessed;
-            long receiveRate = TimeUtils.ratePerSecond(batchStart, end, batch.size());
-            long processRate = TimeUtils.ratePerSecond(persistStart, end, batch.size());
+            long receiveRate = TimeUtils.ratePerSecond(batchStart, end, batch.size()); // TODO: make this a double (and format it when logging)
+            long processRate = TimeUtils.ratePerSecond(persistStart, end, batch.size()); // TODO: make this a double (and format it when logging)
             log.debug("Batch [" + numBatchesProcessed + "] of [" + batch.size() + " of " + data.getClass().getSimpleName() + "] took [" + TimeUtils.durationMessage(batchStart) + "] at rate of [" + receiveRate + "/sec] to aggregate and [" + TimeUtils.durationMessage(persistStart) + "] at a rate of [" + processRate + " items/sec] to process");
             batch = new ArrayList<>();
             batchStart = null;

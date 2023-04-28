@@ -85,11 +85,12 @@ public class DbProvider {
         }
     }
 
-    public int prune(String table, String column, int daysLimit) {
+    // TODO: put configs like hours back and other such configs into db
+    public int prune(String table, String column, int hoursLimit) {
         try {
-            return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + daysLimit + " days';"), table);
+            return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + hoursLimit + " hours';"), table);
         } catch (Exception e) {
-            throw new RuntimeException("Problem pruning table [" + table + "] using column [" + column + "] older than [" + daysLimit + "] days", e);
+            throw new RuntimeException("Problem pruning table [" + table + "] using column [" + column + "] older than [" + hoursLimit + "] hours", e);
         }
     }
 
