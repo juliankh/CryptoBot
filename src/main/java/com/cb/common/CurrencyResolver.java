@@ -1,5 +1,6 @@
 package com.cb.common;
 
+import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
 public class CurrencyResolver {
@@ -14,6 +15,22 @@ public class CurrencyResolver {
 
     public String upperCaseToken(CurrencyPair currencyPair, String separator) {
         return currencyPair.getBase().getCurrencyCode().toUpperCase() + separator + currencyPair.getCounter().getCurrencyCode().toUpperCase();
+    }
+
+    // TODO: unit test
+    public CurrencyPair krakenCurrencyPair(String baseCurrencyCode, String counterCurrencyCode) {
+        checkKrakenCurrencyExists(baseCurrencyCode);
+        checkKrakenCurrencyExists(counterCurrencyCode);
+        Currency baseCurrency = Currency.getInstanceNoCreate(baseCurrencyCode);
+        Currency counterCurrency = Currency.getInstanceNoCreate(counterCurrencyCode);
+        return new CurrencyPair(baseCurrency, counterCurrency);
+    }
+
+    // TODO: unit test
+    public void checkKrakenCurrencyExists(String currencyCode) {
+        if (!Currency.getAvailableCurrencyCodes().contains(currencyCode)) {
+            throw new RuntimeException("There is no Kraken Currency for [" + currencyCode + "]");
+        }
     }
 
 }

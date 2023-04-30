@@ -1,36 +1,36 @@
 package com.cb.db;
 
 import com.cb.alert.AlertProvider;
+import com.cb.common.CurrencyResolver;
 import com.cb.db.kraken.KrakenTableNameResolver;
-import com.google.common.collect.Lists;
+import com.cb.model.config.DataAgeMonitorConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DataAgeMonitor {
 
-    private final KrakenTableNameResolver krakenTableNameResolver;
     private final DbProvider dbProvider;
     private final AlertProvider alertProvider;
 
-    public DataAgeMonitor(KrakenTableNameResolver krakenTableNameResolver, DbProvider dbProvider, AlertProvider alertProvider) {
-        this.krakenTableNameResolver = krakenTableNameResolver;
+    public DataAgeMonitor(DbProvider dbProvider, AlertProvider alertProvider) {
         this.dbProvider = dbProvider;
         this.alertProvider = alertProvider;
     }
 
     public void monitor() {
-        List<Triple<String, String, Integer>> tableMonitorConfig = tableMonitorConfig();
-        tableMonitorConfig.parallelStream().forEach(config -> {
-            String table = config.getLeft();
-            String column = config.getMiddle();
-            int ageLimit = config.getRight();
+        List<DataAgeMonitorConfig> configs = dbProvider.retrieveDataAgeMonitorConfig();
+        log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
+        configs.parallelStream().forEach(config -> {
+            String table = config.getTableName();
+            String column = config.getColumnName();
+            int ageLimit = config.getMinsAgeLimit();
             Instant timeOfLastItem = dbProvider.timeOfLastItem(table, column);
             Instant timeToCompare = Instant.now();
             monitorTable(table, timeOfLastItem, timeToCompare, ageLimit);
@@ -48,17 +48,9 @@ public class DataAgeMonitor {
         }
     }
 
-    // Triple: table - column - age in mins beyond which to alert
-    private List<Triple<String, String, Integer>> tableMonitorConfig() {
-        return Lists.newArrayList(
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.BTC_USDT),                          "exchange_datetime", 5),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.SOL, Currency.USD)),   "exchange_datetime", 5),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.ATOM_USD),                          "exchange_datetime", 5),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(CurrencyPair.LINK_USD),                          "exchange_datetime", 5),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.MXC, Currency.USD)),   "exchange_datetime", 5),
-            Triple.of(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.CHR, Currency.USD)),   "exchange_datetime", 5),
-            Triple.of("cb.jms_destination_stats", "measured", 5)
-        );
+    public static void main(String[] args) {
+        KrakenTableNameResolver krakenTableNameResolver = new KrakenTableNameResolver(new CurrencyResolver());
+        System.out.println(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.CHR, Currency.USD)));
     }
 
     public void cleanup() {

@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class DbKrakenOrderBook implements Serializable {
 
-    private Long id; // db field
+    private long id; // db field
     private String process;
     private Timestamp exchange_datetime;
     private java.sql.Date exchange_date;

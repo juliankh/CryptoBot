@@ -3,8 +3,17 @@ package com.cb.common;
 import com.cb.db.DbProvider;
 import com.cb.db.DbUtils;
 import com.cb.model.CbOrderBook;
+import com.cb.model.config.DataAgeMonitorConfig;
+import com.cb.model.config.DataCleanerConfig;
+import com.cb.model.config.KrakenBridgeOrderBookConfig;
+import com.cb.model.config.QueueMonitorConfig;
+import com.cb.model.config.db.DbDataAgeMonitorConfig;
+import com.cb.model.config.db.DbDataCleanerConfig;
+import com.cb.model.config.db.DbKrakenBridgeOrderBookConfig;
+import com.cb.model.config.db.DbQueueMonitorConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -19,7 +28,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class ObjectConverter {
+
+    private final CurrencyResolver currencyResolver;
 
     public double[] primitiveArray(Collection<Double> collection) {
         return ArrayUtils.toPrimitive(collection.toArray(new Double[0]));
@@ -45,6 +57,41 @@ public class ObjectConverter {
             }
         }
         return matrix;
+    }
+
+    // TODO: unit test
+    public DataAgeMonitorConfig convertToDataAgeMonitorConfig(DbDataAgeMonitorConfig rawConfig) {
+        return new DataAgeMonitorConfig()
+                .setId(rawConfig.getId())
+                .setTableName(rawConfig.getTable_name())
+                .setColumnName(rawConfig.getColumn_name())
+                .setMinsAgeLimit(rawConfig.getMins_age_limit());
+    }
+
+    // TODO: unit test
+    public DataCleanerConfig convertToDataCleanerConfig(DbDataCleanerConfig rawConfig) {
+        return new DataCleanerConfig()
+                .setId(rawConfig.getId())
+                .setTableName(rawConfig.getTable_name())
+                .setColumnName(rawConfig.getColumn_name())
+                .setHoursBack(rawConfig.getHours_back());
+    }
+
+    // TODO: unit test
+    public QueueMonitorConfig convertToQueueMonitorConfig(DbQueueMonitorConfig rawConfig) {
+        return new QueueMonitorConfig()
+                .setId(rawConfig.getId())
+                .setQueueName(rawConfig.getQueue_name())
+                .setMessageLimit(rawConfig.getMessage_limit());
+    }
+
+    // TODO: unit test
+    public KrakenBridgeOrderBookConfig convertToKrakenBridgeOrderBookConfig(DbKrakenBridgeOrderBookConfig rawConfig) {
+        return new KrakenBridgeOrderBookConfig()
+                .setId(rawConfig.getId())
+                .setCurrencyPair(currencyResolver.krakenCurrencyPair(rawConfig.getCurrency_base(), rawConfig.getCurrency_counter()))
+                .setBatchSize(rawConfig.getBatch_size())
+                .setSecsTimeout(rawConfig.getSecs_timeout());
     }
 
     @SneakyThrows

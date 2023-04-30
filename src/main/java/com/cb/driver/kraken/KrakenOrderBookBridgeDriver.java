@@ -3,9 +3,11 @@ package com.cb.driver.kraken;
 import com.cb.alert.AlertProvider;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.util.TimeUtils;
+import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.jms.common.JmsPublisher;
+import com.cb.model.config.KrakenBridgeOrderBookConfig;
 import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.processor.BatchProcessor;
@@ -18,9 +20,7 @@ import io.reactivex.disposables.Disposable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.Instant;
@@ -28,28 +28,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Map.entry;
-
 @Slf4j
 public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
     private static final int SLEEP_SECS_RECONNECT = 15;
     private static final int ORDER_BOOK_DEPTH = 500; // TODO: confirm that all currency pairs have this much depth
-
-    private static final Map<CurrencyPair, Pair<Integer, Integer>> CURRENCY_PAIR_CONFIG = Map.ofEntries(
-            // high volume
-            entry(CurrencyPair.BTC_USDT, Pair.of(300, 30)),
-            entry(new CurrencyPair(Currency.SOL, Currency.USD), Pair.of(300, 30)),
-
-            // medium volume
-            entry(CurrencyPair.ATOM_USD, Pair.of(100, 120)),
-            entry(CurrencyPair.LINK_USD, Pair.of(100, 120)),
-
-            // low volume
-            entry(new CurrencyPair(Currency.MXC, Currency.USD), Pair.of(10, 120)),
-            entry(new CurrencyPair(Currency.CHR, Currency.USD), Pair.of(10, 120))
-    );
 
     private final KrakenOrderBookBridgeProcessor processor;
     private final CurrencyPair currencyPair;
@@ -63,8 +47,10 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         KrakenOrderBookBridgeArgsConverter argsConverter = new KrakenOrderBookBridgeArgsConverter(args);
         String driverToken = argsConverter.getDriverToken();
         CurrencyPair currencyPair = argsConverter.getCurrencyPair();
-        int batchSize = batchSize(currencyPair);
-        int maxSecsBetweenUpdates = maxSecsBetweenUpdates(currencyPair);
+        KrakenBridgeOrderBookConfig config = currencyPairConfig(currencyPair);
+        log.info("Config: " + config);
+        int batchSize = config.getBatchSize();
+        int maxSecsBetweenUpdates = config.getSecsTimeout();
         BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor = new BatchProcessor<>(batchSize);
         CryptoProperties properties = new CryptoProperties();
         String jmsDestination = properties.jmsKrakenOrderBookSnapshotQueueName();
@@ -88,16 +74,10 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         this.driverName = "Kraken OrderBook Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverNameToken) ? "" : " " + driverNameToken);
     }
 
-    private static int batchSize(CurrencyPair currencyPair) {
-        return currencyPairConfig(currencyPair).getLeft();
-    }
-
-    private static int maxSecsBetweenUpdates(CurrencyPair currencyPair) {
-        return currencyPairConfig(currencyPair).getRight();
-    }
-
-    private static Pair<Integer, Integer> currencyPairConfig(CurrencyPair currencyPair) {
-        return CURRENCY_PAIR_CONFIG.get(currencyPair);
+    private static KrakenBridgeOrderBookConfig currencyPairConfig(CurrencyPair currencyPair) {
+        DbProvider dbProvider = new DbProvider();
+        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbProvider.retrieveKrakenBridgeOrderBookConfig();
+        return configMap.get(currencyPair);
     }
 
     @Override

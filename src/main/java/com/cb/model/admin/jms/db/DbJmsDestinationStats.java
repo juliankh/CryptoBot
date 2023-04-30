@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class DbJmsDestinationStats {
 
-    private Long id; // db field
+    private long id; // db field
     private String name;
     private Timestamp measured;
     private int messages;

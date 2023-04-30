@@ -17,7 +17,8 @@ public class TimeUtilsTest {
     public void ratePerSecond() {
         Instant start = Instant.now();
         assertEquals(0.45, TimeUtils.ratePerSecond(start, start.plus(100_000, ChronoUnit.MILLIS), 45L), DOUBLE_COMPARE_DELTA);
-        assertEquals(45L, TimeUtils.ratePerSecond(start, start.plus(1_000, ChronoUnit.MILLIS), 45L), DOUBLE_COMPARE_DELTA);
+        assertEquals(45.0, TimeUtils.ratePerSecond(start, start.plus(1_000, ChronoUnit.MILLIS), 45L), DOUBLE_COMPARE_DELTA);
+        assertEquals(45_000.0, TimeUtils.ratePerSecond(start, start.plus(0, ChronoUnit.MILLIS), 45L), DOUBLE_COMPARE_DELTA);
     }
 
     @Test

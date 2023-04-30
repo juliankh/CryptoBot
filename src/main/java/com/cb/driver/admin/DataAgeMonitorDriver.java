@@ -1,10 +1,8 @@
 package com.cb.driver.admin;
 
 import com.cb.alert.AlertProvider;
-import com.cb.common.CurrencyResolver;
 import com.cb.db.DataAgeMonitor;
 import com.cb.db.DbProvider;
-import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.driver.AbstractDriver;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,11 +14,9 @@ public class DataAgeMonitorDriver extends AbstractDriver  {
     private final DataAgeMonitor dataAgeMonitor;
 
     public static void main(String[] args) {
-        CurrencyResolver currencyResolver = new CurrencyResolver();
-        KrakenTableNameResolver krakenTableNameResolver = new KrakenTableNameResolver(currencyResolver);
         DbProvider dbProvider = new DbProvider();
         AlertProvider alertProvider = new AlertProvider();
-        DataAgeMonitor dataAgeMonitor = new DataAgeMonitor(krakenTableNameResolver, dbProvider, alertProvider);
+        DataAgeMonitor dataAgeMonitor = new DataAgeMonitor(dbProvider, alertProvider);
         (new DataAgeMonitorDriver(dataAgeMonitor, alertProvider)).execute();
     }
 

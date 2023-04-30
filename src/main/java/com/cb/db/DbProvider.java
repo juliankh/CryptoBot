@@ -6,6 +6,14 @@ import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.CbOrderBook;
+import com.cb.model.config.DataAgeMonitorConfig;
+import com.cb.model.config.DataCleanerConfig;
+import com.cb.model.config.KrakenBridgeOrderBookConfig;
+import com.cb.model.config.QueueMonitorConfig;
+import com.cb.model.config.db.DbDataAgeMonitorConfig;
+import com.cb.model.config.db.DbDataCleanerConfig;
+import com.cb.model.config.db.DbKrakenBridgeOrderBookConfig;
+import com.cb.model.config.db.DbQueueMonitorConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
 import lombok.Getter;
@@ -39,6 +47,11 @@ public class DbProvider {
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
+    private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
+    private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
+    private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
+    private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
+
     private static final ScalarHandler<Timestamp> TIMESTAMP_SCALAR_HANDLER = new ScalarHandler<>();
 
     private final QueryRunner queryRunner;
@@ -47,13 +60,19 @@ public class DbProvider {
     private final ObjectConverter objectConverter;
     private final KrakenTableNameResolver krakenTableNameResolver;
 
+    public static void main(String[] args) {
+        DbProvider dbProvider = new DbProvider();
+        List<DataAgeMonitorConfig> dbDataAgeMonitorConfigs = dbProvider.retrieveDataAgeMonitorConfig();
+        dbDataAgeMonitorConfigs.parallelStream().forEach(System.out::println);
+    }
+
     @SneakyThrows
     public DbProvider() {
         queryRunner = new QueryRunner();
         CryptoProperties properties = new CryptoProperties();
         readConnection = DriverManager.getConnection(properties.dbConnectionUrl(), properties.readDbUser(), properties.readDbPassword());
         writeConnection = DriverManager.getConnection(properties.dbConnectionUrl(), properties.writeDbUser(), properties.writeDbPassword());
-        objectConverter = new ObjectConverter();
+        objectConverter = new ObjectConverter(new CurrencyResolver());
         krakenTableNameResolver = new KrakenTableNameResolver(new CurrencyResolver());
     }
 
@@ -75,6 +94,50 @@ public class DbProvider {
         }
     }
 
+    public List<DataAgeMonitorConfig> retrieveDataAgeMonitorConfig() {
+        try {
+            String tableName = "cb.config_data_age_monitor";
+            String sql = "SELECT id, table_name, column_name, mins_age_limit FROM " + tableName + ";";
+            List<DbDataAgeMonitorConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG), tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToDataAgeMonitorConfig).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Data Age Monitor Config", e);
+        }
+    }
+
+    public List<DataCleanerConfig> retrieveDataCleanerConfig() {
+        try {
+            String tableName = "cb.config_data_cleaner";
+            String sql = "SELECT id, table_name, column_name, hours_back FROM " + tableName + ";";
+            List<DbDataCleanerConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG), tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToDataCleanerConfig).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Data Cleaner Config", e);
+        }
+    }
+
+    public List<QueueMonitorConfig> retrieveQueueMonitorConfig() {
+        try {
+            String tableName = "cb.config_queue_monitor";
+            String sql = "SELECT id, queue_name, message_limit FROM " + tableName + ";";
+            List<DbQueueMonitorConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG), tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToQueueMonitorConfig).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Queue Monitor Config", e);
+        }
+    }
+
+    public Map<CurrencyPair, KrakenBridgeOrderBookConfig> retrieveKrakenBridgeOrderBookConfig() {
+        try {
+            String tableName = "cb.config_kraken_bridge_orderbook";
+            String sql = "SELECT id, currency_base, currency_counter, batch_size, secs_timeout FROM " + tableName + ";";
+            List<DbKrakenBridgeOrderBookConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG), tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToKrakenBridgeOrderBookConfig).collect(Collectors.toMap(KrakenBridgeOrderBookConfig::getCurrencyPair, c -> c));
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Kraken Bridge OrderBook Config", e);
+        }
+    }
+
     @SneakyThrows
     public Instant timeOfLastItem(String table, String column) {
         try {
@@ -85,7 +148,6 @@ public class DbProvider {
         }
     }
 
-    // TODO: put configs like hours back and other such configs into db
     public int prune(String table, String column, int hoursLimit) {
         try {
             return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + hoursLimit + " hours';"), table);
@@ -100,7 +162,7 @@ public class DbProvider {
         List<T> result = queryRunner.call();
         Instant end = Instant.now();
         double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
-        log.info("Retrieving [" + NumberUtils.NUMBER_FORMAT.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
+        log.info("Retrieving [" + NumberUtils.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.format(queryRate) + "/sec]");
         return result;
     }
 
@@ -110,7 +172,10 @@ public class DbProvider {
         int rowcount = queryRunner.call();
         Instant end = Instant.now();
         double queryRate = TimeUtils.ratePerSecond(start, end, rowcount);
-        log.info("Updating/Deleting [" + NumberUtils.NUMBER_FORMAT.format(rowcount) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.NUMBER_FORMAT.format(queryRate) + "/sec]");
+        String rowcountString = NumberUtils.format(rowcount);
+        String durationString = TimeUtils.durationMessage(start, end);
+        String rateString = NumberUtils.format(queryRate);
+        log.info("Updating/Deleting [" + rowcountString + "] of [" + itemType + "] took [" + durationString + "] at rate of [" + rateString + "/sec]");
         return rowcount;
     }
 

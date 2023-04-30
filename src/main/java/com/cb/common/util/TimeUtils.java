@@ -48,9 +48,8 @@ public final class TimeUtils {
     }
 
     public static double ratePerSecond(Instant start, Instant end, long quantity) {
-        long millisDuration = ChronoUnit.MILLIS.between(start, end);
-        double d = (double)quantity / (double)millisDuration * 1000;
-        return d;
+        long millisDuration = Math.max(ChronoUnit.MILLIS.between(start, end), 1L);
+        return (double)quantity / (double)millisDuration * 1000d;
     }
 
     public static Instant instant(int year, Month month, int dayOfMonth, int hour, int minute, int second) {

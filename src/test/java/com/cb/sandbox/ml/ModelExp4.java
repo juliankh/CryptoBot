@@ -1,5 +1,6 @@
 package com.cb.sandbox.ml;
 
+import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.DbProvider;
@@ -35,7 +36,7 @@ import java.util.List;
 @Slf4j
 public class ModelExp4 {
 
-    private final ObjectConverter objectConverter = new ObjectConverter();
+    private final ObjectConverter objectConverter = new ObjectConverter(new CurrencyResolver());
 
     @SneakyThrows
     public static void main(String[] args) {

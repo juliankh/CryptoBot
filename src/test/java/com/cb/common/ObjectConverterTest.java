@@ -5,7 +5,13 @@ import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.postgresql.jdbc.PgArray;
 
 import java.sql.Array;
@@ -20,9 +26,19 @@ import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThrows;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ObjectConverterTest {
 
-    private static final ObjectConverter OBJECT_CONVERTER = new ObjectConverter();
+    @Spy
+    private CurrencyResolver currencyResolver;
+
+    @InjectMocks
+    private ObjectConverter objectConverter;
+
+    @Before
+    public void beforeEachTest() {
+        Mockito.reset(currencyResolver);
+    }
 
     @Test
     public void matrixOfDoubles() {
@@ -33,20 +49,20 @@ public class ObjectConverterTest {
         double[][] expected = {{3.4, 5.77},
                 {31.42, -85.2},
                 {5, 7}};
-        EqualsUtils.assertMatrixEquals(expected, OBJECT_CONVERTER.matrixOfDoubles(original));
+        EqualsUtils.assertMatrixEquals(expected, objectConverter.matrixOfDoubles(original));
 
         // diff values
         List<List<Double>> listsDiffLength1 = Arrays.asList(Arrays.asList(3.4, 5.77),
                 Arrays.asList(31.42, -85.2),
                 Arrays.asList(5.0, 7.0),
                 Arrays.asList(-56.3, 8.9));
-        EqualsUtils.assertMatrixNotEquals(expected, OBJECT_CONVERTER.matrixOfDoubles(listsDiffLength1));
+        EqualsUtils.assertMatrixNotEquals(expected, objectConverter.matrixOfDoubles(listsDiffLength1));
 
         // diff values
         List<List<Double>> listsSameSizeButDiffValues = Arrays.asList(Arrays.asList(3.4, 5.77),
                 Arrays.asList(31.42, -85.2),
                 Arrays.asList(5.0, 7.1));
-        EqualsUtils.assertMatrixNotEquals(expected, OBJECT_CONVERTER.matrixOfDoubles(listsSameSizeButDiffValues));
+        EqualsUtils.assertMatrixNotEquals(expected, objectConverter.matrixOfDoubles(listsSameSizeButDiffValues));
     }
 
     @Test
@@ -54,7 +70,7 @@ public class ObjectConverterTest {
         assertThrows(
                 "Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + null + "]",
                 RuntimeException.class,
-                () -> OBJECT_CONVERTER.matrixOfDoubles(null));
+                () -> objectConverter.matrixOfDoubles(null));
     }
 
     @Test
@@ -62,7 +78,7 @@ public class ObjectConverterTest {
         assertThrows(
                 "Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + Collections.emptyList() + "]",
                 RuntimeException.class,
-                () -> OBJECT_CONVERTER.matrixOfDoubles(Collections.emptyList()));
+                () -> objectConverter.matrixOfDoubles(Collections.emptyList()));
     }
 
     @Test
@@ -70,7 +86,7 @@ public class ObjectConverterTest {
         assertThrows(
                 "Tried to get matrix of doubles based on List of Lists that contains at least 1 inner List that's empty-equivalent",
                 RuntimeException.class,
-                () -> OBJECT_CONVERTER.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Collections.emptyList())));
+                () -> objectConverter.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Collections.emptyList())));
     }
 
     @Test
@@ -78,14 +94,14 @@ public class ObjectConverterTest {
         assertThrows(
                 "Tried to get matrix of doubles based on List of Lists where the inner Lists are not all of the same size.  The inner Lists are of 3 diff sizes",
                 RuntimeException.class,
-                () -> OBJECT_CONVERTER.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Arrays.asList(1.1, 2.2, 3.3), Arrays.asList(11.4, 22.5, 33.6, 4.7, 5.8, 6.9))));
+                () -> objectConverter.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Arrays.asList(1.1, 2.2, 3.3), Arrays.asList(11.4, 22.5, 33.6, 4.7, 5.8, 6.9))));
     }
 
     @Test
     public void primitiveArray() {
-        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, OBJECT_CONVERTER.primitiveArray(Collections.emptyList()), DOUBLE_COMPARE_DELTA);
-        assertArrayEquals(new double[] {45.23}, OBJECT_CONVERTER.primitiveArray(Lists.newArrayList(45.23)), DOUBLE_COMPARE_DELTA);
-        assertArrayEquals(new double[] {45.23, 2.3, 8.579}, OBJECT_CONVERTER.primitiveArray(Lists.newArrayList(45.23, 2.3, 8.579)), DOUBLE_COMPARE_DELTA);
+        assertArrayEquals(ArrayUtils.EMPTY_DOUBLE_ARRAY, objectConverter.primitiveArray(Collections.emptyList()), DOUBLE_COMPARE_DELTA);
+        assertArrayEquals(new double[] {45.23}, objectConverter.primitiveArray(Lists.newArrayList(45.23)), DOUBLE_COMPARE_DELTA);
+        assertArrayEquals(new double[] {45.23, 2.3, 8.579}, objectConverter.primitiveArray(Lists.newArrayList(45.23, 2.3, 8.579)), DOUBLE_COMPARE_DELTA);
     }
 
 
@@ -149,7 +165,7 @@ public class ObjectConverterTest {
                 {process2, exchange_datetime2, exchange_date2, received_nanos2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
         };
 
-        assertArrayEquals(expected, OBJECT_CONVERTER.matrix(Lists.newArrayList(ob1, ob2)));
+        assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2)));
     }
 
 }

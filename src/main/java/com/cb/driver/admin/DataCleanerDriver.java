@@ -1,10 +1,8 @@
 package com.cb.driver.admin;
 
 import com.cb.alert.AlertProvider;
-import com.cb.common.CurrencyResolver;
 import com.cb.db.DataCleaner;
 import com.cb.db.DbProvider;
-import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.driver.AbstractDriver;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,11 +14,9 @@ public class DataCleanerDriver extends AbstractDriver  {
     private final DataCleaner dataCleaner;
 
     public static void main(String[] args) {
-        CurrencyResolver currencyResolver = new CurrencyResolver();
-        KrakenTableNameResolver krakenTableNameResolver = new KrakenTableNameResolver(currencyResolver);
         DbProvider dbProvider = new DbProvider();
         AlertProvider alertProvider = new AlertProvider();
-        DataCleaner dataCleaner = new DataCleaner(krakenTableNameResolver, dbProvider);
+        DataCleaner dataCleaner = new DataCleaner(dbProvider);
         (new DataCleanerDriver(dataCleaner, alertProvider)).execute();
     }
 

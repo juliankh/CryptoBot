@@ -1,0 +1,6 @@
+1,cb.kraken_orderbook_btc_usdt,exchange_datetime,5
+2,cb.kraken_orderbook_sol_usd,exchange_datetime,5
+3,cb.kraken_orderbook_atom_usd,exchange_datetime,5
+4,cb.kraken_orderbook_link_usd,exchange_datetime,5
+5,cb.kraken_orderbook_mxc_usd,exchange_datetime,5
+6,cb.kraken_orderbook_chr_usd,exchange_datetime,5

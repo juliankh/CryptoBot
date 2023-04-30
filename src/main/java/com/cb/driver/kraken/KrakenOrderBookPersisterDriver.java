@@ -17,13 +17,13 @@ import java.util.stream.IntStream;
 public class KrakenOrderBookPersisterDriver extends AbstractDriver {
 
     private static final String DRIVER_NAME = "Kraken OrderBook Persister";
-    private static final int NUM_CONSUMERS = 20;
+    private static final int NUM_CONSUMERS = 30;
 
     private final List<KrakenOrderBookPersistJmsConsumer> consumers;
 
     public static void main(String[] args) {
         CurrencyResolver currencyResolver = new CurrencyResolver();
-        ObjectConverter objectConverter = new ObjectConverter();
+        ObjectConverter objectConverter = new ObjectConverter(currencyResolver);
         List<KrakenOrderBookPersistJmsConsumer> consumers = new ArrayList<>();
         log.info("Number of consumers: " + NUM_CONSUMERS);
         IntStream.range(0, NUM_CONSUMERS).forEach(i -> consumers.add(new KrakenOrderBookPersistJmsConsumer(currencyResolver, objectConverter, new DbProvider())));

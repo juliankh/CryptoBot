@@ -2,6 +2,7 @@ package com.cb.jms.admin;
 
 import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;
+import com.cb.model.config.QueueMonitorConfig;
 import com.cb.property.CryptoProperties;
 import com.rabbitmq.http.client.Client;
 import com.rabbitmq.http.client.ClientParameters;
@@ -11,9 +12,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.util.Map;
-
-import static java.util.Map.entry;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,11 +29,14 @@ public class JmsQueueMonitor {
 
     public void monitor() {
         Client c = client();
-        Map<String, Integer> queueToMaxNumMessagesMap = queueMonitoringConfig();
-        queueToMaxNumMessagesMap.entrySet().parallelStream().forEach(entry -> monitorQueue(c, entry.getKey(), entry.getValue()));
+        List<QueueMonitorConfig> queueMonitorConfigs = dbProvider.retrieveQueueMonitorConfig();
+        log.info("Configs:\n\t" + queueMonitorConfigs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
+        queueMonitorConfigs.parallelStream().forEach(config -> monitorQueue(c, config));
     }
 
-    public void monitorQueue(Client c, String queue, int maxNumMessages) {
+    public void monitorQueue(Client c, QueueMonitorConfig config) {
+        String queue = config.getQueueName();
+        int maxNumMessages = config.getMessageLimit();
         String vhost = properties.jmsBrokerVhost();
         QueueInfo queueInfo = c.getQueue(vhost, queue);
         long messages = queueInfo.getTotalMessages();
@@ -50,15 +53,6 @@ public class JmsQueueMonitor {
         } else {
             log.info("For queue [" + queue + "] the current num of messages [" + messages + "] is within limit of [" + maxNumMessages + "]");
         }
-    }
-
-    // Queue name -> Max # of messages
-    public Map<String, Integer> queueMonitoringConfig() {
-        CryptoProperties properties = new CryptoProperties();
-        return Map.ofEntries(
-                entry(properties.jmsKrakenOrderBookSnapshotQueueName(), 100),
-                entry(properties.jmsKrakenOrderBookSnapshotErrorQueueName(), 0)
-        );
     }
 
     @SneakyThrows
