@@ -1,9 +1,9 @@
 package com.cb.driver.admin;
 
+import com.cb.admin.JmsQueueMonitor;
 import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
-import com.cb.jms.admin.JmsQueueMonitor;
 import com.cb.property.CryptoProperties;
 import lombok.extern.slf4j.Slf4j;
 

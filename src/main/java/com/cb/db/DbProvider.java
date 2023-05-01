@@ -6,14 +6,8 @@ import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.CbOrderBook;
-import com.cb.model.config.DataAgeMonitorConfig;
-import com.cb.model.config.DataCleanerConfig;
-import com.cb.model.config.KrakenBridgeOrderBookConfig;
-import com.cb.model.config.QueueMonitorConfig;
-import com.cb.model.config.db.DbDataAgeMonitorConfig;
-import com.cb.model.config.db.DbDataCleanerConfig;
-import com.cb.model.config.db.DbKrakenBridgeOrderBookConfig;
-import com.cb.model.config.db.DbQueueMonitorConfig;
+import com.cb.model.config.*;
+import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.property.CryptoProperties;
 import lombok.Getter;
@@ -46,11 +40,14 @@ public class DbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
+    public static String SINGLE_VALUE_CONFIG_NAME_FREE_DISK_SPACE_THRESHOLD_PERCENT = "Free Disk Space Threshold";
+
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
     private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
     private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
+    private static final BeanListHandler<DbMiscConfig> BEAN_LIST_HANDLER_MISC_CONFIG = new BeanListHandler<>(DbMiscConfig.class);
 
     private static final ScalarHandler<Timestamp> TIMESTAMP_SCALAR_HANDLER = new ScalarHandler<>();
 
@@ -138,7 +135,16 @@ public class DbProvider {
         }
     }
 
-    @SneakyThrows
+    public Map<String, MiscConfig> miscConfig() {
+        try {
+            String sql = "SELECT id, name, value FROM cb.config_misc;";
+            List<DbMiscConfig> rawConfigs = queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_MISC_CONFIG);
+            return rawConfigs.parallelStream().map(objectConverter::convertToMiscConfig).collect(Collectors.toMap(MiscConfig::getName, c -> c));
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Misc Config", e);
+        }
+    }
+
     public Instant timeOfLastItem(String table, String column) {
         try {
             Timestamp result = queryRunner.query(readConnection, "SELECT max(" + column + ") FROM " + table + ";", TIMESTAMP_SCALAR_HANDLER);
@@ -162,7 +168,7 @@ public class DbProvider {
         List<T> result = queryRunner.call();
         Instant end = Instant.now();
         double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
-        log.info("Retrieving [" + NumberUtils.format(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.format(queryRate) + "/sec]");
+        log.info("Retrieving [" + NumberUtils.numberFormat(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
         return result;
     }
 
@@ -172,9 +178,9 @@ public class DbProvider {
         int rowcount = queryRunner.call();
         Instant end = Instant.now();
         double queryRate = TimeUtils.ratePerSecond(start, end, rowcount);
-        String rowcountString = NumberUtils.format(rowcount);
+        String rowcountString = NumberUtils.numberFormat(rowcount);
         String durationString = TimeUtils.durationMessage(start, end);
-        String rateString = NumberUtils.format(queryRate);
+        String rateString = NumberUtils.numberFormat(queryRate);
         log.info("Updating/Deleting [" + rowcountString + "] of [" + itemType + "] took [" + durationString + "] at rate of [" + rateString + "/sec]");
         return rowcount;
     }

@@ -76,6 +76,7 @@
 
 */1 * * * *  sleep 7;   source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/jms_queue_monitor.sh            # every minute
 */5 * * * *  sleep 41;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_age_monitor.sh             # every 5 minutes
+*/27 * * * * sleep 13;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/disk_space_monitor.sh           # every 27 minutes
 
 ###################################################################################
 # cleanup

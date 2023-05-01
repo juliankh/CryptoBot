@@ -32,7 +32,7 @@ public class BatchProcessor<T,P> {
             ++numBatchesProcessed;
             double receiveRate = TimeUtils.ratePerSecond(batchStart, end, batch.size());
             double processRate = TimeUtils.ratePerSecond(persistStart, end, batch.size());
-            log.debug("Batch [" + numBatchesProcessed + "] of [" + batch.size() + " of " + data.getClass().getSimpleName() + "] took [" + TimeUtils.durationMessage(batchStart) + "] at rate of [" + NumberUtils.format(receiveRate) + "/sec] to aggregate and [" + TimeUtils.durationMessage(persistStart) + "] at a rate of [" + NumberUtils.format(processRate) + " items/sec] to process");
+            log.debug("Batch [" + numBatchesProcessed + "] of [" + batch.size() + " of " + data.getClass().getSimpleName() + "] took [" + TimeUtils.durationMessage(batchStart) + "] at rate of [" + NumberUtils.numberFormat(receiveRate) + "/sec] to aggregate and [" + TimeUtils.durationMessage(persistStart) + "] at a rate of [" + NumberUtils.numberFormat(processRate) + " items/sec] to process");
             batch = new ArrayList<>();
             batchStart = null;
         }

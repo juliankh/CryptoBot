@@ -1,7 +1,7 @@
 package com.cb.driver.admin;
 
+import com.cb.admin.DataAgeMonitor;
 import com.cb.alert.AlertProvider;
-import com.cb.db.DataAgeMonitor;
 import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
 import lombok.extern.slf4j.Slf4j;

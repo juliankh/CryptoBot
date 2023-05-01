@@ -1,22 +1,20 @@
-package com.cb.db;
+package com.cb.admin;
 
 import com.cb.common.util.NumberUtils;
+import com.cb.db.DbProvider;
 import com.cb.model.config.DataCleanerConfig;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 public class DataCleaner {
 
     private final DbProvider dbProvider;
 
-    public DataCleaner(DbProvider dbProvider) {
-        this.dbProvider = dbProvider;
-    }
-
-    // TODO: check disk space
     public void prune() {
         List<DataCleanerConfig> configs = dbProvider.retrieveDataCleanerConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
@@ -30,7 +28,7 @@ public class DataCleaner {
 
     public void pruneTable(String table, String column, int hoursLimit) {
         int rowcount = dbProvider.prune(table, column, hoursLimit);
-        log.info("For table [" + table + "] pruned [" + NumberUtils.format(rowcount) + "] rows which were > [" + hoursLimit + "] hours old");
+        log.info("For table [" + table + "] pruned [" + NumberUtils.numberFormat(rowcount) + "] rows which were > [" + hoursLimit + "] hours old");
     }
 
     public void cleanup() {

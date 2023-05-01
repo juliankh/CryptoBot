@@ -3,14 +3,8 @@ package com.cb.common;
 import com.cb.db.DbProvider;
 import com.cb.db.DbUtils;
 import com.cb.model.CbOrderBook;
-import com.cb.model.config.DataAgeMonitorConfig;
-import com.cb.model.config.DataCleanerConfig;
-import com.cb.model.config.KrakenBridgeOrderBookConfig;
-import com.cb.model.config.QueueMonitorConfig;
-import com.cb.model.config.db.DbDataAgeMonitorConfig;
-import com.cb.model.config.db.DbDataCleanerConfig;
-import com.cb.model.config.db.DbKrakenBridgeOrderBookConfig;
-import com.cb.model.config.db.DbQueueMonitorConfig;
+import com.cb.model.config.*;
+import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
 import lombok.RequiredArgsConstructor;
@@ -92,6 +86,14 @@ public class ObjectConverter {
                 .setCurrencyPair(currencyResolver.krakenCurrencyPair(rawConfig.getCurrency_base(), rawConfig.getCurrency_counter()))
                 .setBatchSize(rawConfig.getBatch_size())
                 .setSecsTimeout(rawConfig.getSecs_timeout());
+    }
+
+    // TODO: unit test
+    public MiscConfig convertToMiscConfig(DbMiscConfig rawConfig) {
+        return new MiscConfig()
+                .setId(rawConfig.getId())
+                .setName(rawConfig.getName())
+                .setValue(rawConfig.getValue());
     }
 
     @SneakyThrows

@@ -1,4 +1,4 @@
-package com.cb.jms.admin;
+package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
 import com.cb.db.DbProvider;

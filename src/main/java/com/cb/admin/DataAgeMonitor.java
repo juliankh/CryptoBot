@@ -1,7 +1,8 @@
-package com.cb.db;
+package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
 import com.cb.common.CurrencyResolver;
+import com.cb.db.DbProvider;
 import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.config.DataAgeMonitorConfig;
 import lombok.extern.slf4j.Slf4j;
