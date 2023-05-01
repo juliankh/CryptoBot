@@ -17,7 +17,6 @@ public class CurrencyResolver {
         return currencyPair.getBase().getCurrencyCode().toUpperCase() + separator + currencyPair.getCounter().getCurrencyCode().toUpperCase();
     }
 
-    // TODO: unit test
     public CurrencyPair krakenCurrencyPair(String baseCurrencyCode, String counterCurrencyCode) {
         checkKrakenCurrencyExists(baseCurrencyCode);
         checkKrakenCurrencyExists(counterCurrencyCode);
@@ -26,7 +25,6 @@ public class CurrencyResolver {
         return new CurrencyPair(baseCurrency, counterCurrency);
     }
 
-    // TODO: unit test
     public void checkKrakenCurrencyExists(String currencyCode) {
         if (!Currency.getAvailableCurrencyCodes().contains(currencyCode)) {
             throw new RuntimeException("There is no Kraken Currency for [" + currencyCode + "]");

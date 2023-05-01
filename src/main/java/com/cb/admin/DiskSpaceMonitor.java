@@ -28,14 +28,11 @@ public class DiskSpaceMonitor {
         alertIfAboveLimit(usableRatio, percentThreshold);
     }
 
-    // TODO: unit test
     public double usableRatio(long total, long usable) {
         return (double)usable / (double)total;
     }
 
-    // TODO: unit test
     public void alertIfAboveLimit(double usableRatio, double percentThreshold) {
-        // TODO: confirm how percent is formatted
         double thresholdRatio = percentThreshold / 100d;
         String precentUsableString = NumberUtils.percentFormat(usableRatio);
         String percentThresholdString = NumberUtils.percentFormat(thresholdRatio);

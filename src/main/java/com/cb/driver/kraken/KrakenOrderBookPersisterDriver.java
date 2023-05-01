@@ -17,7 +17,7 @@ import java.util.stream.IntStream;
 public class KrakenOrderBookPersisterDriver extends AbstractDriver {
 
     private static final String DRIVER_NAME = "Kraken OrderBook Persister";
-    private static final int NUM_CONSUMERS = 30;
+    private static final int NUM_CONSUMERS = 40;
 
     private final List<KrakenOrderBookPersistJmsConsumer> consumers;
 

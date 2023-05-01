@@ -1,6 +1,5 @@
-package com.cb.db;
+package com.cb.admin;
 
-import com.cb.admin.DataAgeMonitor;
 import com.cb.alert.AlertProvider;
 import org.junit.Before;
 import org.junit.Test;
