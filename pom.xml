@@ -30,7 +30,8 @@
         <directory>${project.basedir}/property</directory>
         <targetPath>property</targetPath>
         <includes>
-          <include>**/crypto.properties</include>
+          <include>**/encrypted.properties</include>
+          <include>**/unencrypted.properties</include>
         </includes>
       </resource>
       <resource>

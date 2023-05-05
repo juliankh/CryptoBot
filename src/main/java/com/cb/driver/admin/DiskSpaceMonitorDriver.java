@@ -2,7 +2,7 @@ package com.cb.driver.admin;
 
 import com.cb.admin.DiskSpaceMonitor;
 import com.cb.driver.AbstractDriver;
-import com.cb.module.CryptoBotModule;
+import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +15,7 @@ public class DiskSpaceMonitorDriver extends AbstractDriver {
     private DiskSpaceMonitor diskSpaceMonitor;
 
     public static void main(String[] args) {
-        DiskSpaceMonitorDriver driver = CryptoBotModule.INJECTOR.getInstance(DiskSpaceMonitorDriver.class);
+        DiskSpaceMonitorDriver driver = MainModule.INJECTOR.getInstance(DiskSpaceMonitorDriver.class);
         driver.execute();
     }
 

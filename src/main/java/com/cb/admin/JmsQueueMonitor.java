@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.cb.module.BindingName.JMS_VHOST;
+import static com.cb.injection.BindingName.JMS_VHOST;
 
 @Slf4j
 @Singleton

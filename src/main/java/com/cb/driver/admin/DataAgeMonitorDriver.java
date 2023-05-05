@@ -2,7 +2,7 @@ package com.cb.driver.admin;
 
 import com.cb.admin.DataAgeMonitor;
 import com.cb.driver.AbstractDriver;
-import com.cb.module.CryptoBotModule;
+import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +15,7 @@ public class DataAgeMonitorDriver extends AbstractDriver {
     private DataAgeMonitor dataAgeMonitor;
 
     public static void main(String[] args) {
-        DataAgeMonitorDriver driver = CryptoBotModule.INJECTOR.getInstance(DataAgeMonitorDriver.class);
+        DataAgeMonitorDriver driver = MainModule.INJECTOR.getInstance(DataAgeMonitorDriver.class);
         driver.execute();
     }
 

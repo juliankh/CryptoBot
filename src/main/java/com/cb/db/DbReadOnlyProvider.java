@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import static com.cb.module.BindingName.DB_READ_CONNECTION;
+import static com.cb.injection.BindingName.DB_READ_CONNECTION;
 
 @Slf4j
 public class DbReadOnlyProvider {

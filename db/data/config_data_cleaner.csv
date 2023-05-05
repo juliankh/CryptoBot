@@ -1,6 +1,6 @@
-1,cb.kraken_orderbook_btc_usdt,exchange_datetime,24
-2,cb.kraken_orderbook_sol_usd,exchange_datetime,24
-3,cb.kraken_orderbook_atom_usd,exchange_datetime,24
-4,cb.kraken_orderbook_link_usd,exchange_datetime,24
-5,cb.kraken_orderbook_mxc_usd,exchange_datetime,24
-6,cb.kraken_orderbook_chr_usd,exchange_datetime,24
+1,cb.kraken_orderbook_btc_usdt,exchange_datetime,10
+2,cb.kraken_orderbook_sol_usd,exchange_datetime,10
+3,cb.kraken_orderbook_atom_usd,exchange_datetime,10
+4,cb.kraken_orderbook_link_usd,exchange_datetime,10
+5,cb.kraken_orderbook_mxc_usd,exchange_datetime,10
+6,cb.kraken_orderbook_chr_usd,exchange_datetime,10

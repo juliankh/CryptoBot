@@ -15,8 +15,8 @@ import org.knowm.xchange.dto.marketdata.OrderBook;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.cb.module.BindingName.JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE;
-import static com.cb.module.BindingName.JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE;
+import static com.cb.injection.BindingName.JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE;
+import static com.cb.injection.BindingName.JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE;
 
 @Slf4j
 public class KrakenOrderBookBridgeProcessor {

@@ -1,8 +1,10 @@
-package com.cb.module;
+package com.cb.injection;
 
 public interface BindingName {
 
-    String ENCRYPTION_KEY_FILE_PATH = "encryptionKeyFilePath";
+    String MAIN_DIR = "mainDir";
+    String ENCRYPTION_SUBDIR = "encryption.subDir";
+    String ENCRYPTION_KEY_FILE = "encryption.keyFile";
 
     String DB_CONNECTION_URL = "dbConnectionUrl";
 
@@ -13,6 +15,15 @@ public interface BindingName {
     String DB_WRITE_CONNECTION = "writeConnection";
     String DB_WRITE_USER = "writeDbUser";
     String DB_WRITE_PASSWORD = "writeDbPassword";
+
+    String ALERT_EMAIL = "alertEmail";
+    String ALERT_PASSWORD = "alertPassword";
+    String ALERT_TEXT_NUM = "alertTextNum";
+    String ALERT_SMTP_HOST = "alertSmtpHost";
+    String ALERT_SMTP_SOCKET_FACTORY_PORT = "alertSmtpSocketFactoryPort";
+    String ALERT_SMTP_SOCKET_FACTORY_CLASS = "alertSmtpSocketFactoryClass";
+    String ALERT_SMTP_AUTH = "alertSmtpAuth";
+    String ALERT_SMTP_PORT = "alertSmtpPort";
 
     String JMS_BROKER_HOST = "jmsBrokerHost";
     String JMS_BROKER_PORT = "jmsBrokerPort";

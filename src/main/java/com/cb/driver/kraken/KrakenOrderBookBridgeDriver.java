@@ -5,8 +5,8 @@ import com.cb.common.util.TimeUtils;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
+import com.cb.injection.module.MainModule;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
-import com.cb.module.CryptoBotModule;
 import com.cb.processor.kraken.KrakenOrderBookBridgeProcessor;
 import com.google.inject.Inject;
 import info.bitrich.xchangestream.core.StreamingExchange;
@@ -48,7 +48,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     private Throwable throwable;
 
     public static void main(String[] args) {
-        KrakenOrderBookBridgeDriver driver = CryptoBotModule.INJECTOR.getInstance(KrakenOrderBookBridgeDriver.class);
+        KrakenOrderBookBridgeDriver driver = MainModule.INJECTOR.getInstance(KrakenOrderBookBridgeDriver.class);
         driver.initialize(args);
         driver.execute();
     }

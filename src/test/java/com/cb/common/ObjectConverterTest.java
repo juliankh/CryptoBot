@@ -1,6 +1,8 @@
 package com.cb.common;
 
 import com.cb.common.util.TimeUtils;
+import com.cb.model.config.*;
+import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
@@ -8,6 +10,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.knowm.xchange.currency.CurrencyPair;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -23,8 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectConverterTest {
@@ -166,6 +168,117 @@ public class ObjectConverterTest {
         };
 
         assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2)));
+    }
+
+    @Test
+    public void convertToDataAgeMonitorConfig() {
+        // setup data
+        long id = 123;
+        String tableName = "tableName1";
+        String columnName = "columnName1";
+        int minsAgeLimit = 5;
+        DbDataAgeMonitorConfig rawConfig = new DbDataAgeMonitorConfig();
+        rawConfig.setId(id);
+        rawConfig.setTable_name(tableName);
+        rawConfig.setColumn_name(columnName);
+        rawConfig.setMins_age_limit(minsAgeLimit);
+
+        // engage test
+        DataAgeMonitorConfig result = objectConverter.convertToDataAgeMonitorConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(tableName, result.getTableName());
+        assertEquals(columnName, result.getColumnName());
+        assertEquals(minsAgeLimit, result.getMinsAgeLimit());
+    }
+
+    @Test
+    public void convertToDataCleanerConfig() {
+        // setup data
+        long id = 123;
+        String tableName = "tableName1";
+        String columnName = "columnName1";
+        int hoursBack = 10;
+        DbDataCleanerConfig rawConfig = new DbDataCleanerConfig();
+        rawConfig.setId(id);
+        rawConfig.setTable_name(tableName);
+        rawConfig.setColumn_name(columnName);
+        rawConfig.setHours_back(hoursBack);
+
+        // engage test
+        DataCleanerConfig result = objectConverter.convertToDataCleanerConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(tableName, result.getTableName());
+        assertEquals(columnName, result.getColumnName());
+        assertEquals(hoursBack, result.getHoursBack());
+    }
+
+    @Test
+    public void convertToQueueMonitorConfig() {
+        // setup data
+        long id = 456;
+        String queueName = "queue1";
+        int messageLimit = 100;
+        DbQueueMonitorConfig rawConfig = new DbQueueMonitorConfig();
+        rawConfig.setId(id);
+        rawConfig.setQueue_name(queueName);
+        rawConfig.setMessage_limit(messageLimit);
+
+        // engage test
+        QueueMonitorConfig result = objectConverter.convertToQueueMonitorConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(queueName, result.getQueueName());
+        assertEquals(messageLimit, result.getMessageLimit());
+    }
+
+    @Test
+    public void convertToKrakenBridgeOrderBookConfig() {
+        // setup data
+        long id = 567;
+        String currencyBase = "BTC";
+        String currencyCounter = "USDT";
+        int batchSize = 200;
+        int secsTimeout = 20;
+        DbKrakenBridgeOrderBookConfig rawConfig = new DbKrakenBridgeOrderBookConfig();
+        rawConfig.setId(id);
+        rawConfig.setCurrency_base(currencyBase);
+        rawConfig.setCurrency_counter(currencyCounter);
+        rawConfig.setBatch_size(batchSize);
+        rawConfig.setSecs_timeout(secsTimeout);
+
+        // engage test
+        KrakenBridgeOrderBookConfig result = objectConverter.convertToKrakenBridgeOrderBookConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(CurrencyPair.BTC_USDT, result.getCurrencyPair());
+        assertEquals(batchSize, result.getBatchSize());
+        assertEquals(secsTimeout, result.getSecsTimeout());
+    }
+
+    @Test
+    public void convertToMiscConfig() {
+        // setup data
+        long id = 6789;
+        String name = "name1";
+        double value = 56.23;
+        DbMiscConfig rawConfig = new DbMiscConfig();
+        rawConfig.setId(id);
+        rawConfig.setName(name);
+        rawConfig.setValue(value);
+
+        // engage test
+        MiscConfig result = objectConverter.convertToMiscConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(name, result.getName());
+        assertEquals(value, result.getValue(), DOUBLE_COMPARE_DELTA);
     }
 
 }

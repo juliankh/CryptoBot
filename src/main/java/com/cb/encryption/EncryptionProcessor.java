@@ -1,26 +1,24 @@
 package com.cb.encryption;
 
-import com.cb.module.CryptoBotModule;
-import lombok.Setter;
+import com.cb.injection.module.MainModule;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
-@Setter
-public class EncryptionProvider {
+@Singleton
+public class EncryptionProcessor {
 
-	private final StandardPBEStringEncryptor encryptor;
-
-	public EncryptionProvider(StandardPBEStringEncryptor encryptor) {
-		this.encryptor = encryptor;
-	}
+	@Inject
+	private StandardPBEStringEncryptor encryptor;
 
 	public static void main(String[] a) throws Exception {
-		EncryptionProvider encryptionProvider = CryptoBotModule.INJECTOR.getInstance(EncryptionProvider.class);
+		EncryptionProcessor encryptionProcessor = MainModule.INJECTOR.getInstance(EncryptionProcessor.class);
 
 		/*  TODO: erase string after using */ String rawString = ""; /*  TODO: erase string after using */
 
-		String encryptedText = encryptionProvider.encrypt(rawString);
+		String encryptedText = encryptionProcessor.encrypt(rawString);
     	System.out.println("Encrypted: " + encryptedText);
-    	String decryptedText = encryptionProvider.decrypt(encryptedText);
+    	String decryptedText = encryptionProcessor.decrypt(encryptedText);
     	System.out.println("Decrypted (to ensure will decrypt fine in the future): " + decryptedText + " <== NOW ERASE THIS IN CODE");
 	}
 	

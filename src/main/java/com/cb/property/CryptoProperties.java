@@ -1,30 +1,30 @@
 package com.cb.property;
 
-import com.cb.encryption.EncryptionProvider;
-import com.cb.module.CryptoBotModule;
+import com.cb.encryption.EncryptionProcessor;
+import com.cb.injection.module.CryptoBotPropertiesModule;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.SneakyThrows;
 
 import java.util.Properties;
 
+@Singleton
 public class CryptoProperties {
 
-	private final Properties properties;
+	@Inject
+	private Properties properties;
 
-	private final EncryptionProvider encryptionProvider;
-
-	public CryptoProperties(Properties properties, EncryptionProvider encryptionProvider) {
-		this.properties = properties;
-		this.encryptionProvider = encryptionProvider;
-	}
+	@Inject
+	private EncryptionProcessor encryptionProcessor;
 
 	@SneakyThrows
 	public static void main(String[] a) {
-		CryptoProperties properties = CryptoBotModule.INJECTOR.getInstance(CryptoProperties.class);
-		System.out.println(properties.jmsBrokerHost());
-		System.out.println(properties.jmsBrokerVhost());
-		System.out.println(properties.jmsBrokerPortAmqp());
-		System.out.println(properties.jmsBrokerPortHttp());
-		System.out.println(properties.jmsKrakenOrderBookSnapshotErrorQueueName());
+		CryptoProperties cryptoProperties = CryptoBotPropertiesModule.INJECTOR.getInstance(CryptoProperties.class);
+		System.out.println(cryptoProperties.jmsBrokerHost());
+		System.out.println(cryptoProperties.jmsBrokerVhost());
+		System.out.println(cryptoProperties.jmsBrokerPortAmqp());
+		System.out.println(cryptoProperties.jmsBrokerPortHttp());
+		System.out.println(cryptoProperties.jmsKrakenOrderBookSnapshotErrorQueueName());
 	}
 
 	public String writeDbUser() {
@@ -79,17 +79,6 @@ public class CryptoProperties {
 		return decryptedProperty("encrypted.alert.smtp.port");
 	}
 
-	public Properties emailProperties() {
-		// TODO: perhaps make this into a class field that is lazy-loaded and subsequently reused (and make this method synchronized)
-		Properties emailProperties = new Properties();
-		emailProperties.put("mail.smtp.host", alertSmtpHost());
-		emailProperties.put("mail.smtp.socketFactory.port", alertSmtpSocketFactoryPort());
-		emailProperties.put("mail.smtp.socketFactory.class", alertSmtpSocketFactoryClass());
-		emailProperties.put("mail.smtp.auth", alertSmtpAuth());
-		emailProperties.put("mail.smtp.port", alertSmtpPort());
-		return emailProperties;
-	}
-
 	public String jmsBrokerHost() {
 		return decryptedProperty("encrypted.jms.broker.host");
 	}
@@ -129,7 +118,7 @@ public class CryptoProperties {
 	// private methods
 
 	private String decryptedProperty(String name) {
-		return encryptionProvider.decrypt(properties.getProperty(name));
+		return encryptionProcessor.decrypt(properties.getProperty(name));
 	}
 	
 }

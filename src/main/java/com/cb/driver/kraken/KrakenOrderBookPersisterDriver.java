@@ -1,8 +1,8 @@
 package com.cb.driver.kraken;
 
 import com.cb.driver.AbstractDriver;
+import com.cb.injection.module.MainModule;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
-import com.cb.module.CryptoBotModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +17,7 @@ public class KrakenOrderBookPersisterDriver extends AbstractDriver {
     private List<KrakenOrderBookPersistJmsConsumer> consumers;
 
     public static void main(String[] args) {
-        KrakenOrderBookPersisterDriver driver = CryptoBotModule.INJECTOR.getInstance(KrakenOrderBookPersisterDriver.class);
+        KrakenOrderBookPersisterDriver driver = MainModule.INJECTOR.getInstance(KrakenOrderBookPersisterDriver.class);
         driver.execute();
     }
 

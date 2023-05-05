@@ -2,7 +2,7 @@ package com.cb.driver.admin;
 
 import com.cb.admin.JmsQueueMonitor;
 import com.cb.driver.AbstractDriver;
-import com.cb.module.CryptoBotModule;
+import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +15,7 @@ public class JmsQueueMonitorDriver extends AbstractDriver {
     private JmsQueueMonitor jmsQueueMonitor;
 
     public static void main(String[] args) {
-        JmsQueueMonitorDriver driver = CryptoBotModule.INJECTOR.getInstance(JmsQueueMonitorDriver.class);
+        JmsQueueMonitorDriver driver = MainModule.INJECTOR.getInstance(JmsQueueMonitorDriver.class);
         driver.execute();
     }
 

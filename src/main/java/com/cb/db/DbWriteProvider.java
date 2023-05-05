@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import static com.cb.module.BindingName.DB_WRITE_CONNECTION;
+import static com.cb.injection.BindingName.DB_WRITE_CONNECTION;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 

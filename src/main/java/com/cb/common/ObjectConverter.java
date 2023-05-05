@@ -55,7 +55,6 @@ public class ObjectConverter {
         return matrix;
     }
 
-    // TODO: unit test
     public DataAgeMonitorConfig convertToDataAgeMonitorConfig(DbDataAgeMonitorConfig rawConfig) {
         return new DataAgeMonitorConfig()
                 .setId(rawConfig.getId())
@@ -64,7 +63,6 @@ public class ObjectConverter {
                 .setMinsAgeLimit(rawConfig.getMins_age_limit());
     }
 
-    // TODO: unit test
     public DataCleanerConfig convertToDataCleanerConfig(DbDataCleanerConfig rawConfig) {
         return new DataCleanerConfig()
                 .setId(rawConfig.getId())
@@ -73,7 +71,6 @@ public class ObjectConverter {
                 .setHoursBack(rawConfig.getHours_back());
     }
 
-    // TODO: unit test
     public QueueMonitorConfig convertToQueueMonitorConfig(DbQueueMonitorConfig rawConfig) {
         return new QueueMonitorConfig()
                 .setId(rawConfig.getId())
@@ -81,7 +78,6 @@ public class ObjectConverter {
                 .setMessageLimit(rawConfig.getMessage_limit());
     }
 
-    // TODO: unit test
     public KrakenBridgeOrderBookConfig convertToKrakenBridgeOrderBookConfig(DbKrakenBridgeOrderBookConfig rawConfig) {
         return new KrakenBridgeOrderBookConfig()
                 .setId(rawConfig.getId())
@@ -90,7 +86,6 @@ public class ObjectConverter {
                 .setSecsTimeout(rawConfig.getSecs_timeout());
     }
 
-    // TODO: unit test
     public MiscConfig convertToMiscConfig(DbMiscConfig rawConfig) {
         return new MiscConfig()
                 .setId(rawConfig.getId())
@@ -158,8 +153,7 @@ public class ObjectConverter {
     }
 
     public Object[][] matrix(Collection<DbKrakenOrderBook> orderbooks) {
-        /*
-            implementing the method as below because for some reason this doesn't work:
+        /*  TODO: implementing the method as below because for some reason this doesn't work (figure out why):
                 return orderbooks.parallelStream().map(orderbook -> new Object[] {orderbook.getExchange_datetime(), orderbook.getExchange_date(), orderbook.getBids(), orderbook.getAsks()}).toArray();
          */
         List<Object[]> list = orderbooks.parallelStream().map(orderbook -> new Object[] {

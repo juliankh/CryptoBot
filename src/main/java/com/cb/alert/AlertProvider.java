@@ -1,8 +1,8 @@
 package com.cb.alert;
 
-import com.cb.property.CryptoProperties;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -10,6 +10,9 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.util.Properties;
+
+import static com.cb.injection.BindingName.*;
 
 @Slf4j
 @Singleton
@@ -18,10 +21,41 @@ public class AlertProvider {
 	public static boolean DEFAULT_IS_ON = true;
 
 	@Inject
-	private CryptoProperties cryptoProperties;
+	@Named(ALERT_EMAIL)
+	private String alertEmail;
 
-	/* // for manual testing
+	@Inject
+	@Named(ALERT_PASSWORD)
+	private String alertPassword;
+
+	@Inject
+	@Named(ALERT_TEXT_NUM)
+	private String alertTextNum;
+
+	@Inject
+	@Named(ALERT_SMTP_HOST)
+	private String alertSmtpHost;
+
+	@Inject
+	@Named(ALERT_SMTP_SOCKET_FACTORY_PORT)
+	private String alertSmtpSocketFactoryPort;
+
+	@Inject
+	@Named(ALERT_SMTP_SOCKET_FACTORY_CLASS)
+	private String alertSmtpSocketFactoryClass;
+
+	@Inject
+	@Named(ALERT_SMTP_AUTH)
+	private String alertSmtpAuth;
+
+	@Inject
+	@Named(ALERT_SMTP_PORT)
+	private String alertSmtpPort;
+
+	/*
+	// for manual testing
 	public static void main(String[] args) throws IOException {
+		AlertProvider alertProvider = MainModule.INJECTOR.getInstance(AlertProvider.class);
 		Throwable t = null;
 		try {
 			try {
@@ -32,7 +66,7 @@ public class AlertProvider {
 		} catch (Exception e) {
 			t = e;
 		}
-		(new AlertProvider()).sendEmailAlert("subj", "bodbod", t);
+		(alertProvider).sendEmailAlert("subj", "bodbod", t);
 		//(new AlertProviderImpl()).sendTextAlert("hey hello");
 	}*/
 
@@ -62,7 +96,7 @@ public class AlertProvider {
 	}
 
 	public void sendEmailAlert(String subject, String body, boolean quietly) {
-		sendAlert(subject, body, cryptoProperties.alertEmail(), quietly);
+		sendAlert(subject, body, alertEmail, quietly);
 	}
 
 	public void sendTextAlert(String msg) {
@@ -74,7 +108,7 @@ public class AlertProvider {
 	}
 
 	public void sendTextAlert(String msg, boolean quietly) {
-		sendAlert(msg, msg, cryptoProperties.alertTextNum(), quietly);
+		sendAlert(msg, msg, alertTextNum, quietly);
 	}
 
 	public void sendAlert(String subject, String body, String recipient, boolean quietly) {
@@ -84,15 +118,15 @@ public class AlertProvider {
 				return;
 			}
 			log.info("Sending alert with subject [" + subject + "]");
-			Session session = Session.getDefaultInstance(cryptoProperties.emailProperties(),
+			Session session = Session.getDefaultInstance(emailProperties(),
 					new Authenticator() {
 						protected PasswordAuthentication getPasswordAuthentication() {
-							return new PasswordAuthentication(cryptoProperties.alertEmail(), cryptoProperties.alertPassword());
+							return new PasswordAuthentication(alertEmail, alertPassword);
 						}
 					});
 			try {
 				Message message = new MimeMessage(session);
-				message.setFrom(new InternetAddress(cryptoProperties.alertEmail()));
+				message.setFrom(new InternetAddress(alertEmail));
 				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
 				message.setSubject(subject);
 				message.setText(body);
@@ -107,6 +141,16 @@ public class AlertProvider {
 				throw e;
 			}
 		}
+	}
+
+	private Properties emailProperties() {
+		Properties emailProperties = new Properties();
+		emailProperties.put("mail.smtp.host", alertSmtpHost);
+		emailProperties.put("mail.smtp.socketFactory.port", alertSmtpSocketFactoryPort);
+		emailProperties.put("mail.smtp.socketFactory.class", alertSmtpSocketFactoryClass);
+		emailProperties.put("mail.smtp.auth", alertSmtpAuth);
+		emailProperties.put("mail.smtp.port", alertSmtpPort);
+		return emailProperties;
 	}
 	
 }

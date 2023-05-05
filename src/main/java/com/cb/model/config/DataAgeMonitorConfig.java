@@ -7,8 +7,8 @@ import lombok.experimental.Accessors;
 
 @Getter
 @Setter
-@ToString
 @Accessors(chain = true)
+@ToString
 public class DataAgeMonitorConfig {
 
     private long id;

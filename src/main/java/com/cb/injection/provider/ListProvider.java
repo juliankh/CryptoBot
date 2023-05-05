@@ -1,4 +1,4 @@
-package com.cb.module.provider;
+package com.cb.injection.provider;
 
 import com.google.inject.Provider;
 

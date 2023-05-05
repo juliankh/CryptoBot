@@ -1,15 +1,8 @@
-package com.cb.module;
+package com.cb.injection.module;
 
-import com.cb.driver.admin.DataAgeMonitorDriver;
-import com.cb.driver.admin.DataCleanerDriver;
-import com.cb.driver.admin.DiskSpaceMonitorDriver;
-import com.cb.driver.admin.JmsQueueMonitorDriver;
-import com.cb.driver.kraken.KrakenOrderBookBridgeDriver;
-import com.cb.driver.kraken.KrakenOrderBookPersisterDriver;
-import com.cb.encryption.EncryptionProvider;
+import com.cb.injection.provider.KrakenOrderBookPersistJmsConsumerProvider;
+import com.cb.injection.provider.ListProvider;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
-import com.cb.module.provider.KrakenOrderBookPersistJmsConsumerProvider;
-import com.cb.module.provider.ListProvider;
 import com.cb.property.CryptoProperties;
 import com.google.inject.*;
 import com.google.inject.name.Named;
@@ -19,40 +12,35 @@ import com.rabbitmq.http.client.Client;
 import com.rabbitmq.http.client.ClientParameters;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.DriverManager;
 import java.util.List;
-import java.util.Properties;
 
-import static com.cb.module.BindingName.*;
+import static com.cb.injection.BindingName.*;
 
 @Slf4j
-public class CryptoBotModule extends AbstractModule {
+public class MainModule extends AbstractModule {
 
-    public static Injector INJECTOR = Guice.createInjector(new CryptoBotModule());
+    public static Injector INJECTOR = Guice.createInjector(new MainModule());
 
     @Override
     protected void configure() {
-        Properties properties = properties();
+        CryptoProperties cryptoProperties = CryptoBotPropertiesModule.INJECTOR.getInstance(CryptoProperties.class);
 
-        String mainDir = properties.getProperty("mainDir");
-        String encryptionSubDir = properties.getProperty("encryption.subDir");
-        String keyFile = properties.getProperty("encryption.keyFile");
-        String encryptionKeyFilePath = mainDir + encryptionSubDir + keyFile;
-
-        CryptoProperties cryptoProperties = cryptoProperties(properties, encryptionKeyFilePath);
-
-        bindConstant().annotatedWith(Names.named(ENCRYPTION_KEY_FILE_PATH)).to(encryptionKeyFilePath);
         bindConstant().annotatedWith(Names.named(DB_CONNECTION_URL)).to(cryptoProperties.dbConnectionUrl());
         bindConstant().annotatedWith(Names.named(DB_READ_USER)).to(cryptoProperties.readDbUser());
         bindConstant().annotatedWith(Names.named(DB_READ_PASSWORD)).to(cryptoProperties.readDbPassword());
         bindConstant().annotatedWith(Names.named(DB_WRITE_USER)).to(cryptoProperties.writeDbUser());
         bindConstant().annotatedWith(Names.named(DB_WRITE_PASSWORD)).to(cryptoProperties.writeDbPassword());
+
+        bindConstant().annotatedWith(Names.named(ALERT_EMAIL)).to(cryptoProperties.alertEmail());
+        bindConstant().annotatedWith(Names.named(ALERT_PASSWORD)).to(cryptoProperties.alertPassword());
+        bindConstant().annotatedWith(Names.named(ALERT_TEXT_NUM)).to(cryptoProperties.alertTextNum());
+        bindConstant().annotatedWith(Names.named(ALERT_SMTP_HOST)).to(cryptoProperties.alertSmtpHost());
+        bindConstant().annotatedWith(Names.named(ALERT_SMTP_SOCKET_FACTORY_PORT)).to(cryptoProperties.alertSmtpSocketFactoryPort());
+        bindConstant().annotatedWith(Names.named(ALERT_SMTP_SOCKET_FACTORY_CLASS)).to(cryptoProperties.alertSmtpSocketFactoryClass());
+        bindConstant().annotatedWith(Names.named(ALERT_SMTP_AUTH)).to(cryptoProperties.alertSmtpAuth());
+        bindConstant().annotatedWith(Names.named(ALERT_SMTP_PORT)).to(cryptoProperties.alertSmtpPort());
 
         bindConstant().annotatedWith(Names.named(JMS_BROKER_HOST)).to(cryptoProperties.jmsBrokerHost());
         bindConstant().annotatedWith(Names.named(JMS_BROKER_PORT)).to(cryptoProperties.jmsBrokerPortAmqp());
@@ -64,20 +52,7 @@ public class CryptoBotModule extends AbstractModule {
         bindConstant().annotatedWith(Names.named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE)).to(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName());
         bindConstant().annotatedWith(Names.named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE)).to(cryptoProperties.jmsKrakenOrderBookSnapshotQueueExchange());
 
-        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), 30));
-
-        bind(KrakenOrderBookBridgeDriver.class);
-        bind(KrakenOrderBookPersisterDriver.class);
-        bind(DataAgeMonitorDriver.class);
-        bind(DataCleanerDriver.class);
-        bind(DiskSpaceMonitorDriver.class);
-        bind(JmsQueueMonitorDriver.class);
-    }
-
-    @Provides
-    public CryptoProperties cryptoProperties(Properties properties, @Named(ENCRYPTION_KEY_FILE_PATH) String encryptionKeyFilePath) {
-        EncryptionProvider encryptionProvider = new EncryptionProvider(encryptor(encryptionKeyFilePath));
-        return new CryptoProperties(properties, encryptionProvider);
+        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), 50));
     }
 
     @Provides
@@ -108,24 +83,6 @@ public class CryptoBotModule extends AbstractModule {
         factory.setUsername(username);
         factory.setPassword(password);
         return factory;
-    }
-
-    // --------------------------  PRIVATE METHODS  --------------------------
-
-    @SneakyThrows
-    private Properties properties() {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream("property/crypto.properties"));
-        return properties;
-    }
-
-    @SneakyThrows
-    private StandardPBEStringEncryptor encryptor(String encryptionKeyFilePath) {
-        String encryptionKey = FileUtils.readFileToString(new File(encryptionKeyFilePath), StandardCharsets.ISO_8859_1);
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-        encryptor.setPassword(encryptionKey);
-        encryptor.setAlgorithm("PBEWithMD5AndTripleDES");
-        return encryptor;
     }
 
 }
