@@ -1,13 +1,11 @@
 package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
-import com.cb.common.CurrencyResolver;
-import com.cb.db.DbProvider;
-import com.cb.db.kraken.KrakenTableNameResolver;
+import com.cb.db.DbReadOnlyProvider;
 import com.cb.model.config.DataAgeMonitorConfig;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-import org.knowm.xchange.currency.Currency;
-import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -15,15 +13,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Singleton
 public class DataAgeMonitor {
 
-    private final DbProvider dbProvider;
-    private final AlertProvider alertProvider;
+    @Inject
+    private DbReadOnlyProvider dbProvider;
 
-    public DataAgeMonitor(DbProvider dbProvider, AlertProvider alertProvider) {
-        this.dbProvider = dbProvider;
-        this.alertProvider = alertProvider;
-    }
+    @Inject
+    private AlertProvider alertProvider;
 
     public void monitor() {
         List<DataAgeMonitorConfig> configs = dbProvider.retrieveDataAgeMonitorConfig();
@@ -47,11 +44,6 @@ public class DataAgeMonitor {
         } else {
             log.info("For table [" + table + "] the last item is [" + minsAge + "] mins old, which is within limit of [" + ageLimit + "] mins");
         }
-    }
-
-    public static void main(String[] args) {
-        KrakenTableNameResolver krakenTableNameResolver = new KrakenTableNameResolver(new CurrencyResolver());
-        System.out.println(krakenTableNameResolver.krakenOrderBookTable(new CurrencyPair(Currency.CHR, Currency.USD)));
     }
 
     public void cleanup() {

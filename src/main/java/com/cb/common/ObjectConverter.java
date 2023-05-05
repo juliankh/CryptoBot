@@ -1,13 +1,14 @@
 package com.cb.common;
 
-import com.cb.db.DbProvider;
 import com.cb.db.DbUtils;
+import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
-import lombok.RequiredArgsConstructor;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,10 +23,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+@Singleton
 public class ObjectConverter {
 
-    private final CurrencyResolver currencyResolver;
+    @Inject
+    private CurrencyResolver currencyResolver;
 
     public double[] primitiveArray(Collection<Double> collection) {
         return ArrayUtils.toPrimitive(collection.toArray(new Double[0]));
@@ -121,8 +123,8 @@ public class ObjectConverter {
         Pair<Double, Double> highestBid = bids.get(0);
         Pair<Double, Double> lowestAsk = asks.get(0);
 
-        Array bidsArray = sqlArray(bids, DbProvider.TYPE_ORDER_BOOK_QUOTE, connection);
-        Array asksArray = sqlArray(asks, DbProvider.TYPE_ORDER_BOOK_QUOTE, connection);
+        Array bidsArray = sqlArray(bids, DbWriteProvider.TYPE_ORDER_BOOK_QUOTE, connection);
+        Array asksArray = sqlArray(asks, DbWriteProvider.TYPE_ORDER_BOOK_QUOTE, connection);
 
         DbKrakenOrderBook result = new DbKrakenOrderBook();
         result.setProcess(krakenOrderBook.getProcess());

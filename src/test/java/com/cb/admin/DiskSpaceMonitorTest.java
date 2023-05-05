@@ -1,7 +1,7 @@
 package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
-import com.cb.db.DbProvider;
+import com.cb.db.DbReadOnlyProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 public class DiskSpaceMonitorTest {
 
     @Mock
-    private DbProvider dbProvider;
+    private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Mock
     private AlertProvider alertProvider;
@@ -29,7 +29,7 @@ public class DiskSpaceMonitorTest {
 
     @Before
     public void beforeEachTest() {
-        Mockito.reset(dbProvider);
+        Mockito.reset(dbReadOnlyProvider);
         Mockito.reset(alertProvider);
     }
 

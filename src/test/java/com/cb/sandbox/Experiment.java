@@ -1,6 +1,7 @@
 package com.cb.sandbox;
 
 import com.cb.model.kraken.db.DbKrakenOrderBook;
+import com.cb.module.CryptoBotModule;
 import com.cb.property.CryptoProperties;
 import com.google.common.collect.Lists;
 import org.apache.commons.dbutils.QueryRunner;
@@ -17,8 +18,7 @@ import java.util.stream.Collectors;
 public class Experiment {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
-
-        CryptoProperties props = new CryptoProperties();
+        CryptoProperties props = CryptoBotModule.INJECTOR.getInstance(CryptoProperties.class);
         Connection readConnection = DriverManager.getConnection(props.dbConnectionUrl(), props.readDbUser(), props.readDbPassword());
         Connection writeConnection = DriverManager.getConnection(props.dbConnectionUrl(), props.writeDbUser(), props.writeDbPassword());
 

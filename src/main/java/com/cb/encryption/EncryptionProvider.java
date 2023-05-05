@@ -1,39 +1,27 @@
 package com.cb.encryption;
 
-import com.cb.property.CryptoPropertiesRaw;
-import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
+import com.cb.module.CryptoBotModule;
+import lombok.Setter;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
+@Setter
 public class EncryptionProvider {
-	
-	private static final Charset ISO_CHARSET = StandardCharsets.ISO_8859_1;
-	private static final String ENCRYPTION_ALGORITHM = "PBEWithMD5AndTripleDES";
-	
+
 	private final StandardPBEStringEncryptor encryptor;
 
+	public EncryptionProvider(StandardPBEStringEncryptor encryptor) {
+		this.encryptor = encryptor;
+	}
+
 	public static void main(String[] a) throws Exception {
-		EncryptionProvider encryptionProvider = new EncryptionProvider();
-		
+		EncryptionProvider encryptionProvider = CryptoBotModule.INJECTOR.getInstance(EncryptionProvider.class);
+
 		/*  TODO: erase string after using */ String rawString = ""; /*  TODO: erase string after using */
-		
+
 		String encryptedText = encryptionProvider.encrypt(rawString);
     	System.out.println("Encrypted: " + encryptedText);
     	String decryptedText = encryptionProvider.decrypt(encryptedText);
     	System.out.println("Decrypted (to ensure will decrypt fine in the future): " + decryptedText + " <== NOW ERASE THIS IN CODE");
-	}
-	
-	@SneakyThrows
-	public EncryptionProvider() {
-		CryptoPropertiesRaw properties = new CryptoPropertiesRaw();
-		String encryptionKey = FileUtils.readFileToString(new File(properties.getEncryptionKeyFilePath()), ISO_CHARSET);
-		this.encryptor = new StandardPBEStringEncryptor();
-		encryptor.setPassword(encryptionKey);            
-    	encryptor.setAlgorithm(ENCRYPTION_ALGORITHM);  
 	}
 	
 	public String encrypt(String s) {

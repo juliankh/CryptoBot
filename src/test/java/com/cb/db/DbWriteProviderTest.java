@@ -16,14 +16,14 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DbProviderTest {
+public class DbWriteProviderTest {
 
     @InjectMocks
-    private DbProvider dbProvider;
+    private DbWriteProvider dbWriteProvider;
 
     @Test
     public void numDupes() {
-        assertEquals(3, dbProvider.numDupes(Lists.newArrayList(
+        assertEquals(3, dbWriteProvider.numDupes(Lists.newArrayList(
                     Lists.newArrayList(2, 2),     // 1 dupe
                     Lists.newArrayList(1, 1, 1),  // 2 dupes
                     Lists.newArrayList(3)         // 0 dupes
@@ -32,10 +32,10 @@ public class DbProviderTest {
 
     @Test
     public void dupeDescription() {
-        assertEquals("# dupe ItemType1 received from upstream [0]; # of ItemType1 rows skipped insertion [0] [NONE]", dbProvider.dupeDescription("ItemType1", 0, 0));
-        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [3]", dbProvider.dupeDescription("ItemType1", 3, 3));
-        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [2] [DIFFERENT by (-1)] (probably due to multiple persisters running concurrently)", dbProvider.dupeDescription("ItemType1", 3, 2));
-        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [5] [DIFFERENT by (2)] (probably due to multiple persisters running concurrently)", dbProvider.dupeDescription("ItemType1", 3, 5));
+        assertEquals("# dupe ItemType1 received from upstream [0]; # of ItemType1 rows skipped insertion [0] [NONE]", dbWriteProvider.dupeDescription("ItemType1", 0, 0));
+        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [3]", dbWriteProvider.dupeDescription("ItemType1", 3, 3));
+        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [2] [DIFFERENT by (-1)] (probably due to multiple persisters running concurrently)", dbWriteProvider.dupeDescription("ItemType1", 3, 2));
+        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [5] [DIFFERENT by (2)] (probably due to multiple persisters running concurrently)", dbWriteProvider.dupeDescription("ItemType1", 3, 5));
     }
 
     @Test
@@ -49,7 +49,7 @@ public class DbProviderTest {
         List<DbKrakenOrderBook> convertedBatch = Lists.newArrayList(orderbook1, orderbook2, orderbook3, orderbook4, orderbook5);
 
         // engage test
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbProvider.dupeOrderBooks(convertedBatch);
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbWriteProvider.dupeOrderBooks(convertedBatch);
 
         assertEquals(2, result.size());
         assertEquals(Sets.newHashSet(Triple.of(receivedNanos, 111, 1111), Triple.of(receivedNanos, 222, 2222)), result.keySet());
@@ -68,29 +68,29 @@ public class DbProviderTest {
         List<DbKrakenOrderBook> orderbooks = Lists.newArrayList(orderbook1, orderbook2, orderbook3, orderbook4, orderbook5);
 
         // engage test
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbProvider.dupeOrderBooks(orderbooks);
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbWriteProvider.dupeOrderBooks(orderbooks);
 
         assertEquals(0, result.size());
     }
 
     @Test
     public void checkUpsertRowCounts_NoException() {
-        assertEquals(0, dbProvider.checkUpsertRowCounts(new int[]{}));
-        assertEquals(0, dbProvider.checkUpsertRowCounts(new int[]{1}));
-        assertEquals(1, dbProvider.checkUpsertRowCounts(new int[]{0}));
-        assertEquals(2, dbProvider.checkUpsertRowCounts(new int[]{1, 0, 0}));
+        assertEquals(0, dbWriteProvider.checkUpsertRowCounts(new int[]{}));
+        assertEquals(0, dbWriteProvider.checkUpsertRowCounts(new int[]{1}));
+        assertEquals(1, dbWriteProvider.checkUpsertRowCounts(new int[]{0}));
+        assertEquals(2, dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 0}));
     }
 
     @Test(expected = RuntimeException.class)
     public void checkUpsertRowCounts_Exception() {
-        assertEquals(1, dbProvider.checkUpsertRowCounts(new int[]{1, 0, 2}));
+        assertEquals(1, dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 2}));
     }
 
     @Test
     public void questionMarks() {
-        assertEquals("?", dbProvider.questionMarks(1));
-        assertEquals("?,?", dbProvider.questionMarks(2));
-        assertEquals("?,?,?,?", dbProvider.questionMarks(4));
+        assertEquals("?", dbWriteProvider.questionMarks(1));
+        assertEquals("?,?", dbWriteProvider.questionMarks(2));
+        assertEquals("?,?,?,?", dbWriteProvider.questionMarks(4));
     }
 
 }

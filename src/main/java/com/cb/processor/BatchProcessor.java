@@ -2,7 +2,6 @@ package com.cb.processor;
 
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -12,14 +11,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Slf4j
-@RequiredArgsConstructor
 public class BatchProcessor<T,P> {
 
-    private final int batchSize;
+    private Integer batchSize; // using Integer instead of int so that if it's not set, a NullPointerException would be thrown
 
     private List<T> batch = new ArrayList<>();
     private Instant batchStart;
     private int numBatchesProcessed = 0;
+
+    public void initialize(int batchSize) {
+        this.batchSize = batchSize;
+    }
 
     public synchronized void process(T data, Function<List<T>,P> converter, Consumer<P> processor) {
         batchStart = batchStart == null ? Instant.now() : batchStart;

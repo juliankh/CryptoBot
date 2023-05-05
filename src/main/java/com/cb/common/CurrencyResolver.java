@@ -1,8 +1,10 @@
 package com.cb.common;
 
+import com.google.inject.Singleton;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
+@Singleton
 public class CurrencyResolver {
 
     public static void main(String[] args) {

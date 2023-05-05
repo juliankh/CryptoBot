@@ -1,28 +1,22 @@
 package com.cb.driver.admin;
 
 import com.cb.admin.DiskSpaceMonitor;
-import com.cb.alert.AlertProvider;
-import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
+import com.cb.module.CryptoBotModule;
+import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DiskSpaceMonitorDriver extends AbstractDriver  {
+public class DiskSpaceMonitorDriver extends AbstractDriver {
 
     private static final String DRIVER_NAME = "Disk Space Monitor";
 
-    private final DiskSpaceMonitor diskSpaceMonitor;
+    @Inject
+    private DiskSpaceMonitor diskSpaceMonitor;
 
     public static void main(String[] args) {
-        DbProvider dbProvider = new DbProvider();
-        AlertProvider alertProvider = new AlertProvider();
-        DiskSpaceMonitor diskSpaceMonitor = new DiskSpaceMonitor(dbProvider, alertProvider);
-        (new DiskSpaceMonitorDriver(diskSpaceMonitor, alertProvider)).execute();
-    }
-
-    public DiskSpaceMonitorDriver(DiskSpaceMonitor diskSpaceMonitor, AlertProvider alertProvider) {
-        super(alertProvider);
-        this.diskSpaceMonitor = diskSpaceMonitor;
+        DiskSpaceMonitorDriver driver = CryptoBotModule.INJECTOR.getInstance(DiskSpaceMonitorDriver.class);
+        driver.execute();
     }
 
     @Override

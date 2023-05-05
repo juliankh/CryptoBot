@@ -5,7 +5,8 @@ import com.cb.jms.common.JmsPublisher;
 import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.cb.processor.BatchProcessor;
-import lombok.SneakyThrows;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -14,16 +15,29 @@ import org.knowm.xchange.dto.marketdata.OrderBook;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static com.cb.module.BindingName.JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE;
+import static com.cb.module.BindingName.JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE;
+
 @Slf4j
 public class KrakenOrderBookBridgeProcessor {
 
-    private final BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor;
-    private final JmsPublisher<KrakenOrderBookBatch> jmsPublisher;
+    @Inject
+    private BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor;
 
-    @SneakyThrows
-    public KrakenOrderBookBridgeProcessor(BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor, JmsPublisher<KrakenOrderBookBatch> jmsPublisher) {
-        this.batchProcessor = batchProcessor;
-        this.jmsPublisher = jmsPublisher;
+    @Inject
+    @Named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE)
+    private String jmsExchange;
+
+    @Inject
+    @Named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE)
+    private String jmsQueue;
+
+    @Inject
+    private JmsPublisher jmsPublisher;
+
+    public void initialize(int batchSize) {
+        batchProcessor.initialize(batchSize);
+        jmsPublisher.initialize(jmsExchange, jmsQueue);
     }
 
     public void process(OrderBook orderBook, CurrencyPair currencyPair, String process) {

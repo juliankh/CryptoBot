@@ -1,23 +1,18 @@
 package com.cb.driver.kraken;
 
-import com.cb.alert.AlertProvider;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbProvider;
+import com.cb.db.DbReadOnlyProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
-import com.cb.jms.common.JmsPublisher;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
-import com.cb.model.kraken.jms.KrakenOrderBook;
-import com.cb.model.kraken.jms.KrakenOrderBookBatch;
-import com.cb.processor.BatchProcessor;
+import com.cb.module.CryptoBotModule;
 import com.cb.processor.kraken.KrakenOrderBookBridgeProcessor;
-import com.cb.property.CryptoProperties;
+import com.google.inject.Inject;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;
 import io.reactivex.disposables.Disposable;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.ExchangeSpecification;
@@ -35,49 +30,42 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     private static final int SLEEP_SECS_RECONNECT = 15;
     private static final int ORDER_BOOK_DEPTH = 500; // TODO: confirm that all currency pairs have this much depth
 
-    private final KrakenOrderBookBridgeProcessor processor;
-    private final CurrencyPair currencyPair;
-    private final int maxSecsBetweenUpdates;
+    @Inject
+    private DbReadOnlyProvider dbReadOnlyProvider;
+
+    @Inject
+    private CurrencyResolver currencyResolver;
+
+    @Inject
+    private KrakenOrderBookBridgeProcessor processor;
+
+    private CurrencyPair currencyPair;
+    private String driverName;
+    private int maxSecsBetweenUpdates;
+
     private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
-    private final String driverName;
 
     private Throwable throwable;
 
     public static void main(String[] args) {
+        KrakenOrderBookBridgeDriver driver = CryptoBotModule.INJECTOR.getInstance(KrakenOrderBookBridgeDriver.class);
+        driver.initialize(args);
+        driver.execute();
+    }
+
+    public void initialize(String[] args) {
         KrakenOrderBookBridgeArgsConverter argsConverter = new KrakenOrderBookBridgeArgsConverter(args);
+        currencyPair = argsConverter.getCurrencyPair();
+        String currencyToken = currencyResolver.upperCaseToken(currencyPair, "-");
         String driverToken = argsConverter.getDriverToken();
-        CurrencyPair currencyPair = argsConverter.getCurrencyPair();
-        KrakenBridgeOrderBookConfig config = currencyPairConfig(currencyPair);
+        driverName = "Kraken OrderBook Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverToken) ? "" : " " + driverToken);
+        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbReadOnlyProvider.retrieveKrakenBridgeOrderBookConfig();
+        dbReadOnlyProvider.cleanup();
+        KrakenBridgeOrderBookConfig config = configMap.get(currencyPair);
         log.info("Config: " + config);
         int batchSize = config.getBatchSize();
-        int maxSecsBetweenUpdates = config.getSecsTimeout();
-        BatchProcessor<KrakenOrderBook, KrakenOrderBookBatch> batchProcessor = new BatchProcessor<>(batchSize);
-        CryptoProperties properties = new CryptoProperties();
-        String jmsDestination = properties.jmsKrakenOrderBookSnapshotQueueName();
-        String jmsExchange = properties.jmsKrakenOrderBookSnapshotQueueExchange();
-        JmsPublisher<KrakenOrderBookBatch> jmsPublisher = new JmsPublisher<>(jmsDestination, jmsExchange);
-        KrakenOrderBookBridgeProcessor processor = new KrakenOrderBookBridgeProcessor(batchProcessor, jmsPublisher);
-        AlertProvider alertProvider = new AlertProvider();
-        (new KrakenOrderBookBridgeDriver(driverToken, currencyPair, processor, maxSecsBetweenUpdates, alertProvider)).execute();
-    }
-
-    @SneakyThrows
-    public KrakenOrderBookBridgeDriver(String driverNameToken, CurrencyPair currencyPair, KrakenOrderBookBridgeProcessor processor, int maxSecsBetweenUpdates, AlertProvider alertProvider) {
-        super(alertProvider);
-        this.currencyPair = currencyPair;
-        this.processor = processor;
-        this.maxSecsBetweenUpdates = maxSecsBetweenUpdates;
-
-        CurrencyResolver tokenResolver = new CurrencyResolver();
-        String currencyToken = tokenResolver.upperCaseToken(currencyPair, "-");
-
-        this.driverName = "Kraken OrderBook Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverNameToken) ? "" : " " + driverNameToken);
-    }
-
-    private static KrakenBridgeOrderBookConfig currencyPairConfig(CurrencyPair currencyPair) {
-        DbProvider dbProvider = new DbProvider();
-        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbProvider.retrieveKrakenBridgeOrderBookConfig();
-        return configMap.get(currencyPair);
+        maxSecsBetweenUpdates = config.getSecsTimeout();
+        processor.initialize(batchSize);
     }
 
     @Override

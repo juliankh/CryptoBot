@@ -1,29 +1,30 @@
 package com.cb.property;
 
 import com.cb.encryption.EncryptionProvider;
+import com.cb.module.CryptoBotModule;
 import lombok.SneakyThrows;
 
-import javax.inject.Singleton;
+import java.util.Properties;
 
-// TODO: make into a singleton
-@Singleton
-public class CryptoProperties extends CryptoPropertiesRaw {
+public class CryptoProperties {
+
+	private final Properties properties;
 
 	private final EncryptionProvider encryptionProvider;
-	
+
+	public CryptoProperties(Properties properties, EncryptionProvider encryptionProvider) {
+		this.properties = properties;
+		this.encryptionProvider = encryptionProvider;
+	}
+
 	@SneakyThrows
 	public static void main(String[] a) {
-		CryptoProperties properties = new CryptoProperties();
+		CryptoProperties properties = CryptoBotModule.INJECTOR.getInstance(CryptoProperties.class);
 		System.out.println(properties.jmsBrokerHost());
 		System.out.println(properties.jmsBrokerVhost());
 		System.out.println(properties.jmsBrokerPortAmqp());
 		System.out.println(properties.jmsBrokerPortHttp());
 		System.out.println(properties.jmsKrakenOrderBookSnapshotErrorQueueName());
-	}
-	
-	public CryptoProperties() {
-		super();
-		this.encryptionProvider = new EncryptionProvider();
 	}
 
 	public String writeDbUser() {
@@ -76,6 +77,17 @@ public class CryptoProperties extends CryptoPropertiesRaw {
 
 	public String alertSmtpPort() {
 		return decryptedProperty("encrypted.alert.smtp.port");
+	}
+
+	public Properties emailProperties() {
+		// TODO: perhaps make this into a class field that is lazy-loaded and subsequently reused (and make this method synchronized)
+		Properties emailProperties = new Properties();
+		emailProperties.put("mail.smtp.host", alertSmtpHost());
+		emailProperties.put("mail.smtp.socketFactory.port", alertSmtpSocketFactoryPort());
+		emailProperties.put("mail.smtp.socketFactory.class", alertSmtpSocketFactoryClass());
+		emailProperties.put("mail.smtp.auth", alertSmtpAuth());
+		emailProperties.put("mail.smtp.port", alertSmtpPort());
+		return emailProperties;
 	}
 
 	public String jmsBrokerHost() {

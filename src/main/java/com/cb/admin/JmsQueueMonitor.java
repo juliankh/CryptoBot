@@ -1,48 +1,56 @@
 package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
-import com.cb.db.DbProvider;
+import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.DbWriteProvider;
 import com.cb.model.config.QueueMonitorConfig;
-import com.cb.property.CryptoProperties;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.rabbitmq.http.client.Client;
-import com.rabbitmq.http.client.ClientParameters;
 import com.rabbitmq.http.client.domain.QueueInfo;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.cb.module.BindingName.JMS_VHOST;
+
 @Slf4j
-@RequiredArgsConstructor
+@Singleton
 public class JmsQueueMonitor {
 
-    private final CryptoProperties properties;
-    private final DbProvider dbProvider;
-    private final AlertProvider alertProvider;
+    @Inject
+    private Client jmsClient;
 
-    public static void main(String[] args) {
-        (new JmsQueueMonitor(new CryptoProperties(), new DbProvider(), new AlertProvider())).monitor();
-    }
+    @Inject
+    private DbReadOnlyProvider dbReadOnlyProvider;
+
+    @Inject
+    private DbWriteProvider dbWriteProvider;
+
+    @Inject
+    private AlertProvider alertProvider;
+
+    @Inject
+    @Named(JMS_VHOST)
+    private String jmsVhost;
 
     public void monitor() {
-        Client c = client();
-        List<QueueMonitorConfig> queueMonitorConfigs = dbProvider.retrieveQueueMonitorConfig();
+        List<QueueMonitorConfig> queueMonitorConfigs = dbReadOnlyProvider.retrieveQueueMonitorConfig();
         log.info("Configs:\n\t" + queueMonitorConfigs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
-        queueMonitorConfigs.parallelStream().forEach(config -> monitorQueue(c, config));
+        queueMonitorConfigs.parallelStream().forEach(this::monitorQueue);
     }
 
-    public void monitorQueue(Client c, QueueMonitorConfig config) {
+    public void monitorQueue(QueueMonitorConfig config) {
         String queue = config.getQueueName();
         int maxNumMessages = config.getMessageLimit();
-        String vhost = properties.jmsBrokerVhost();
-        QueueInfo queueInfo = c.getQueue(vhost, queue);
+        QueueInfo queueInfo = jmsClient.getQueue(jmsVhost, queue);
         long messages = queueInfo.getTotalMessages();
         long consumers = queueInfo.getConsumerCount();
         monitorQueue(queue, messages, maxNumMessages);
-        dbProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
+        dbWriteProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
     }
 
     public void monitorQueue(String queue, long messages, long maxNumMessages) {
@@ -55,19 +63,10 @@ public class JmsQueueMonitor {
         }
     }
 
-    @SneakyThrows
-    public Client client() {
-        String host = properties.jmsBrokerHost();
-        int port = properties.jmsBrokerPortHttp();
-        String baseUrl = "http://" + host + ":" + port + "/api/";
-        String username = properties.jmsUsername();
-        String password = properties.jmsPassword();
-        return new Client(new ClientParameters().url(baseUrl).username(username).password(password));
-    }
-
     public void cleanup() {
         log.info("Cleaning up");
-        dbProvider.cleanup();
+        dbReadOnlyProvider.cleanup();
+        dbWriteProvider.cleanup();
     }
 
 }

@@ -1,28 +1,22 @@
 package com.cb.driver.admin;
 
 import com.cb.admin.DataAgeMonitor;
-import com.cb.alert.AlertProvider;
-import com.cb.db.DbProvider;
 import com.cb.driver.AbstractDriver;
+import com.cb.module.CryptoBotModule;
+import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DataAgeMonitorDriver extends AbstractDriver  {
+public class DataAgeMonitorDriver extends AbstractDriver {
 
     private static final String DRIVER_NAME = "Data Age Monitor";
 
-    private final DataAgeMonitor dataAgeMonitor;
+    @Inject
+    private DataAgeMonitor dataAgeMonitor;
 
     public static void main(String[] args) {
-        DbProvider dbProvider = new DbProvider();
-        AlertProvider alertProvider = new AlertProvider();
-        DataAgeMonitor dataAgeMonitor = new DataAgeMonitor(dbProvider, alertProvider);
-        (new DataAgeMonitorDriver(dataAgeMonitor, alertProvider)).execute();
-    }
-
-    public DataAgeMonitorDriver(DataAgeMonitor dataAgeMonitor, AlertProvider alertProvider) {
-        super(alertProvider);
-        this.dataAgeMonitor = dataAgeMonitor;
+        DataAgeMonitorDriver driver = CryptoBotModule.INJECTOR.getInstance(DataAgeMonitorDriver.class);
+        driver.execute();
     }
 
     @Override

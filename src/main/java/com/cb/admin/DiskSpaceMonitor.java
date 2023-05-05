@@ -2,28 +2,33 @@ package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
 import com.cb.common.util.NumberUtils;
-import com.cb.db.DbProvider;
+import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.MiscConfigName;
 import com.cb.model.config.MiscConfig;
-import lombok.RequiredArgsConstructor;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.Map;
 
 @Slf4j
-@RequiredArgsConstructor
+@Singleton
 public class DiskSpaceMonitor {
 
-    private final DbProvider dbProvider;
-    private final AlertProvider alertProvider;
+    @Inject
+    private DbReadOnlyProvider dbReadOnlyProvider;
+
+    @Inject
+    private AlertProvider alertProvider;
 
     public void monitor() {
         File f = new File("/");
         long totalSpace = f.getTotalSpace();
         long usableSpace = f.getFreeSpace();
         double usableRatio = usableRatio(totalSpace, usableSpace);
-        Map<String, MiscConfig> configMap = dbProvider.miscConfig();
-        MiscConfig config = configMap.get(DbProvider.SINGLE_VALUE_CONFIG_NAME_FREE_DISK_SPACE_THRESHOLD_PERCENT);
+        Map<String, MiscConfig> configMap = dbReadOnlyProvider.miscConfig();
+        MiscConfig config = configMap.get(MiscConfigName.FREE_DISK_SPACE_THRESHOLD_PERCENT);
         double percentThreshold = config.getValue();
         alertIfAboveLimit(usableRatio, percentThreshold);
     }
@@ -47,7 +52,7 @@ public class DiskSpaceMonitor {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbProvider.cleanup();
+        dbReadOnlyProvider.cleanup();
     }
 
 }

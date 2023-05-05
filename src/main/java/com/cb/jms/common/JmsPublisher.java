@@ -5,17 +5,17 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 
-public class JmsPublisher<T extends Serializable> extends AbstractJmsComponent {
+public class JmsPublisher extends AbstractJmsComponent {
 
-    private final String exchange;
+    private String exchange;
 
-    public JmsPublisher(String destination, String exchange) {
-        super(destination);
+    public void initialize(String exchange, String destination) {
         this.exchange = exchange;
+        super.initialize(destination);
     }
 
     @SneakyThrows
-    public void publish(T payload) {
+    public void publish(Serializable payload) {
         channel.basicPublish(exchange, destination, null, SerializationUtils.serialize(payload));
     }
 

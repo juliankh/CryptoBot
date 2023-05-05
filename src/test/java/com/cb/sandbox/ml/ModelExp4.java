@@ -1,9 +1,8 @@
 package com.cb.sandbox.ml;
 
-import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbProvider;
+import com.cb.db.DbReadOnlyProvider;
 import com.cb.model.CbOrderBook;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,7 @@ import java.util.List;
 @Slf4j
 public class ModelExp4 {
 
-    private final ObjectConverter objectConverter = new ObjectConverter(new CurrencyResolver());
+    private final ObjectConverter objectConverter = new ObjectConverter();
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -45,10 +44,10 @@ public class ModelExp4 {
 
     public void doStuff() {
         // get data from db
-        DbProvider dbProvider = new DbProvider();
+        DbReadOnlyProvider dbReadOnlyProvider = new DbReadOnlyProvider();
         Instant from = TimeUtils.instant(2023, Month.APRIL, 12, 17, 30, 45);
         Instant to = TimeUtils.instant(2023, Month.APRIL, 12, 17, 32, 45);
-        List<CbOrderBook> orderBooks = dbProvider.retrieveKrakenOrderBooks(CurrencyPair.BTC_USDT, from, to);
+        List<CbOrderBook> orderBooks = dbReadOnlyProvider.retrieveKrakenOrderBooks(CurrencyPair.BTC_USDT, from, to);
 
         // generate model
         Pair<MultiLayerNetwork, Long> result = generateAndPersistModel(orderBooks);

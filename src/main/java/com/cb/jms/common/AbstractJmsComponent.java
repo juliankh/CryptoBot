@@ -1,23 +1,25 @@
 package com.cb.jms.common;
 
-import com.cb.property.CryptoProperties;
+import com.google.inject.Inject;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO: if there's ever a use case where a process will use more then 1 instance of this class, then change this so that connection and channel aren't created here but are passed in
 @Slf4j
 public abstract class AbstractJmsComponent {
 
-    protected final Connection connection;
-    protected final Channel channel;
-    protected final String destination;
+    @Inject
+    private ConnectionFactory jmsConnectionFactory;
 
-    public AbstractJmsComponent(String destination) {
+    protected Connection connection;
+    protected Channel channel;
+    protected String destination;
+
+    public void initialize(String destination) {
         try {
-            this.connection = connectionFactory().newConnection();
+            this.connection = jmsConnectionFactory.newConnection();
             this.channel = connection.createChannel();
         } catch (Exception e) {
             cleanup();
@@ -43,16 +45,6 @@ public abstract class AbstractJmsComponent {
                 log.error("Problem while closing JMS Channel.  Logging, but otherwise ignoring.", e);
             }
         }
-    }
-
-    private ConnectionFactory connectionFactory() {
-        CryptoProperties properties = new CryptoProperties();
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(properties.jmsBrokerHost());
-        factory.setPort(properties.jmsBrokerPortAmqp());
-        factory.setUsername(properties.jmsUsername());
-        factory.setPassword(properties.jmsPassword());
-        return factory;
     }
 
 }

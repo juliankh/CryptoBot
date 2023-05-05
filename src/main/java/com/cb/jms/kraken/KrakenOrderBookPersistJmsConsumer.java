@@ -4,11 +4,11 @@ import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbProvider;
+import com.cb.db.DbWriteProvider;
 import com.cb.jms.common.AbstractJmsConsumer;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
-import com.cb.property.CryptoProperties;
+import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -19,29 +19,22 @@ import java.util.Collection;
 @Slf4j
 public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
 
-    private final CurrencyResolver currencyResolver;
-    private final ObjectConverter objectConverter;
-    private final DbProvider dbProvider;
+    @Inject
+    private CurrencyResolver currencyResolver;
 
-    public KrakenOrderBookPersistJmsConsumer(CurrencyResolver currencyResolver, ObjectConverter objectConverter, DbProvider dbProvider) {
-        super(destination());
-        this.currencyResolver = currencyResolver;
-        this.objectConverter = objectConverter;
-        this.dbProvider = dbProvider;
-    }
+    @Inject
+    private ObjectConverter objectConverter;
 
-    private static String destination() {
-        CryptoProperties properties = new CryptoProperties();
-        return properties.jmsKrakenOrderBookSnapshotQueueName();
-    }
+    @Inject
+    private DbWriteProvider dbWriteProvider;
 
     @Override
     protected void customProcess(byte[] payload) {
         KrakenOrderBookBatch batch = SerializationUtils.deserialize(payload);
         CurrencyPair batchCurrencyPair = batch.getCurrencyPair();
-        Collection<DbKrakenOrderBook> orderBooks = batch.getOrderbooks().parallelStream().map(orderbook -> objectConverter.convertToKrakenOrderBook(orderbook, dbProvider.getReadConnection())).toList();
+        Collection<DbKrakenOrderBook> orderBooks = batch.getOrderbooks().parallelStream().map(orderbook -> objectConverter.convertToKrakenOrderBook(orderbook, dbWriteProvider.getWriteConnection())).toList();
         Instant start = Instant.now();
-        dbProvider.insertKrakenOrderBooks(orderBooks, batchCurrencyPair);
+        dbWriteProvider.insertKrakenOrderBooks(orderBooks, batchCurrencyPair);
         Instant end = Instant.now();
         double insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size());
         String currencyPairToken = currencyResolver.upperCaseToken(batchCurrencyPair, "-");
@@ -50,7 +43,8 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbProvider.cleanup();
+        dbWriteProvider.cleanup();
+        super.cleanup();
     }
 
 }

@@ -2,6 +2,7 @@ package com.cb.jms.common;
 
 import com.cb.alert.AlertProvider;
 import com.cb.common.util.TimeUtils;
+import com.google.inject.Inject;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ShutdownSignalException;
@@ -13,14 +14,10 @@ import java.time.Instant;
 @Slf4j
 public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
 
-    private final AlertProvider alertProvider;
+    @Inject
+    private AlertProvider alertProvider;
 
     private int numMessagesReceived = 0;
-
-    public AbstractJmsConsumer(String destination) {
-        super(destination);
-        this.alertProvider = new AlertProvider();
-    }
 
     @SneakyThrows
     public void engageConsumption() {
