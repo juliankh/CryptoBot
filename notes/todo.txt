@@ -2,6 +2,10 @@ TODO:
 -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
 -add to orderbook snapshot tables: spread size (abs), spread size (% of midprice)
 -how to make jms msgs persist (like filestore) even after restarting RabbitMQ
+-ensure ML uses gpu processors
+
+Potential improvements
+-data for ML not querried from db, but is gotten from cache that is updated in live fashion by consuming from jms
 
 Test/Confirm
 -the best orderbook depth to use (500?  100?  10?)

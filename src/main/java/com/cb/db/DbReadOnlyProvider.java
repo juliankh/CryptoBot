@@ -1,9 +1,7 @@
 package com.cb.db;
 
-import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
@@ -23,13 +21,14 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.DB_READ_CONNECTION;
 
 @Slf4j
-public class DbReadOnlyProvider {
+public class DbReadOnlyProvider extends AbstractDbProvider {
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
@@ -47,18 +46,6 @@ public class DbReadOnlyProvider {
     @Inject
     private QueryRunner queryRunner;
 
-    @Inject
-    private ObjectConverter objectConverter;
-
-    @Inject
-    private KrakenTableNameResolver krakenTableNameResolver;
-
-    public static void main(String[] args) {
-        DbReadOnlyProvider dbProvider = new DbReadOnlyProvider();
-        List<DataAgeMonitorConfig> dbDataAgeMonitorConfigs = dbProvider.retrieveDataAgeMonitorConfig();
-        dbDataAgeMonitorConfigs.parallelStream().forEach(System.out::println);
-    }
-
     public List<CbOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Instant from, Instant to) {
         List<DbKrakenOrderBook> dbOrderBooks = retrieveKrakenOrderBooks(currencyPair, Timestamp.from(from), Timestamp.from(to));
         return dbOrderBooks.stream().map(objectConverter::convertToKrakenOrderBook).toList();
@@ -74,6 +61,21 @@ public class DbReadOnlyProvider {
             return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), tableName);
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Kraken OrderBooks for CurrencyPair [" + currencyPair + "] between [" + from + "] and [" + to + "]", e);
+        }
+    }
+
+    public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Set<Long> ids) {
+        try {
+            String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
+            String questionMarkString = questionMarks(ids.size());
+            Long[] idArray = ids.toArray(new Long[0]);
+            String sql = " SELECT * " +
+                    " FROM " + tableName +
+                    " WHERE id in (" + questionMarkString + ")" +
+                    " ORDER BY received_nanos";
+            return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, idArray), tableName);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Kraken OrderBooks for CurrencyPair [" + currencyPair + "] and Set of Ids [" + ids.size() + " ids]", e);
         }
     }
 

@@ -28,7 +28,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
     private static final int SLEEP_SECS_RECONNECT = 15;
-    private static final int ORDER_BOOK_DEPTH = 500; // TODO: confirm that all currency pairs have this much depth
+    private static final int ORDER_BOOK_DEPTH = 500;
 
     @Inject
     private DbReadOnlyProvider dbReadOnlyProvider;

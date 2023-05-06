@@ -1,5 +1,6 @@
 package com.cb.injection.module;
 
+import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.provider.KrakenOrderBookPersistJmsConsumerProvider;
 import com.cb.injection.provider.ListProvider;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
@@ -52,7 +53,7 @@ public class MainModule extends AbstractModule {
         bindConstant().annotatedWith(Names.named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE)).to(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName());
         bindConstant().annotatedWith(Names.named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE)).to(cryptoProperties.jmsKrakenOrderBookSnapshotQueueExchange());
 
-        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), 50));
+        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), 60));
     }
 
     @Provides

@@ -1,9 +1,7 @@
 package com.cb.db;
 
-import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.kraken.KrakenTableNameResolver;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.google.inject.Inject;
@@ -22,7 +20,10 @@ import org.knowm.xchange.currency.CurrencyPair;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Getter
-public class DbWriteProvider {
+public class DbWriteProvider extends AbstractDbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
@@ -51,12 +52,6 @@ public class DbWriteProvider {
 
     @Inject
     private QueryRunner queryRunner;
-
-    @Inject
-    private ObjectConverter objectConverter;
-
-    @Inject
-    private KrakenTableNameResolver krakenTableNameResolver;
 
     public int prune(String table, String column, int hoursLimit) {
         try {
@@ -87,10 +82,6 @@ public class DbWriteProvider {
         String rateString = NumberUtils.numberFormat(queryRate);
         log.info("Updating/Deleting [" + rowcountString + "] of [" + itemType + "] took [" + durationString + "] at rate of [" + rateString + "/sec]");
         return rowcount;
-    }
-
-    public String questionMarks(int numQuestionMarks) {
-        return String.join(",", Collections.nCopies(numQuestionMarks, "?"));
     }
 
     public void insertKrakenOrderBooks(Collection<DbKrakenOrderBook> orderBooks, CurrencyPair currencyPair) {
