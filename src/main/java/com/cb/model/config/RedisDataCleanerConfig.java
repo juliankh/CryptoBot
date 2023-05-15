@@ -9,11 +9,10 @@ import lombok.experimental.Accessors;
 @Setter
 @ToString
 @Accessors(chain = true)
-public class DataCleanerConfig {
+public class RedisDataCleanerConfig {
 
     private long id;
-    private String tableName;
-    private String columnName;
-    private int hoursBack;
+    private String redisKey;
+    private int minsBack;
 
 }

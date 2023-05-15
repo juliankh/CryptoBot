@@ -1,6 +1,5 @@
 package com.cb.db;
 
-import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
@@ -24,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.DB_WRITE_CONNECTION;
@@ -39,7 +37,7 @@ public class DbWriteProvider extends AbstractDbProvider {
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
-    private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
+    private static final BeanListHandler<DbRedisDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbRedisDataCleanerConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
     private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
     private static final BeanListHandler<DbMiscConfig> BEAN_LIST_HANDLER_MISC_CONFIG = new BeanListHandler<>(DbMiscConfig.class);
@@ -53,35 +51,12 @@ public class DbWriteProvider extends AbstractDbProvider {
     @Inject
     private QueryRunner queryRunner;
 
-    public int prune(String table, String column, int hoursLimit) {
+    public long prune(String table, String column, int hoursLimit) {
         try {
-            return runTimedUpdate(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + hoursLimit + " hours';"), table);
+            return TimeUtils.runTimedCallable_NumberedOutput(() -> queryRunner.update(writeConnection, "DELETE FROM " + table + " WHERE " + column + " < NOW() - INTERVAL '" + hoursLimit + " hours';"), "Updating/Deleting", table);
         } catch (Exception e) {
             throw new RuntimeException("Problem pruning table [" + table + "] using column [" + column + "] older than [" + hoursLimit + "] hours", e);
         }
-    }
-
-    @SneakyThrows
-    private <T> List<T> runTimedQuery(Callable<List<T>> queryRunner, String itemType) {
-        Instant start = Instant.now();
-        List<T> result = queryRunner.call();
-        Instant end = Instant.now();
-        double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
-        log.info("Retrieving [" + NumberUtils.numberFormat(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
-        return result;
-    }
-
-    @SneakyThrows
-    private int runTimedUpdate(Callable<Integer> queryRunner, String itemType) {
-        Instant start = Instant.now();
-        int rowcount = queryRunner.call();
-        Instant end = Instant.now();
-        double queryRate = TimeUtils.ratePerSecond(start, end, rowcount);
-        String rowcountString = NumberUtils.numberFormat(rowcount);
-        String durationString = TimeUtils.durationMessage(start, end);
-        String rateString = NumberUtils.numberFormat(queryRate);
-        log.info("Updating/Deleting [" + rowcountString + "] of [" + itemType + "] took [" + durationString + "] at rate of [" + rateString + "/sec]");
-        return rowcount;
     }
 
     public void insertKrakenOrderBooks(Collection<DbKrakenOrderBook> orderBooks, CurrencyPair currencyPair) {
@@ -89,7 +64,7 @@ public class DbWriteProvider extends AbstractDbProvider {
             Object[][] payload = objectConverter.matrix(orderBooks);
             String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
             int[] rowCounts = queryRunner.batch(writeConnection,
-                    "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_nanos, bids_hash, asks_hash) DO NOTHING;",
+                    "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_micros, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_micros, bids_hash, asks_hash) DO NOTHING;",
                     payload);
             checkDupes(orderBooks, rowCounts);
         } catch (Exception e) {
@@ -139,7 +114,7 @@ public class DbWriteProvider extends AbstractDbProvider {
     Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> dupeOrderBooks(Collection<DbKrakenOrderBook> orderbooks) {
         Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> buckets = orderbooks
                 .parallelStream()
-                .collect(groupingBy(dbOrderBook -> Triple.of(dbOrderBook.getReceived_nanos(), dbOrderBook.getBids_hash(), dbOrderBook.getAsks_hash())));
+                .collect(groupingBy(dbOrderBook -> Triple.of(dbOrderBook.getReceived_micros(), dbOrderBook.getBids_hash(), dbOrderBook.getAsks_hash())));
         Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> bucketsWithMultipleItemsOnly = buckets.entrySet()
                 .parallelStream()
                 .filter(entry -> entry.getValue().size() > 1)

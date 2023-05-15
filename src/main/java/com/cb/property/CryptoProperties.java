@@ -20,99 +20,104 @@ public class CryptoProperties {
 	@SneakyThrows
 	public static void main(String[] a) {
 		CryptoProperties cryptoProperties = CryptoBotPropertiesModule.INJECTOR.getInstance(CryptoProperties.class);
-		System.out.println(cryptoProperties.jmsBrokerHost());
-		System.out.println(cryptoProperties.jmsBrokerVhost());
-		System.out.println(cryptoProperties.jmsBrokerPortAmqp());
-		System.out.println(cryptoProperties.jmsBrokerPortHttp());
-		System.out.println(cryptoProperties.jmsKrakenOrderBookSnapshotErrorQueueName());
+		System.out.println(cryptoProperties.redisHost());
+		System.out.println(cryptoProperties.redisPort());
 	}
 
 	public String writeDbUser() {
-		return decryptedProperty("encrypted.db.write.user");
+		return decryptedProperty("db.write.user");
 	}
 
 	public String writeDbPassword() {
-		return decryptedProperty("encrypted.db.write.password");
+		return decryptedProperty("db.write.password");
 	}
 
 	public String readDbUser() {
-		return decryptedProperty("encrypted.db.read.user");
+		return decryptedProperty("db.read.user");
 	}
 
 	public String readDbPassword() {
-		return decryptedProperty("encrypted.db.read.password");
+		return decryptedProperty("db.read.password");
 	}
 
 	public String dbConnectionUrl() {
-		return decryptedProperty("encrypted.db.connectionUrl");
+		return decryptedProperty("db.connectionUrl");
 	}
 
 	public String alertTextNum() {
-		return decryptedProperty("encrypted.alert.textNum");
+		return decryptedProperty("alert.textNum");
 	}
 	
 	public String alertEmail() {
-		return decryptedProperty("encrypted.alert.email");
+		return decryptedProperty("alert.email");
 	}
 
 	public String alertPassword() {
-		return decryptedProperty("encrypted.alert.password");
+		return decryptedProperty("alert.password");
 	}
 
 	public String alertSmtpHost() {
-		return decryptedProperty("encrypted.alert.smtp.host");
+		return decryptedProperty("alert.smtp.host");
 	}
 
 	public String alertSmtpSocketFactoryPort() {
-		return decryptedProperty("encrypted.alert.smtp.socketFactory.port");
+		return decryptedProperty("alert.smtp.socketFactory.port");
 	}
 
 	public String alertSmtpSocketFactoryClass() {
-		return decryptedProperty("encrypted.alert.smtp.socketFactory.class");
+		return decryptedProperty("alert.smtp.socketFactory.class");
 	}
 
 	public String alertSmtpAuth() {
-		return decryptedProperty("encrypted.alert.smtp.auth");
+		return decryptedProperty("alert.smtp.auth");
 	}
 
 	public String alertSmtpPort() {
-		return decryptedProperty("encrypted.alert.smtp.port");
+		return decryptedProperty("alert.smtp.port");
 	}
 
 	public String jmsBrokerHost() {
-		return decryptedProperty("encrypted.jms.broker.host");
+		return decryptedProperty("jms.broker.host");
 	}
 
 	public String jmsBrokerVhost() {
-		return decryptedProperty("encrypted.jms.broker.vhost");
+		return decryptedProperty("jms.broker.vhost");
 	}
 
 	public int jmsBrokerPortAmqp() {
-		return Integer.parseInt(decryptedProperty("encrypted.jms.broker.port.amqp"));
+		return Integer.parseInt(decryptedProperty("jms.broker.port.amqp"));
 	}
 
 	public int jmsBrokerPortHttp() {
-		return Integer.parseInt(decryptedProperty("encrypted.jms.broker.port.http"));
+		return Integer.parseInt(decryptedProperty("jms.broker.port.http"));
 	}
 
 	public String jmsUsername() {
-		return decryptedProperty("encrypted.jms.username");
+		return decryptedProperty("jms.username");
 	}
 
 	public String jmsPassword() {
-		return decryptedProperty("encrypted.jms.password");
+		return decryptedProperty("jms.password");
 	}
 	
 	public String jmsKrakenOrderBookSnapshotQueueName() {
-		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.name");
+		return decryptedProperty("jms.kraken.orderBook.snapshot.queue.name");
 	}
 
 	public String jmsKrakenOrderBookSnapshotErrorQueueName() {
-		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.error_queue.name");
+		return decryptedProperty("jms.kraken.orderBook.snapshot.error_queue.name");
 	}
 
 	public String jmsKrakenOrderBookSnapshotQueueExchange() {
-		return decryptedProperty("encrypted.jms.kraken.orderBook.snapshot.queue.exchange");
+		return decryptedProperty("jms.kraken.orderBook.snapshot.queue.exchange");
+	}
+
+	public String redisHost() {
+		return decryptedProperty("redis.host");
+	}
+
+	public int redisPort() {
+		return Integer.parseInt(decryptedProperty("redis.port"));
 	}
 
 	// private methods

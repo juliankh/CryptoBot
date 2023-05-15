@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS cb.kraken_orderbook_link_usd
     process varchar(256) NOT NULL,
     exchange_datetime timestamp with time zone NOT NULL,
     exchange_date date NOT NULL,
-    received_nanos bigint NOT NULL,
+    received_micros bigint NOT NULL,
     created timestamp with time zone NOT NULL,
     highest_bid_price numeric NOT NULL,
     highest_bid_volume numeric NOT NULL,
@@ -43,5 +43,5 @@ CREATE INDEX IF NOT EXISTS kraken_orderbook_link_usd_exchange_datetime_index
     TABLESPACE pg_default;
 
 CREATE UNIQUE INDEX IF NOT EXISTS kraken_orderbook_link_usd_unique_payload
-    ON cb.kraken_orderbook_link_usd USING btree (received_nanos DESC NULLS FIRST, bids_hash DESC NULLS FIRST, asks_hash DESC NULLS FIRST)
+    ON cb.kraken_orderbook_link_usd USING btree (received_micros DESC NULLS FIRST, bids_hash DESC NULLS FIRST, asks_hash DESC NULLS FIRST)
     TABLESPACE pg_default;

@@ -1,10 +1,14 @@
 package com.cb.common.util;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 @Slf4j
 public final class TimeUtils {
@@ -14,9 +18,12 @@ public final class TimeUtils {
     public static final long HOUR = 60 * MINUTE;
     public static final long DAY = 24 * HOUR;
 
-    public static long currentNanos() {
-        Instant now = Instant.now();
-        return now.getEpochSecond() * 1_000_000_000 + now.getNano();
+    public static long currentMicros() {
+        return micros(Instant.now());
+    }
+
+    public static long micros(Instant instant) {
+        return (instant.getEpochSecond() * 1_000_000_000 + instant.getNano()) / 1000;
     }
 
     public static void sleepQuietlyForSecs(int secs) {
@@ -58,6 +65,46 @@ public final class TimeUtils {
 
     public static Instant instant(int year, Month month, int dayOfMonth, int hour, int minute, int second, ZoneId zone) {
         return LocalDateTime.of(year, month, dayOfMonth, hour, minute, second).atZone(zone).toInstant();
+    }
+
+    @SneakyThrows
+    public static <T> T runTimedCallable_ObjectOutput(Callable<T> callable, String action) {
+        Instant start = Instant.now();
+        T result = callable.call();
+        Instant end = Instant.now();
+        log.info(action + " took [" + TimeUtils.durationMessage(start, end) + "]");
+        return result;
+    }
+
+    @SneakyThrows
+    public static long runTimedCallable_NumberedOutput(Callable<Number> callable, String action, String itemType) {
+        Instant start = Instant.now();
+        Number countRaw = callable.call();
+        long count = countRaw.longValue();
+        Instant end = Instant.now();
+        double queryRate = TimeUtils.ratePerSecond(start, end, count);
+        log.info(action + " [" + NumberUtils.numberFormat(count) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
+        return count;
+    }
+
+    @SneakyThrows
+    public static <T extends Collection<?>> T runTimedCallable_CollectionOutput(Callable<T> callable, String action, String itemType) {
+        Instant start = Instant.now();
+        T result = callable.call();
+        Instant end = Instant.now();
+        double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
+        log.info(action + " [" + NumberUtils.numberFormat(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
+        return result;
+    }
+
+    @SneakyThrows
+    public static <K, V> Map<K, V> runTimedCallable_MapOutput(Callable<Map<K, V>> callable, String action, String itemType) {
+        Instant start = Instant.now();
+        Map<K, V> result = callable.call();
+        Instant end = Instant.now();
+        double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
+        log.info(action + " [" + NumberUtils.numberFormat(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
+        return result;
     }
 
 }

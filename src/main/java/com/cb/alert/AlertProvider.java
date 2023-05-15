@@ -18,7 +18,7 @@ import static com.cb.injection.BindingName.*;
 @Singleton
 public class AlertProvider {
 
-	public static boolean DEFAULT_IS_ON = true;
+	public static boolean DEFAULT_IS_ON = false; // TODO: set to true
 
 	@Inject
 	@Named(ALERT_EMAIL)

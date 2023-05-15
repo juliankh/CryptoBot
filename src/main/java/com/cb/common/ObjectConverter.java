@@ -4,9 +4,12 @@ import com.cb.db.DbUtils;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
+import com.cb.model.config.archived.DataCleanerConfig;
 import com.cb.model.config.db.*;
+import com.cb.model.config.db.archived.DbDataCleanerConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.SneakyThrows;
@@ -19,8 +22,12 @@ import org.knowm.xchange.dto.trade.LimitOrder;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -28,6 +35,9 @@ public class ObjectConverter {
 
     @Inject
     private CurrencyResolver currencyResolver;
+
+    @Inject
+    private Gson gson;
 
     public double[] primitiveArray(Collection<Double> collection) {
         return ArrayUtils.toPrimitive(collection.toArray(new Double[0]));
@@ -71,6 +81,13 @@ public class ObjectConverter {
                 .setHoursBack(rawConfig.getHours_back());
     }
 
+    public RedisDataCleanerConfig convertToRedisDataCleanerConfig(DbRedisDataCleanerConfig rawConfig) {
+        return new RedisDataCleanerConfig()
+                .setId(rawConfig.getId())
+                .setRedisKey(rawConfig.getRedis_key())
+                .setMinsBack(rawConfig.getMins_back());
+    }
+
     public QueueMonitorConfig convertToQueueMonitorConfig(DbQueueMonitorConfig rawConfig) {
         return new QueueMonitorConfig()
                 .setId(rawConfig.getId())
@@ -94,23 +111,37 @@ public class ObjectConverter {
     }
 
     @SneakyThrows
-    public CbOrderBook convertToKrakenOrderBook(DbKrakenOrderBook input) {
+    public CbOrderBook convertToDbKrakenOrderBook(DbKrakenOrderBook input) {
         return new CbOrderBook()
                 .setExchangeDatetime(input.getExchange_datetime().toInstant())
                 .setExchangeDate(input.getExchange_date().toLocalDate())
-                .setReceivedNanos(input.getReceived_nanos())
+                .setReceivedNanos(input.getReceived_micros())
                 .setBids(DbUtils.doubleMapFromArray(input.getBids()))
                 .setAsks(DbUtils.doubleMapFromArray(input.getAsks()));
     }
 
-    public DbKrakenOrderBook convertToKrakenOrderBook(KrakenOrderBook krakenOrderBook, Connection connection) {
+    public List<CbOrderBook> convertToCbOrderBooks(Collection<KrakenOrderBook> krakenOrderBooks) {
+        return krakenOrderBooks.parallelStream().map(this::convertToCbOrderBook).toList();
+    }
+
+    public CbOrderBook convertToCbOrderBook(KrakenOrderBook krakenOrderBook) {
+        OrderBook orderBook = krakenOrderBook.getOrderBook();
+        return new CbOrderBook()
+                .setExchangeDatetime(orderBook.getTimeStamp().toInstant())
+                .setExchangeDate(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()))
+                .setReceivedNanos(krakenOrderBook.getMicroSeconds())
+                .setBids(quoteTreeMap(orderBook.getBids()))
+                .setAsks(quoteTreeMap(orderBook.getAsks()));
+    }
+
+    public DbKrakenOrderBook convertToDbKrakenOrderBook(KrakenOrderBook krakenOrderBook, Connection connection) {
         OrderBook orderBook = krakenOrderBook.getOrderBook();
 
         List<LimitOrder> orderBookBids = orderBook.getBids();
         List<LimitOrder> orderBookAsks = orderBook.getAsks();
 
-        List<Pair<Double, Double>> bids = quotes(orderBookBids);
-        List<Pair<Double, Double>> asks = quotes(orderBookAsks);
+        List<Pair<Double, Double>> bids = quoteList(orderBookBids);
+        List<Pair<Double, Double>> asks = quoteList(orderBookAsks);
 
         int bidsHash = bids.hashCode();
         int asksHash = asks.hashCode();
@@ -125,7 +156,7 @@ public class ObjectConverter {
         result.setProcess(krakenOrderBook.getProcess());
         result.setExchange_datetime(new Timestamp(orderBook.getTimeStamp().getTime()));
         result.setExchange_date(new java.sql.Date(orderBook.getTimeStamp().getTime()));
-        result.setReceived_nanos(krakenOrderBook.getSecondNanos());
+        result.setReceived_micros(krakenOrderBook.getMicroSeconds());
         result.setHighest_bid_price(highestBid.getLeft());
         result.setHighest_bid_volume(highestBid.getRight());
         result.setLowest_ask_price(lowestAsk.getLeft());
@@ -137,8 +168,16 @@ public class ObjectConverter {
         return result;
     }
 
-    public List<Pair<Double, Double>> quotes(List<LimitOrder> limitOrders) {
-        return limitOrders.parallelStream().map(this::quantityAndPricePair).toList();
+    public Map<String, Double> convertToRedisPayload(Collection<CbOrderBook> orderBooks) {
+        return orderBooks.parallelStream().collect(Collectors.toMap(gson::toJson, orderbook -> (double)(orderbook.getReceivedNanos()), (a,b)->a));
+    }
+
+    public List<Pair<Double, Double>> quoteList(List<LimitOrder> limitOrders) {
+        return limitOrders.parallelStream().map(this::priceAndQuantity).toList();
+    }
+
+    public TreeMap<Double, Double> quoteTreeMap(List<LimitOrder> limitOrders) {
+        return limitOrders.parallelStream().collect(Collectors.toMap(limitOrder -> limitOrder.getLimitPrice().doubleValue(), limitOrder -> limitOrder.getOriginalAmount().doubleValue(), (a,b)->a, TreeMap::new));
     }
 
     @SneakyThrows
@@ -148,7 +187,7 @@ public class ObjectConverter {
         return connection.createArrayOf(arrayName, pairArray);
     }
 
-    private Pair<Double, Double> quantityAndPricePair(LimitOrder limitOrder) {
+    public Pair<Double, Double> priceAndQuantity(LimitOrder limitOrder) {
         return Pair.of(limitOrder.getLimitPrice().doubleValue(), limitOrder.getOriginalAmount().doubleValue());
     }
 
@@ -160,7 +199,7 @@ public class ObjectConverter {
                 orderbook.getProcess(),
                 orderbook.getExchange_datetime(),
                 orderbook.getExchange_date(),
-                orderbook.getReceived_nanos(),
+                orderbook.getReceived_micros(),
                 orderbook.getHighest_bid_price(),
                 orderbook.getHighest_bid_volume(),
                 orderbook.getLowest_ask_price(),

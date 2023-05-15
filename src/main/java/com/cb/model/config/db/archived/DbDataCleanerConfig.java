@@ -1,4 +1,4 @@
-package com.cb.model.config.db;
+package com.cb.model.config.db.archived;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

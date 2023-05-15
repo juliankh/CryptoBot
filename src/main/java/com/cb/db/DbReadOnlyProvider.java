@@ -1,10 +1,12 @@
 package com.cb.db;
 
-import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
+import com.cb.injection.module.MainModule;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
+import com.cb.model.config.archived.DataCleanerConfig;
 import com.cb.model.config.db.*;
+import com.cb.model.config.db.archived.DbDataCleanerConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -22,7 +24,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.DB_READ_CONNECTION;
@@ -33,6 +34,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
     private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
+    private static final BeanListHandler<DbRedisDataCleanerConfig> BEAN_LIST_HANDLER_REDIS_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbRedisDataCleanerConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
     private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
     private static final BeanListHandler<DbMiscConfig> BEAN_LIST_HANDLER_MISC_CONFIG = new BeanListHandler<>(DbMiscConfig.class);
@@ -46,19 +48,24 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
     @Inject
     private QueryRunner queryRunner;
 
+    public static void main(String[] args) {
+        DbReadOnlyProvider dbReadOnlyProvider = MainModule.INJECTOR.getInstance(DbReadOnlyProvider.class);
+        dbReadOnlyProvider.retrieveRedisDataCleanerConfig().forEach(System.out::println);
+    }
+
     public List<CbOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Instant from, Instant to) {
         List<DbKrakenOrderBook> dbOrderBooks = retrieveKrakenOrderBooks(currencyPair, Timestamp.from(from), Timestamp.from(to));
-        return dbOrderBooks.stream().map(objectConverter::convertToKrakenOrderBook).toList();
+        return dbOrderBooks.parallelStream().map(objectConverter::convertToDbKrakenOrderBook).toList();
     }
 
     public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Timestamp from, Timestamp to) {
         try {
             String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
-            String sql = " SELECT id, process, exchange_datetime, exchange_date, received_nanos, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks " +
+            String sql = " SELECT id, process, exchange_datetime, exchange_date, received_micros, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks " +
                          " FROM " + tableName +
                          " WHERE exchange_datetime between ? and ?" +
-                         " ORDER BY received_nanos";
-            return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), tableName);
+                         " ORDER BY received_micros";
+            return TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, from, to), "Retrieving", tableName);
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Kraken OrderBooks for CurrencyPair [" + currencyPair + "] between [" + from + "] and [" + to + "]", e);
         }
@@ -72,8 +79,8 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
             String sql = " SELECT * " +
                     " FROM " + tableName +
                     " WHERE id in (" + questionMarkString + ")" +
-                    " ORDER BY received_nanos";
-            return runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, idArray), tableName);
+                    " ORDER BY received_micros";
+            return TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK, idArray), "Retrieving", tableName);
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Kraken OrderBooks for CurrencyPair [" + currencyPair + "] and Set of Ids [" + ids.size() + " ids]", e);
         }
@@ -83,7 +90,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         try {
             String tableName = "cb.config_data_age_monitor";
             String sql = "SELECT id, table_name, column_name, mins_age_limit FROM " + tableName + ";";
-            List<DbDataAgeMonitorConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG), tableName);
+            List<DbDataAgeMonitorConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG), "Retrieving", tableName);
             return rawConfigs.parallelStream().map(objectConverter::convertToDataAgeMonitorConfig).toList();
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Data Age Monitor Config", e);
@@ -94,10 +101,21 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         try {
             String tableName = "cb.config_data_cleaner";
             String sql = "SELECT id, table_name, column_name, hours_back FROM " + tableName + ";";
-            List<DbDataCleanerConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG), tableName);
+            List<DbDataCleanerConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG), "Retrieving", tableName);
             return rawConfigs.parallelStream().map(objectConverter::convertToDataCleanerConfig).toList();
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Data Cleaner Config", e);
+        }
+    }
+
+    public List<RedisDataCleanerConfig> retrieveRedisDataCleanerConfig() {
+        try {
+            String tableName = "cb.config_redis_data_cleaner";
+            String sql = "SELECT id, redis_key, mins_back FROM " + tableName + ";";
+            List<DbRedisDataCleanerConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_REDIS_DATA_CLEANER_CONFIG), "Retrieving", tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToRedisDataCleanerConfig).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Redis Data Cleaner Config", e);
         }
     }
 
@@ -105,7 +123,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         try {
             String tableName = "cb.config_queue_monitor";
             String sql = "SELECT id, queue_name, message_limit FROM " + tableName + ";";
-            List<DbQueueMonitorConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG), tableName);
+            List<DbQueueMonitorConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG), "Retrieving", tableName);
             return rawConfigs.parallelStream().map(objectConverter::convertToQueueMonitorConfig).toList();
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Queue Monitor Config", e);
@@ -116,7 +134,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         try {
             String tableName = "cb.config_kraken_bridge_orderbook";
             String sql = "SELECT id, currency_base, currency_counter, batch_size, secs_timeout FROM " + tableName + ";";
-            List<DbKrakenBridgeOrderBookConfig> rawConfigs = runTimedQuery(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG), tableName);
+            List<DbKrakenBridgeOrderBookConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG), "Retrieving", tableName);
             return rawConfigs.parallelStream().map(objectConverter::convertToKrakenBridgeOrderBookConfig).collect(Collectors.toMap(KrakenBridgeOrderBookConfig::getCurrencyPair, c -> c));
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Kraken Bridge OrderBook Config", e);
@@ -140,16 +158,6 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         } catch (Exception e) {
             throw new RuntimeException("Problem getting the time of last item in table [" + table + "] using column [" + column + "]", e);
         }
-    }
-
-    @SneakyThrows
-    private <T> List<T> runTimedQuery(Callable<List<T>> queryRunner, String itemType) {
-        Instant start = Instant.now();
-        List<T> result = queryRunner.call();
-        Instant end = Instant.now();
-        double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
-        log.info("Retrieving [" + NumberUtils.numberFormat(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
-        return result;
     }
 
     @SneakyThrows

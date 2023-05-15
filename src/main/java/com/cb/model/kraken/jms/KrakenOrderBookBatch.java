@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,6 +14,6 @@ import java.util.Collection;
 public class KrakenOrderBookBatch implements Serializable {
 
     private final CurrencyPair currencyPair;
-    private final Collection<KrakenOrderBook> orderbooks;
+    private final List<KrakenOrderBook> orderbooks; // TODO: decide whether it's better to have here List<CbOrderBook> instead (meaning it's already converted before sending via jms)
 
 }

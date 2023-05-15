@@ -40,31 +40,31 @@ public class DbWriteProviderTest {
 
     @Test
     public void dupeOrderBooks_Dupes() {
-        long receivedNanos = TimeUtils.currentNanos();
-        DbKrakenOrderBook orderbook1 = new DbKrakenOrderBook();orderbook1.setReceived_nanos(receivedNanos);orderbook1.setBids_hash(111);orderbook1.setAsks_hash(1111);orderbook1.setId(123L);
-        DbKrakenOrderBook orderbook2 = new DbKrakenOrderBook();orderbook2.setReceived_nanos(receivedNanos);orderbook2.setBids_hash(222);orderbook2.setAsks_hash(2222);orderbook2.setId(124L);
-        DbKrakenOrderBook orderbook3 = new DbKrakenOrderBook();orderbook3.setReceived_nanos(receivedNanos);orderbook3.setBids_hash(222);orderbook3.setAsks_hash(2222);orderbook3.setId(125L);
-        DbKrakenOrderBook orderbook4 = new DbKrakenOrderBook();orderbook4.setReceived_nanos(receivedNanos);orderbook4.setBids_hash(111);orderbook4.setAsks_hash(1111);orderbook4.setId(126L);
-        DbKrakenOrderBook orderbook5 = new DbKrakenOrderBook();orderbook5.setReceived_nanos(receivedNanos);orderbook5.setBids_hash(333);orderbook5.setAsks_hash(3333);orderbook5.setId(127L);
+        long receivedMicros = TimeUtils.currentMicros();
+        DbKrakenOrderBook orderbook1 = new DbKrakenOrderBook();orderbook1.setReceived_micros(receivedMicros);orderbook1.setBids_hash(111);orderbook1.setAsks_hash(1111);orderbook1.setId(123L);
+        DbKrakenOrderBook orderbook2 = new DbKrakenOrderBook();orderbook2.setReceived_micros(receivedMicros);orderbook2.setBids_hash(222);orderbook2.setAsks_hash(2222);orderbook2.setId(124L);
+        DbKrakenOrderBook orderbook3 = new DbKrakenOrderBook();orderbook3.setReceived_micros(receivedMicros);orderbook3.setBids_hash(222);orderbook3.setAsks_hash(2222);orderbook3.setId(125L);
+        DbKrakenOrderBook orderbook4 = new DbKrakenOrderBook();orderbook4.setReceived_micros(receivedMicros);orderbook4.setBids_hash(111);orderbook4.setAsks_hash(1111);orderbook4.setId(126L);
+        DbKrakenOrderBook orderbook5 = new DbKrakenOrderBook();orderbook5.setReceived_micros(receivedMicros);orderbook5.setBids_hash(333);orderbook5.setAsks_hash(3333);orderbook5.setId(127L);
         List<DbKrakenOrderBook> convertedBatch = Lists.newArrayList(orderbook1, orderbook2, orderbook3, orderbook4, orderbook5);
 
         // engage test
         Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbWriteProvider.dupeOrderBooks(convertedBatch);
 
         assertEquals(2, result.size());
-        assertEquals(Sets.newHashSet(Triple.of(receivedNanos, 111, 1111), Triple.of(receivedNanos, 222, 2222)), result.keySet());
-        assertEquals(Lists.newArrayList(orderbook1, orderbook4), result.get(Triple.of(receivedNanos, 111, 1111)));
-        assertEquals(Lists.newArrayList(orderbook2, orderbook3), result.get(Triple.of(receivedNanos, 222, 2222)));
+        assertEquals(Sets.newHashSet(Triple.of(receivedMicros, 111, 1111), Triple.of(receivedMicros, 222, 2222)), result.keySet());
+        assertEquals(Lists.newArrayList(orderbook1, orderbook4), result.get(Triple.of(receivedMicros, 111, 1111)));
+        assertEquals(Lists.newArrayList(orderbook2, orderbook3), result.get(Triple.of(receivedMicros, 222, 2222)));
     }
 
     @Test
     public void dupeOrderBooks_NoDupes() {
-        long receivedNanos = TimeUtils.currentNanos();
-        DbKrakenOrderBook orderbook1 = new DbKrakenOrderBook();orderbook1.setReceived_nanos(receivedNanos);orderbook1.setBids_hash(111);orderbook1.setAsks_hash(1111);orderbook1.setId(123L);
-        DbKrakenOrderBook orderbook2 = new DbKrakenOrderBook();orderbook2.setReceived_nanos(receivedNanos);orderbook2.setBids_hash(222);orderbook2.setAsks_hash(2222);orderbook2.setId(124L);
-        DbKrakenOrderBook orderbook3 = new DbKrakenOrderBook();orderbook3.setReceived_nanos(receivedNanos);orderbook3.setBids_hash(333);orderbook3.setAsks_hash(3333);orderbook3.setId(125L);
-        DbKrakenOrderBook orderbook4 = new DbKrakenOrderBook();orderbook4.setReceived_nanos(receivedNanos);orderbook4.setBids_hash(444);orderbook4.setAsks_hash(4444);orderbook4.setId(126L);
-        DbKrakenOrderBook orderbook5 = new DbKrakenOrderBook();orderbook5.setReceived_nanos(receivedNanos);orderbook5.setBids_hash(555);orderbook5.setAsks_hash(5555);orderbook5.setId(127L);
+        long receivedNanos = TimeUtils.currentMicros();
+        DbKrakenOrderBook orderbook1 = new DbKrakenOrderBook();orderbook1.setReceived_micros(receivedNanos);orderbook1.setBids_hash(111);orderbook1.setAsks_hash(1111);orderbook1.setId(123L);
+        DbKrakenOrderBook orderbook2 = new DbKrakenOrderBook();orderbook2.setReceived_micros(receivedNanos);orderbook2.setBids_hash(222);orderbook2.setAsks_hash(2222);orderbook2.setId(124L);
+        DbKrakenOrderBook orderbook3 = new DbKrakenOrderBook();orderbook3.setReceived_micros(receivedNanos);orderbook3.setBids_hash(333);orderbook3.setAsks_hash(3333);orderbook3.setId(125L);
+        DbKrakenOrderBook orderbook4 = new DbKrakenOrderBook();orderbook4.setReceived_micros(receivedNanos);orderbook4.setBids_hash(444);orderbook4.setAsks_hash(4444);orderbook4.setId(126L);
+        DbKrakenOrderBook orderbook5 = new DbKrakenOrderBook();orderbook5.setReceived_micros(receivedNanos);orderbook5.setBids_hash(555);orderbook5.setAsks_hash(5555);orderbook5.setId(127L);
         List<DbKrakenOrderBook> orderbooks = Lists.newArrayList(orderbook1, orderbook2, orderbook3, orderbook4, orderbook5);
 
         // engage test

@@ -1,6 +1,6 @@
 package com.cb.encryption;
 
-import com.cb.injection.module.MainModule;
+import com.cb.injection.module.CryptoBotPropertiesModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
@@ -12,7 +12,7 @@ public class EncryptionProcessor {
 	private StandardPBEStringEncryptor encryptor;
 
 	public static void main(String[] a) throws Exception {
-		EncryptionProcessor encryptionProcessor = MainModule.INJECTOR.getInstance(EncryptionProcessor.class);
+		EncryptionProcessor encryptionProcessor = CryptoBotPropertiesModule.INJECTOR.getInstance(EncryptionProcessor.class);
 
 		/*  TODO: erase string after using */ String rawString = ""; /*  TODO: erase string after using */
 

@@ -1,10 +1,13 @@
 package com.cb.injection.module;
 
-import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.provider.KrakenOrderBookPersistJmsConsumerProvider;
 import com.cb.injection.provider.ListProvider;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
+import com.cb.model.json.adapter.InstantAdapter;
+import com.cb.model.json.adapter.LocalDateAdapter;
 import com.cb.property.CryptoProperties;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -13,14 +16,20 @@ import com.rabbitmq.http.client.Client;
 import com.rabbitmq.http.client.ClientParameters;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.Jedis;
 
 import java.sql.DriverManager;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.cb.injection.BindingName.*;
 
 @Slf4j
 public class MainModule extends AbstractModule {
+
+    private static final int NUM_PERSISTERS = 60;
 
     public static Injector INJECTOR = Guice.createInjector(new MainModule());
 
@@ -49,11 +58,14 @@ public class MainModule extends AbstractModule {
         bindConstant().annotatedWith(Names.named(JMS_API_URL)).to("http://" + cryptoProperties.jmsBrokerHost() + ":" + cryptoProperties.jmsBrokerPortHttp() + "/api/");
         bindConstant().annotatedWith(Names.named(JMS_USERNAME)).to(cryptoProperties.jmsUsername());
         bindConstant().annotatedWith(Names.named(JMS_PASSWORD)).to(cryptoProperties.jmsPassword());
-
         bindConstant().annotatedWith(Names.named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE)).to(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName());
         bindConstant().annotatedWith(Names.named(JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE)).to(cryptoProperties.jmsKrakenOrderBookSnapshotQueueExchange());
 
-        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), 60));
+        bindConstant().annotatedWith(Names.named(REDIS_HOST)).to(cryptoProperties.redisHost());
+        bindConstant().annotatedWith(Names.named(REDIS_PORT)).to(cryptoProperties.redisPort());
+
+        log.info("Number of Persisters: " + NUM_PERSISTERS);
+        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), NUM_PERSISTERS));
     }
 
     @Provides
@@ -84,6 +96,20 @@ public class MainModule extends AbstractModule {
         factory.setUsername(username);
         factory.setPassword(password);
         return factory;
+    }
+
+    @Provides
+    public Jedis jedis(@Named(REDIS_HOST) String host, @Named(REDIS_PORT) int port) {
+        return new Jedis(host, port, DefaultJedisClientConfig.builder().connectionTimeoutMillis(Integer.MAX_VALUE).socketTimeoutMillis(Integer.MAX_VALUE).build());
+    }
+
+    @Provides
+    @Singleton
+    public Gson gson() {
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(Instant.class, new InstantAdapter());
+        builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
+        return builder.create();
     }
 
 }

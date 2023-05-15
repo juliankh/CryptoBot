@@ -31,8 +31,10 @@ public interface BindingName {
     String JMS_VHOST = "jmsVhost";
     String JMS_USERNAME = "jmsUsername";
     String JMS_PASSWORD = "jmsPassword";
-
     String JMS_KRAKEN_ORDERBOOK_SNAPSHOT_QUEUE = "jmsKrakenOrderBookSnapshotQueue";
     String JMS_KRAKEN_ORDERBOOK_SNAPSHOT_EXCHANGE = "jmsKrakenOrderBookSnapshotExchange";
+
+    String REDIS_HOST = "redisHost";
+    String REDIS_PORT = "redisPort";
 
 }

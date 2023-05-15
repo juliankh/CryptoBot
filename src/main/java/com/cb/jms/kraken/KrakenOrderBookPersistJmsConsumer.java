@@ -4,17 +4,18 @@ import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbWriteProvider;
 import com.cb.jms.common.AbstractJmsConsumer;
-import com.cb.model.kraken.db.DbKrakenOrderBook;
+import com.cb.model.CbOrderBook;
+import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBookBatch;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.knowm.xchange.currency.CurrencyPair;
+import redis.clients.jedis.Jedis;
 
-import java.time.Instant;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
@@ -26,24 +27,23 @@ public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
     private ObjectConverter objectConverter;
 
     @Inject
-    private DbWriteProvider dbWriteProvider;
+    private Jedis jedis;
 
     @Override
     protected void customProcess(byte[] payload) {
-        KrakenOrderBookBatch batch = SerializationUtils.deserialize(payload);
+        KrakenOrderBookBatch batch = TimeUtils.runTimedCallable_ObjectOutput(() -> SerializationUtils.deserialize(payload), "Deserializing Kraken OrderBook Jms payload");
         CurrencyPair batchCurrencyPair = batch.getCurrencyPair();
-        Collection<DbKrakenOrderBook> orderBooks = batch.getOrderbooks().parallelStream().map(orderbook -> objectConverter.convertToKrakenOrderBook(orderbook, dbWriteProvider.getWriteConnection())).toList();
-        Instant start = Instant.now();
-        dbWriteProvider.insertKrakenOrderBooks(orderBooks, batchCurrencyPair);
-        Instant end = Instant.now();
-        double insertRate = TimeUtils.ratePerSecond(start, end, orderBooks.size());
-        String currencyPairToken = currencyResolver.upperCaseToken(batchCurrencyPair, "-");
-        log.info("Inserting [" + orderBooks.size() + "] [" + currencyPairToken + "] OrderBooks into db took [" + TimeUtils.durationMessage(start) + "] at a rate of [" + NumberUtils.numberFormat(insertRate) + "] items/sec");
+        List<KrakenOrderBook> krakenOrderBooks = batch.getOrderbooks();
+        List<CbOrderBook> orderBooks = TimeUtils.runTimedCallable_CollectionOutput(() -> objectConverter.convertToCbOrderBooks(krakenOrderBooks), "Converting [" + NumberUtils.numberFormat(krakenOrderBooks.size()) + " " + batchCurrencyPair + " KrakenOrderBooks] ->", "CbOrderBook");
+        Map<String, Double> redisPayloadMap = TimeUtils.runTimedCallable_MapOutput(() -> objectConverter.convertToRedisPayload(orderBooks), "Converting [" + NumberUtils.numberFormat(orderBooks.size()) + " " + batchCurrencyPair + " CbOrderBooks] -> Map of", "Kraken CbOrderBook Redis Payload");
+        long numInserted = TimeUtils.runTimedCallable_NumberedOutput(() -> jedis.zadd(batchCurrencyPair.toString(), redisPayloadMap), "Inserting into Redis", batchCurrencyPair + " Kraken CbOrderBook");
+        String allOrPartialIndicator = numInserted == redisPayloadMap.size() ? "ALL" : "PARTIAL";
+        log.info("Inserted [" + NumberUtils.numberFormat(numInserted) + "] out of [" + NumberUtils.numberFormat(redisPayloadMap.size()) + "] [" + batchCurrencyPair + "] OrderBooks into Redis (" + allOrPartialIndicator + ")");
     }
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbWriteProvider.cleanup();
+        jedis.close();
         super.cleanup();
     }
 

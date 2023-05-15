@@ -4,3 +4,7 @@ start: /usr/local/sbin/rabbitmq-server start &
 
 PostgreSQL
 check current connections: SELECT * FROM pg_stat_activity;
+
+Redis
+stop: brew services stop redis
+start: brew services start redis

@@ -1,5 +1,6 @@
 package com.cb.model;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -13,6 +14,7 @@ import java.util.TreeMap;
 @Getter
 @Setter
 @Accessors(chain = true)
+@EqualsAndHashCode
 public class CbOrderBook {
 
     private Instant exchangeDatetime;

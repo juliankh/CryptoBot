@@ -1,32 +1,44 @@
 package com.cb.common;
 
 import com.cb.common.util.TimeUtils;
+import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
+import com.cb.model.config.archived.DataCleanerConfig;
 import com.cb.model.config.db.*;
+import com.cb.model.config.db.archived.DbDataCleanerConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
+import com.cb.model.kraken.jms.KrakenOrderBook;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.Order;
+import org.knowm.xchange.dto.marketdata.OrderBook;
+import org.knowm.xchange.dto.trade.LimitOrder;
 import org.mockito.InjectMocks;
-import org.mockito.Mockito;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.postgresql.jdbc.PgArray;
 
+import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectConverterTest {
@@ -34,12 +46,16 @@ public class ObjectConverterTest {
     @Spy
     private CurrencyResolver currencyResolver;
 
+    @Mock
+    private Gson gson;
+
     @InjectMocks
     private ObjectConverter objectConverter;
 
     @Before
     public void beforeEachTest() {
-        Mockito.reset(currencyResolver);
+        reset(currencyResolver);
+        reset(gson);
     }
 
     @Test
@@ -115,8 +131,8 @@ public class ObjectConverterTest {
         Timestamp exchange_datetime2 = new Timestamp(System.currentTimeMillis() + 1);
         java.sql.Date exchange_date1 = new Date(System.currentTimeMillis() + 5);
         java.sql.Date exchange_date2 = new Date(System.currentTimeMillis() + 6);
-        long received_nanos1 = TimeUtils.currentNanos();
-        long received_nanos2 = TimeUtils.currentNanos();
+        long received_micros1 = TimeUtils.currentMicros();
+        long received_micros2 = TimeUtils.currentMicros();
         double highest_bid_price1 = 1.23;
         double highest_bid_price2 = 1.24;
         double highest_bid_volume1 = 2.34;
@@ -138,7 +154,7 @@ public class ObjectConverterTest {
         ob1.setProcess(process1);
         ob1.setExchange_datetime(exchange_datetime1);
         ob1.setExchange_date(exchange_date1);
-        ob1.setReceived_nanos(received_nanos1);
+        ob1.setReceived_micros(received_micros1);
         ob1.setHighest_bid_price(highest_bid_price1);
         ob1.setHighest_bid_volume(highest_bid_volume1);
         ob1.setLowest_ask_price(lowest_ask_price1);
@@ -152,7 +168,7 @@ public class ObjectConverterTest {
         ob2.setProcess(process2);
         ob2.setExchange_datetime(exchange_datetime2);
         ob2.setExchange_date(exchange_date2);
-        ob2.setReceived_nanos(received_nanos2);
+        ob2.setReceived_micros(received_micros2);
         ob2.setHighest_bid_price(highest_bid_price2);
         ob2.setHighest_bid_volume(highest_bid_volume2);
         ob2.setLowest_ask_price(lowest_ask_price2);
@@ -163,8 +179,8 @@ public class ObjectConverterTest {
         ob2.setAsks(asks2);
 
         Object[][] expected = new Object[][] {
-                {process1, exchange_datetime1, exchange_date1, received_nanos1, highest_bid_price1, highest_bid_volume1, lowest_ask_price1, lowest_ask_volume1, bids_hash1, asks_hash1, bids1, asks1},
-                {process2, exchange_datetime2, exchange_date2, received_nanos2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
+                {process1, exchange_datetime1, exchange_date1, received_micros1, highest_bid_price1, highest_bid_volume1, lowest_ask_price1, lowest_ask_volume1, bids_hash1, asks_hash1, bids1, asks1},
+                {process2, exchange_datetime2, exchange_date2, received_micros2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
         };
 
         assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2)));
@@ -237,6 +253,26 @@ public class ObjectConverterTest {
     }
 
     @Test
+    public void convertToRedisDataCleanerConfig() {
+        // setup data
+        long id = 123;
+        String redisKey = "redisKey1";
+        int minsBack = 10;
+        DbRedisDataCleanerConfig rawConfig = new DbRedisDataCleanerConfig();
+        rawConfig.setId(id);
+        rawConfig.setRedis_key(redisKey);
+        rawConfig.setMins_back(minsBack);
+
+        // engage test
+        RedisDataCleanerConfig result = objectConverter.convertToRedisDataCleanerConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(redisKey, result.getRedisKey());
+        assertEquals(minsBack, result.getMinsBack());
+    }
+
+    @Test
     public void convertToKrakenBridgeOrderBookConfig() {
         // setup data
         long id = 567;
@@ -279,6 +315,190 @@ public class ObjectConverterTest {
         assertEquals(id, result.getId());
         assertEquals(name, result.getName());
         assertEquals(value, result.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void priceAndQuantity() {
+        // setup data
+        double price = 10.1;
+        double volume = 2.3;
+        LimitOrder limitOrder = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume), null, null, null, BigDecimal.valueOf(price));
+
+        // engage test
+        Pair<Double, Double> result = objectConverter.priceAndQuantity(limitOrder);
+
+        // verify
+        assertEquals(price, result.getLeft(), DOUBLE_COMPARE_DELTA);
+        assertEquals(volume, result.getRight(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void quoteList() {
+        // setup data
+        double price1 = 10.1;
+        double price2 = 10.3;
+        double price3 = 10.2;
+
+        double volume1 = 2.3;
+        double volume2 = 2.4;
+        double volume3 = 2.5;
+
+        LimitOrder limitOrder1 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume1), null, null, null, BigDecimal.valueOf(price1));
+        LimitOrder limitOrder2 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume2), null, null, null, BigDecimal.valueOf(price2));
+        LimitOrder limitOrder3 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume3), null, null, null, BigDecimal.valueOf(price3));
+
+        // engage test
+        List<Pair<Double, Double>> result = objectConverter.quoteList(Lists.newArrayList(limitOrder1, limitOrder2, limitOrder3));
+
+        // verify
+        Pair<Double, Double> quote1 = result.get(0);
+        Pair<Double, Double> quote2 = result.get(1);
+        Pair<Double, Double> quote3 = result.get(2);
+
+        assertEquals(price1, quote1.getLeft(), DOUBLE_COMPARE_DELTA);
+        assertEquals(price2, quote2.getLeft(), DOUBLE_COMPARE_DELTA);
+        assertEquals(price3, quote3.getLeft(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(volume1, quote1.getRight(), DOUBLE_COMPARE_DELTA);
+        assertEquals(volume2, quote2.getRight(), DOUBLE_COMPARE_DELTA);
+        assertEquals(volume3, quote3.getRight(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void quoteTreeMap() {
+        // setup data
+        double price1 = 10.1;
+        double price2 = 10.3;
+        double price3 = 10.2;
+
+        double volume1 = 2.3;
+        double volume2 = 2.4;
+        double volume3 = 2.5;
+
+        LimitOrder limitOrder1 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume1), null, null, null, BigDecimal.valueOf(price1));
+        LimitOrder limitOrder2 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume2), null, null, null, BigDecimal.valueOf(price2));
+        LimitOrder limitOrder3 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(volume3), null, null, null, BigDecimal.valueOf(price3));
+
+        List<LimitOrder> limitOrders = Lists.newArrayList(limitOrder1, limitOrder2, limitOrder3);
+
+        // engage test
+        TreeMap<Double, Double> result = objectConverter.quoteTreeMap(limitOrders);
+
+        // verify results
+        List<Map.Entry<Double, Double>> resultList = Lists.newArrayList(result.entrySet());
+
+        assertEquals(limitOrders.size(), resultList.size());
+
+        Map.Entry<Double, Double> resultQuote1 = resultList.get(0);
+        Map.Entry<Double, Double> resultQuote2 = resultList.get(1);
+        Map.Entry<Double, Double> resultQuote3 = resultList.get(2);
+
+        assertEquals(price1, resultQuote1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(volume1, resultQuote1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(price3, resultQuote2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(volume3, resultQuote2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(price2, resultQuote3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(volume2, resultQuote3.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToCbOrderBook() {
+        // setup data
+        double bid1Price = 10.1;
+        double bid2Price = 10.3;
+        double bid3Price = 10.2;
+
+        double bid1Volume = 2.3;
+        double bid2Volume = 2.4;
+        double bid3Volume = 2.5;
+
+        double ask1Price = 11.77;
+        double ask2Price = 11.55;
+        double ask3Price = 11.66;
+
+        double ask1Volume = 5.33;
+        double ask2Volume = 5.44;
+        double ask3Volume = 5.55;
+
+        java.util.Date date = new java.util.Date(System.currentTimeMillis());
+
+        LimitOrder bid1 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(bid1Volume), null, null, null, BigDecimal.valueOf(bid1Price));
+        LimitOrder bid2 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(bid2Volume), null, null, null, BigDecimal.valueOf(bid2Price));
+        LimitOrder bid3 = new LimitOrder(Order.OrderType.BID, BigDecimal.valueOf(bid3Volume), null, null, null, BigDecimal.valueOf(bid3Price));
+        LimitOrder ask1 = new LimitOrder(Order.OrderType.ASK, BigDecimal.valueOf(ask1Volume), null, null, null, BigDecimal.valueOf(ask1Price));
+        LimitOrder ask2 = new LimitOrder(Order.OrderType.ASK, BigDecimal.valueOf(ask2Volume), null, null, null, BigDecimal.valueOf(ask2Price));
+        LimitOrder ask3 = new LimitOrder(Order.OrderType.ASK, BigDecimal.valueOf(ask3Volume), null, null, null, BigDecimal.valueOf(ask3Price));
+        List<LimitOrder> bids = Lists.newArrayList(bid1, bid2, bid3);
+        List<LimitOrder> asks = Lists.newArrayList(ask1, ask2, ask3);
+        OrderBook orderBook = new OrderBook(date, asks, bids);
+
+        long micros = 121212L;
+
+        KrakenOrderBook krakenOrderBook = new KrakenOrderBook().setProcess("Process1").setMicroSeconds(micros).setOrderBook(orderBook);
+
+        // engage test
+        CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook);
+
+        // verify results
+        assertEquals(date.toInstant(), result.getExchangeDatetime());
+        assertEquals(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()), result.getExchangeDate());
+        assertEquals(micros, result.getReceivedNanos());
+
+        List<Map.Entry<Double, Double>> resultBidList = Lists.newArrayList(result.getBids().entrySet());
+        List<Map.Entry<Double, Double>> resultAskList = Lists.newArrayList(result.getAsks().entrySet());
+
+        assertEquals(bids.size(), resultBidList.size());
+        assertEquals(asks.size(), resultAskList.size());
+
+        Map.Entry<Double, Double> resultBid1 = resultBidList.get(0);
+        Map.Entry<Double, Double> resultBid2 = resultBidList.get(1);
+        Map.Entry<Double, Double> resultBid3 = resultBidList.get(2);
+
+        assertEquals(bid1Price, resultBid1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid1Volume, resultBid1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(bid3Price, resultBid2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid3Volume, resultBid2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(bid2Price, resultBid3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid2Volume, resultBid3.getValue(), DOUBLE_COMPARE_DELTA);
+
+        Map.Entry<Double, Double> resultAsk1 = resultAskList.get(0);
+        Map.Entry<Double, Double> resultAsk2 = resultAskList.get(1);
+        Map.Entry<Double, Double> resultAsk3 = resultAskList.get(2);
+
+        assertEquals(ask2Price, resultAsk1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask2Volume, resultAsk1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(ask3Price, resultAsk2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask3Volume, resultAsk2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask1Volume, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToRedisPayload() {
+        // setup
+        long micros1 = 123123;
+        long micros2 = 34221;
+        String json1 = "SomeJson1";
+        String json2 = "SomeJson2";
+        CbOrderBook orderBook1 = new CbOrderBook().setReceivedNanos(micros1);
+        CbOrderBook orderBook2 = new CbOrderBook().setReceivedNanos(micros2);
+        List<CbOrderBook> orderBooks = Lists.newArrayList(orderBook1, orderBook2);
+        when(gson.toJson(orderBook1)).thenReturn(json1);
+        when(gson.toJson(orderBook2)).thenReturn(json2);
+
+        // engage test
+        Map<String, Double> result = objectConverter.convertToRedisPayload(orderBooks);
+
+        // verify
+        assertEquals(2, result.size());
+        assertEquals(micros1, result.get(json1), DOUBLE_COMPARE_DELTA);
+        assertEquals(micros2, result.get(json2), DOUBLE_COMPARE_DELTA);
     }
 
 }
