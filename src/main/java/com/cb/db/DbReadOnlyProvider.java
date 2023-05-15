@@ -4,8 +4,10 @@ import com.cb.common.util.TimeUtils;
 import com.cb.injection.module.MainModule;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
+import com.cb.model.config.archived.DataAgeMonitorConfig;
 import com.cb.model.config.archived.DataCleanerConfig;
 import com.cb.model.config.db.*;
+import com.cb.model.config.db.archived.DbDataAgeMonitorConfig;
 import com.cb.model.config.db.archived.DbDataCleanerConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.google.inject.Inject;
@@ -33,6 +35,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
+    private static final BeanListHandler<DbRedisDataAgeMonitorConfig> BEAN_LIST_HANDLER_REDIS_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbRedisDataAgeMonitorConfig.class);
     private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
     private static final BeanListHandler<DbRedisDataCleanerConfig> BEAN_LIST_HANDLER_REDIS_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbRedisDataCleanerConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
@@ -92,6 +95,17 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
             String sql = "SELECT id, table_name, column_name, mins_age_limit FROM " + tableName + ";";
             List<DbDataAgeMonitorConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG), "Retrieving", tableName);
             return rawConfigs.parallelStream().map(objectConverter::convertToDataAgeMonitorConfig).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Data Age Monitor Config", e);
+        }
+    }
+
+    public List<RedisDataAgeMonitorConfig> retrieveRedisDataAgeMonitorConfig() {
+        try {
+            String tableName = "cb.config_redis_data_age_monitor";
+            String sql = "SELECT id, redis_key, mins_age_limit FROM " + tableName + ";";
+            List<DbRedisDataAgeMonitorConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_REDIS_DATA_AGE_MONITOR_CONFIG), "Retrieving", tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToRedisDataAgeMonitorConfig).toList();
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Data Age Monitor Config", e);
         }

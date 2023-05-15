@@ -6,8 +6,7 @@ import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO: change to look at redis
-// TODO: make a new monitor for free memory (ram)
+// TODO: make a new monitor for free memory (ram), and increase num of mins of data held
 @Slf4j
 public class DataAgeMonitorDriver extends AbstractDriver {
 

@@ -3,8 +3,10 @@ package com.cb.common;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
+import com.cb.model.config.archived.DataAgeMonitorConfig;
 import com.cb.model.config.archived.DataCleanerConfig;
 import com.cb.model.config.db.*;
+import com.cb.model.config.db.archived.DbDataAgeMonitorConfig;
 import com.cb.model.config.db.archived.DbDataCleanerConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
@@ -206,6 +208,26 @@ public class ObjectConverterTest {
         assertEquals(id, result.getId());
         assertEquals(tableName, result.getTableName());
         assertEquals(columnName, result.getColumnName());
+        assertEquals(minsAgeLimit, result.getMinsAgeLimit());
+    }
+
+    @Test
+    public void convertToRedisDataAgeMonitorConfig() {
+        // setup data
+        long id = 123;
+        String redisKey = "redisKey1";
+        int minsAgeLimit = 5;
+        DbRedisDataAgeMonitorConfig rawConfig = new DbRedisDataAgeMonitorConfig();
+        rawConfig.setId(id);
+        rawConfig.setRedis_key(redisKey);
+        rawConfig.setMins_age_limit(minsAgeLimit);
+
+        // engage test
+        RedisDataAgeMonitorConfig result = objectConverter.convertToRedisDataAgeMonitorConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(redisKey, result.getRedisKey());
         assertEquals(minsAgeLimit, result.getMinsAgeLimit());
     }
 

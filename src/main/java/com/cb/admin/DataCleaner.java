@@ -34,7 +34,6 @@ public class DataCleaner {
         });
     }
 
-    // TODO: unit test
     public void pruneRedisKey(Jedis jedis, String redisKey, int minsLimit) {
         if (jedis.exists(redisKey)) {
             long microsMinsBack = TimeUtils.micros(Instant.now().minus(minsLimit, ChronoUnit.MINUTES));

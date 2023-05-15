@@ -1,4 +1,4 @@
-package com.cb.model.config;
+package com.cb.model.config.archived;
 
 import lombok.Getter;
 import lombok.Setter;

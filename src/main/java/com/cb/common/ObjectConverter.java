@@ -4,8 +4,10 @@ import com.cb.db.DbUtils;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
+import com.cb.model.config.archived.DataAgeMonitorConfig;
 import com.cb.model.config.archived.DataCleanerConfig;
 import com.cb.model.config.db.*;
+import com.cb.model.config.db.archived.DbDataAgeMonitorConfig;
 import com.cb.model.config.db.archived.DbDataCleanerConfig;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.KrakenOrderBook;
@@ -70,6 +72,13 @@ public class ObjectConverter {
                 .setId(rawConfig.getId())
                 .setTableName(rawConfig.getTable_name())
                 .setColumnName(rawConfig.getColumn_name())
+                .setMinsAgeLimit(rawConfig.getMins_age_limit());
+    }
+
+    public RedisDataAgeMonitorConfig convertToRedisDataAgeMonitorConfig(DbRedisDataAgeMonitorConfig rawConfig) {
+        return new RedisDataAgeMonitorConfig()
+                .setId(rawConfig.getId())
+                .setRedisKey(rawConfig.getRedis_key())
                 .setMinsAgeLimit(rawConfig.getMins_age_limit());
     }
 
