@@ -29,7 +29,7 @@ import static com.cb.injection.BindingName.*;
 @Slf4j
 public class MainModule extends AbstractModule {
 
-    private static final int NUM_PERSISTERS = 3; // TODO: lower this
+    private static final int NUM_PERSISTERS = 1;
 
     public static Injector INJECTOR = Guice.createInjector(new MainModule());
 

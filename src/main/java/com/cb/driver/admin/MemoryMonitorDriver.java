@@ -1,21 +1,21 @@
 package com.cb.driver.admin;
 
-import com.cb.admin.DataAgeMonitor;
+import com.cb.admin.MemoryMonitor;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DataAgeMonitorDriver extends AbstractDriver {
+public class MemoryMonitorDriver extends AbstractDriver {
 
-    private static final String DRIVER_NAME = "Data Age Monitor";
+    private static final String DRIVER_NAME = "Memory Monitor";
 
     @Inject
-    private DataAgeMonitor dataAgeMonitor;
+    private MemoryMonitor memoryMonitor;
 
     public static void main(String[] args) {
-        DataAgeMonitorDriver driver = MainModule.INJECTOR.getInstance(DataAgeMonitorDriver.class);
+        MemoryMonitorDriver driver = MainModule.INJECTOR.getInstance(MemoryMonitorDriver.class);
         driver.execute();
     }
 
@@ -26,13 +26,13 @@ public class DataAgeMonitorDriver extends AbstractDriver {
 
     @Override
     protected void executeCustom() {
-        dataAgeMonitor.monitor();
+        memoryMonitor.monitor();
     }
 
     @Override
     protected void cleanup() {
         log.info("Cleaning up");
-        dataAgeMonitor.cleanup();
+        memoryMonitor.cleanup();
     }
 
 }
