@@ -1,5 +1,6 @@
 package com.cb.admin;
 
+import com.cb.admin.archived.JmsQueueMonitor;
 import com.cb.alert.AlertProvider;
 import org.junit.Before;
 import org.junit.Test;

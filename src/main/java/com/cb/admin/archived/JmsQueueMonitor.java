@@ -1,4 +1,4 @@
-package com.cb.admin;
+package com.cb.admin.archived;
 
 import com.cb.alert.AlertProvider;
 import com.cb.db.DbReadOnlyProvider;

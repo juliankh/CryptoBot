@@ -1,6 +1,6 @@
-package com.cb.driver.admin;
+package com.cb.driver.admin.archived;
 
-import com.cb.admin.JmsQueueMonitor;
+import com.cb.admin.archived.JmsQueueMonitor;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;

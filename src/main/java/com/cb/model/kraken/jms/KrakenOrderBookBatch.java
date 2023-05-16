@@ -14,6 +14,6 @@ import java.util.List;
 public class KrakenOrderBookBatch implements Serializable {
 
     private final CurrencyPair currencyPair;
-    private final List<KrakenOrderBook> orderbooks; // TODO: decide whether it's better to have here List<CbOrderBook> instead (meaning it's already converted before sending via jms)
+    private final List<KrakenOrderBook> orderbooks;
 
 }
