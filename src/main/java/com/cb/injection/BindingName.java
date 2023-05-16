@@ -25,6 +25,7 @@ public interface BindingName {
     String ALERT_SMTP_AUTH = "alertSmtpAuth";
     String ALERT_SMTP_PORT = "alertSmtpPort";
 
+    // TODO: is this jms stuff needed?
     String JMS_BROKER_HOST = "jmsBrokerHost";
     String JMS_BROKER_PORT = "jmsBrokerPort";
     String JMS_API_URL = "jmsApiUrl";

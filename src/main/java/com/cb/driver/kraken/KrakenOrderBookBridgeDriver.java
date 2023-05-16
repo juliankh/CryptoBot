@@ -84,8 +84,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @Override
     protected void cleanup() {
-        log.info("Cleaning up");
-        processor.cleanup();
+        log.info("Nothing to cleanup");
     }
 
     private Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {

@@ -68,7 +68,7 @@
 */10 * * * *  sleep 59;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/chr_usd/09_safety_net.sh   # every 10 minutes
 */10 * * * *  sleep 60;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_bridge_orderbook/chr_usd/10_safety_net.sh   # every 10 minutes
 
-*/8 * * * *   sleep 31;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_persister_orderbook_safety_net.sh            # every 8 minutes
+# */8 * * * *   sleep 31;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/kraken_persister_orderbook_safety_net.sh            # every 8 minutes
 
 ###################################################################################
 # monitoring

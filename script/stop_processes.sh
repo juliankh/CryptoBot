@@ -11,5 +11,5 @@ cd ${CRYPTO_BOT_BIN_SCRIPT_DIR}
 ./stop_processes_kraken_bridge_orderbook_mxc_usd.sh &
 ./stop_processes_kraken_bridge_orderbook_chr_usd.sh &
 
-./common_stop_processes.sh "\
-KrakenOrderBookPersisterDriver"
+#./common_stop_processes.sh "\
+#KrakenOrderBookPersisterDriver"
