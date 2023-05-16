@@ -28,7 +28,7 @@ public abstract class AbstractDriver {
 			logProcessDuration(startTime);
 			cleanup();
 			alertProvider.sendEmailAlertQuietly(errMsg, errMsg, e);
-			throw new RuntimeException(errMsg, e);
+			throw e;
 		}
 		logProcessDuration(startTime);
 	}
