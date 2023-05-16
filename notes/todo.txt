@@ -1,19 +1,9 @@
 TODO:
 -misc
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
-    -how to make jms msgs persist (like filestore) even after restarting RabbitMQ
-    -db vacuum
 -ML
-    -data for ML not querried from db, but is gotten from cache that is updated in live fashion by consuming from jms
-        -options
-            -redis
-                -check that cache is persistent (still there after restart)
-                -ttl (start with 5 min, then expand)
-            -memcache
-            -coherence
-            -Apache Ignite
-    -add to orderbook snapshot tables: spread size (abs), spread size (% of midprice)
-    -ensure ML uses gpu processors
-    -see which kind of time gaps exist in data
-    -Test/Confirm
+    -admin
+        -ensure ML uses gpu processors
+    -features
+        -add to orderbook snapshot tables: spread size (abs), spread size (% of midprice)
         -the best orderbook depth to use (500?  100?  10?)

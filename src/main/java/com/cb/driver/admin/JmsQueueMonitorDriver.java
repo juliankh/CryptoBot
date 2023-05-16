@@ -1,11 +1,12 @@
-package com.cb.driver.admin.archived;
+package com.cb.driver.admin;
 
-import com.cb.admin.archived.JmsQueueMonitor;
+import com.cb.admin.JmsQueueMonitor;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Slf4j
 public class JmsQueueMonitorDriver extends AbstractDriver {
 

@@ -13,13 +13,13 @@ import redis.clients.jedis.Jedis;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DataCleanerTest {
+public class RedisDataCleanerTest {
 
     @Mock
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     @InjectMocks
-    private DataCleaner dataCleaner;
+    private RedisDataCleaner redisDataCleaner;
 
     @Before
     public void beforeEachTest() {
@@ -35,7 +35,7 @@ public class DataCleanerTest {
         when(jedis.exists(redisKey)).thenReturn(true);
 
         // engage test
-        dataCleaner.pruneRedisKey(jedis, redisKey, minsLimitDoesNotMatter);
+        redisDataCleaner.pruneRedisKey(jedis, redisKey, minsLimitDoesNotMatter);
 
         // verify
         verify(jedis, times(1)).zremrangeByScore(anyString(), anyDouble(), anyDouble());
@@ -50,7 +50,7 @@ public class DataCleanerTest {
         when(jedis.exists(redisKey)).thenReturn(false);
 
         // engage test
-        dataCleaner.pruneRedisKey(jedis, redisKey, minsLimitDoesNotMatter);
+        redisDataCleaner.pruneRedisKey(jedis, redisKey, minsLimitDoesNotMatter);
 
         // verify
         verify(jedis, times(0)).zremrangeByScore(anyString(), anyDouble(), anyDouble());

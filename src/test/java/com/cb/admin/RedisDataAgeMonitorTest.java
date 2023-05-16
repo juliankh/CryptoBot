@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DataAgeMonitorTest {
+public class RedisDataAgeMonitorTest {
 
     @Spy
     private Gson gson = MainModule.INJECTOR.getInstance(Gson.class);
@@ -31,7 +31,7 @@ public class DataAgeMonitorTest {
     private AlertProvider alertProvider;
 
     @InjectMocks
-    private DataAgeMonitor dataAgeMonitor;
+    private RedisDataAgeMonitor redisDataAgeMonitor;
 
     @Before
     public void beforeEachTest() {
@@ -48,7 +48,7 @@ public class DataAgeMonitorTest {
         when(jedis.zpopmax(redisKey)).thenReturn(sampleRedisData(timeOfLastItem));
 
         // engage test
-        dataAgeMonitor.monitorRedisKey(jedis, redisKey, 6, timeToCompare);
+        redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, 6, timeToCompare);
 
         // verify
         verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
@@ -64,7 +64,7 @@ public class DataAgeMonitorTest {
         when(jedis.zpopmax(redisKey)).thenReturn(sampleRedisData(timeOfLastItem));
 
         // engage test
-        dataAgeMonitor.monitorRedisKey(jedis, redisKey, 5, timeToCompare);
+        redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, 5, timeToCompare);
 
         // verify
         verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
@@ -80,7 +80,7 @@ public class DataAgeMonitorTest {
         when(jedis.zpopmax(redisKey)).thenReturn(sampleRedisData(timeOfLastItem));
 
         // engage test
-        dataAgeMonitor.monitorRedisKey(jedis, redisKey, 4, timeToCompare);
+        redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, 4, timeToCompare);
 
         // verify
         verify(alertProvider, times(1)).sendEmailAlert(anyString(), anyString());

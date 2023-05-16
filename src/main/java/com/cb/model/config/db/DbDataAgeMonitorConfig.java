@@ -1,7 +1,8 @@
-package com.cb.model.config.db.archived;
+package com.cb.model.config.db;
 
 import lombok.*;
 
+@Deprecated
 @Getter
 @Setter
 @NoArgsConstructor

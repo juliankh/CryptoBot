@@ -1,19 +1,20 @@
-package com.cb.model.config.archived;
+package com.cb.model.config;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
+@Deprecated
 @Getter
 @Setter
-@Accessors(chain = true)
 @ToString
-public class DataAgeMonitorConfig {
+@Accessors(chain = true)
+public class DataCleanerConfig {
 
     private long id;
     private String tableName;
     private String columnName;
-    private int minsAgeLimit;
+    private int hoursBack;
 
 }

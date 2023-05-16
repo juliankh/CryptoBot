@@ -1,10 +1,11 @@
-package com.cb.model.config.db.archived;
+package com.cb.model.config.db;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Deprecated
 @Getter
 @Setter
 @NoArgsConstructor

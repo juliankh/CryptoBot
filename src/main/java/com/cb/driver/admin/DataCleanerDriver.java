@@ -1,6 +1,6 @@
 package com.cb.driver.admin;
 
-import com.cb.admin.DataCleaner;
+import com.cb.admin.RedisDataCleaner;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
@@ -12,7 +12,7 @@ public class DataCleanerDriver extends AbstractDriver {
     private static final String DRIVER_NAME = "Data Cleaner";
 
     @Inject
-    private DataCleaner dataCleaner;
+    private RedisDataCleaner redisDataCleaner;
 
     public static void main(String[] args) {
         DataCleanerDriver driver = MainModule.INJECTOR.getInstance(DataCleanerDriver.class);
@@ -26,13 +26,13 @@ public class DataCleanerDriver extends AbstractDriver {
 
     @Override
     protected void executeCustom() {
-        dataCleaner.prune();
+        redisDataCleaner.prune();
     }
 
     @Override
     protected void cleanup() {
         log.info("Cleaning up");
-        dataCleaner.cleanup();
+        redisDataCleaner.cleanup();
     }
 
 }

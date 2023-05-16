@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
-public class DataAgeMonitor {
+public class RedisDataAgeMonitor {
 
     @Inject
     private DbReadOnlyProvider dbProvider;

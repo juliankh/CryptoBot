@@ -1,4 +1,4 @@
-package com.cb.admin.archived;
+package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
 import com.cb.db.DbReadOnlyProvider;
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.JMS_VHOST;
 
+@Deprecated
 @Slf4j
 @Singleton
 public class JmsQueueMonitor {

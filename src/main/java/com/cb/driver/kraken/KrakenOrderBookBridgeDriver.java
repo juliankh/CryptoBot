@@ -12,6 +12,7 @@ import com.google.inject.Inject;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
 import io.reactivex.disposables.Disposable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,9 +49,16 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     private Throwable throwable;
 
     public static void main(String[] args) {
-        KrakenOrderBookBridgeDriver driver = MainModule.INJECTOR.getInstance(KrakenOrderBookBridgeDriver.class);
-        driver.initialize(args);
-        driver.execute();
+        try {
+            KrakenOrderBookBridgeDriver driver = MainModule.INJECTOR.getInstance(KrakenOrderBookBridgeDriver.class);
+            driver.initialize(args);
+            driver.execute();
+        } catch (WebSocketClientHandshakeException e) {
+            if (e.getMessage().contains("Too Many Requests")) {
+                log.error("TOO MANY REQUESTS -- so need to exit the process to prevent further requests (which will fail anyway) from being made");
+                System.exit(1);
+            }
+        }
     }
 
     public void initialize(String[] args) {
