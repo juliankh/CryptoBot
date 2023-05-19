@@ -271,6 +271,26 @@ public class ObjectConverterTest {
     }
 
     @Test
+    public void convertToSafetyNetConfig() {
+        // setup data
+        long id = 123;
+        String processToken = "processToken1";
+        String processSubtoken = "processSubtoken1";
+        DbSafetyNetConfig rawConfig = new DbSafetyNetConfig();
+        rawConfig.setId(id);
+        rawConfig.setProcess_token(processToken);
+        rawConfig.setProcess_subtoken(processSubtoken);
+
+        // engage test
+        SafetyNetConfig result = objectConverter.convertToSafetyNetConfig(rawConfig);
+
+        // verify results
+        assertEquals(id, result.getId());
+        assertEquals(processToken, result.getProcessToken());
+        assertEquals(processSubtoken, result.getProcessSubToken());
+    }
+
+    @Test
     public void convertToRedisDataCleanerConfig() {
         // setup data
         long id = 123;

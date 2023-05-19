@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class SafetyNetMonitor {
 
-    private static final Set<Integer> EXPECTED_EXIST_CODES = Sets.newHashSet(0, 1);
+    private static final Set<Integer> EXPECTED_EXIT_CODES = Sets.newHashSet(0, 1);
 
     @Inject
     private DbReadOnlyProvider dbReadOnlyProvider;
@@ -44,7 +44,7 @@ public class SafetyNetMonitor {
             int exitCode = result.getLeft();
             List<String> output = result.getRight();
             log.info("For token [" + token + "] refined output: " + (CollectionUtils.isEmpty(output) ? "<nothing>" : "\n\t" + output.parallelStream().sorted().collect(Collectors.joining("\n\t"))));
-            if (!EXPECTED_EXIST_CODES.contains(exitCode)) {
+            if (!EXPECTED_EXIT_CODES.contains(exitCode)) {
                 String error = "When checking if any process for token [" + token + "] is running, got unexpected exit code [" + exitCode + "]";
                 processesWithProblemChecking.put(token, error);
                 log.error(error);

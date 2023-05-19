@@ -93,7 +93,6 @@ public class ObjectConverter {
                 .setMinsBack(raw.getMins_back());
     }
 
-    // TODO: unit test
     public SafetyNetConfig convertToSafetyNetConfig(DbSafetyNetConfig raw) {
         return new SafetyNetConfig()
                 .setId(raw.getId())
