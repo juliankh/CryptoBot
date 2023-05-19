@@ -31,7 +31,7 @@ public class RedisDataAgeMonitor {
     private AlertProvider alertProvider;
 
     public void monitor() {
-        List<RedisDataAgeMonitorConfig> configs = dbProvider.retrieveRedisDataAgeMonitorConfig();
+        List<RedisDataAgeMonitorConfig> configs = dbProvider.redisDataAgeMonitorConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         configs.parallelStream().forEach(config -> {
             String redisKey = config.getRedisKey();
@@ -44,17 +44,21 @@ public class RedisDataAgeMonitor {
     }
 
     public void monitorRedisKey(Jedis jedis, String redisKey, int ageLimit, Instant timeToCompare) {
-        Tuple oldest = jedis.zpopmax(redisKey);
-        String jsonOldest = oldest.getElement();
-        CbOrderBook oldestOrderBook = gson.fromJson(jsonOldest, CbOrderBook.class);
-        Instant exchangeDatetime = oldestOrderBook.getExchangeDatetime();
-        long minsAge = ChronoUnit.MINUTES.between(exchangeDatetime, timeToCompare);
-        if (minsAge > ageLimit) {
-            String msg = "For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is > limit of [" + ageLimit + "] mins";
-            log.warn(msg);
-            alertProvider.sendEmailAlert(msg, msg);
+        if (jedis.exists(redisKey)) {
+            Tuple oldest = jedis.zpopmax(redisKey);
+            String jsonOldest = oldest.getElement();
+            CbOrderBook oldestOrderBook = gson.fromJson(jsonOldest, CbOrderBook.class);
+            Instant exchangeDatetime = oldestOrderBook.getExchangeDatetime();
+            long minsAge = ChronoUnit.MINUTES.between(exchangeDatetime, timeToCompare);
+            if (minsAge > ageLimit) {
+                String msg = "For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is > limit of [" + ageLimit + "] mins";
+                log.warn(msg);
+                alertProvider.sendEmailAlert(msg, msg);
+            } else {
+                log.info("For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is within limit of [" + ageLimit + "] mins");
+            }
         } else {
-            log.info("For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is within limit of [" + ageLimit + "] mins");
+            log.warn("Redis Key [" + redisKey + "] doesn't exist");
         }
     }
 

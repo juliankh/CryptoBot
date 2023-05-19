@@ -47,7 +47,7 @@ public class ModelExp4 {
         DbReadOnlyProvider dbReadOnlyProvider = new DbReadOnlyProvider();
         Instant from = TimeUtils.instant(2023, Month.APRIL, 12, 17, 30, 45);
         Instant to = TimeUtils.instant(2023, Month.APRIL, 12, 17, 32, 45);
-        List<CbOrderBook> orderBooks = dbReadOnlyProvider.retrieveKrakenOrderBooks(CurrencyPair.BTC_USDT, from, to);
+        List<CbOrderBook> orderBooks = dbReadOnlyProvider.krakenOrderBooks(CurrencyPair.BTC_USDT, from, to);
 
         // generate model
         Pair<MultiLayerNetwork, Long> result = generateAndPersistModel(orderBooks);

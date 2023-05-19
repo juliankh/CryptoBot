@@ -19,9 +19,8 @@ import org.knowm.xchange.currency.CurrencyPair;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.DB_READ_CONNECTION;
@@ -34,6 +33,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
     private static final BeanListHandler<DbRedisDataAgeMonitorConfig> BEAN_LIST_HANDLER_REDIS_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbRedisDataAgeMonitorConfig.class);
     private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
     private static final BeanListHandler<DbRedisDataCleanerConfig> BEAN_LIST_HANDLER_REDIS_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbRedisDataCleanerConfig.class);
+    private static final BeanListHandler<DbSafetyNetConfig> BEAN_LIST_HANDLER_SAFETY_NET = new BeanListHandler<>(DbSafetyNetConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
     private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
     private static final BeanListHandler<DbMiscConfig> BEAN_LIST_HANDLER_MISC_CONFIG = new BeanListHandler<>(DbMiscConfig.class);
@@ -49,15 +49,15 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
 
     public static void main(String[] args) {
         DbReadOnlyProvider dbReadOnlyProvider = MainModule.INJECTOR.getInstance(DbReadOnlyProvider.class);
-        dbReadOnlyProvider.retrieveRedisDataCleanerConfig().forEach(System.out::println);
+        dbReadOnlyProvider.miscConfig().entrySet().forEach(System.out::println);
     }
 
-    public List<CbOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Instant from, Instant to) {
-        List<DbKrakenOrderBook> dbOrderBooks = retrieveKrakenOrderBooks(currencyPair, Timestamp.from(from), Timestamp.from(to));
+    public List<CbOrderBook> krakenOrderBooks(CurrencyPair currencyPair, Instant from, Instant to) {
+        List<DbKrakenOrderBook> dbOrderBooks = krakenOrderBooks(currencyPair, Timestamp.from(from), Timestamp.from(to));
         return dbOrderBooks.parallelStream().map(objectConverter::convertToDbKrakenOrderBook).toList();
     }
 
-    public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Timestamp from, Timestamp to) {
+    public List<DbKrakenOrderBook> krakenOrderBooks(CurrencyPair currencyPair, Timestamp from, Timestamp to) {
         try {
             String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
             String sql = " SELECT id, process, exchange_datetime, exchange_date, received_micros, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks " +
@@ -70,7 +70,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public List<DbKrakenOrderBook> retrieveKrakenOrderBooks(CurrencyPair currencyPair, Set<Long> ids) {
+    public List<DbKrakenOrderBook> krakenOrderBooks(CurrencyPair currencyPair, Set<Long> ids) {
         try {
             String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
             String questionMarkString = questionMarks(ids.size());
@@ -85,7 +85,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public List<DataAgeMonitorConfig> retrieveDataAgeMonitorConfig() {
+    public List<DataAgeMonitorConfig> dataAgeMonitorConfig() {
         try {
             String tableName = "cb.config_data_age_monitor";
             String sql = "SELECT id, table_name, column_name, mins_age_limit FROM " + tableName + ";";
@@ -96,7 +96,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public List<RedisDataAgeMonitorConfig> retrieveRedisDataAgeMonitorConfig() {
+    public List<RedisDataAgeMonitorConfig> redisDataAgeMonitorConfig() {
         try {
             String tableName = "cb.config_redis_data_age_monitor";
             String sql = "SELECT id, redis_key, mins_age_limit FROM " + tableName + ";";
@@ -107,7 +107,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public List<DataCleanerConfig> retrieveDataCleanerConfig() {
+    public List<DataCleanerConfig> dataCleanerConfig() {
         try {
             String tableName = "cb.config_data_cleaner";
             String sql = "SELECT id, table_name, column_name, hours_back FROM " + tableName + ";";
@@ -118,7 +118,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public List<RedisDataCleanerConfig> retrieveRedisDataCleanerConfig() {
+    public List<RedisDataCleanerConfig> redisDataCleanerConfig() {
         try {
             String tableName = "cb.config_redis_data_cleaner";
             String sql = "SELECT id, redis_key, mins_back FROM " + tableName + ";";
@@ -129,7 +129,34 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public List<QueueMonitorConfig> retrieveQueueMonitorConfig() {
+    public TreeMap<String, TreeSet<String>> activeSafetyNetConfigMap() {
+        List<SafetyNetConfig> activeSafetyNets = activeSafetyNetConfig();
+        TreeMap<String, List<SafetyNetConfig>> activeSafetyNetMap = activeSafetyNets.parallelStream().collect(Collectors.groupingBy(SafetyNetConfig::getProcessToken, TreeMap::new, Collectors.toList()));
+        TreeMap<String, TreeSet<String>> result = activeSafetyNetMap.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().parallelStream().map(SafetyNetConfig::getProcessSubToken).filter(Objects::nonNull).collect(Collectors.toCollection(TreeSet::new)), (a, b)->a, TreeMap::new));
+        return result;
+    }
+
+    public List<SafetyNetConfig> activeSafetyNetConfig() {
+        return safetyNetConfig(true);
+    }
+
+    public List<SafetyNetConfig> safetyNetConfig(boolean active) {
+        List<SafetyNetConfig> safetyNets = safetyNetConfig();
+        return safetyNets.parallelStream().filter(config -> config.isActive() == active).toList();
+    }
+
+    public List<SafetyNetConfig> safetyNetConfig() {
+        try {
+            String tableName = "cb.config_safety_net";
+            String sql = "SELECT id, process_token, process_subtoken, active FROM " + tableName + ";";
+            List<DbSafetyNetConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_SAFETY_NET), "Retrieving", tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToSafetyNetConfig).toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Safety Nets", e);
+        }
+    }
+
+    public List<QueueMonitorConfig> queueMonitorConfig() {
         try {
             String tableName = "cb.config_queue_monitor";
             String sql = "SELECT id, queue_name, message_limit FROM " + tableName + ";";
@@ -140,7 +167,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public Map<CurrencyPair, KrakenBridgeOrderBookConfig> retrieveKrakenBridgeOrderBookConfig() {
+    public Map<CurrencyPair, KrakenBridgeOrderBookConfig> krakenBridgeOrderBookConfig() {
         try {
             String tableName = "cb.config_kraken_bridge_orderbook";
             String sql = "SELECT id, currency_base, currency_counter, batch_size, secs_timeout FROM " + tableName + ";";
@@ -155,7 +182,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         try {
             String sql = "SELECT id, name, value FROM cb.config_misc;";
             List<DbMiscConfig> rawConfigs = queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_MISC_CONFIG);
-            return rawConfigs.parallelStream().map(objectConverter::convertToMiscConfig).collect(Collectors.toMap(MiscConfig::getName, c -> c));
+            return rawConfigs.parallelStream().map(objectConverter::convertToMiscConfig).collect(Collectors.toMap(MiscConfig::getName, Function.identity()));
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Misc Config", e);
         }

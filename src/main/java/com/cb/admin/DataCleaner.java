@@ -23,7 +23,7 @@ public class DataCleaner {
     private DbWriteProvider dbWriteProvider;
 
     public void prune() {
-        List<DataCleanerConfig> configs = dbReadOnlyProvider.retrieveDataCleanerConfig();
+        List<DataCleanerConfig> configs = dbReadOnlyProvider.dataCleanerConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         configs.parallelStream().forEach(config -> {
             String table = config.getTableName();

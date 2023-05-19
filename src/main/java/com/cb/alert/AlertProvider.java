@@ -1,5 +1,6 @@
 package com.cb.alert;
 
+import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -18,7 +19,7 @@ import static com.cb.injection.BindingName.*;
 @Singleton
 public class AlertProvider {
 
-	public static boolean DEFAULT_IS_ON = true;
+	public static boolean DEFAULT_IS_ON = false; // TODO: put back to true
 
 	@Inject
 	@Named(ALERT_EMAIL)
@@ -72,7 +73,8 @@ public class AlertProvider {
 
 	// DO NOT MODIFY/DELETE -- this is used by safety net driver wrapper scripts
 	public static void main(String[] args) throws IOException {
-		(new AlertProvider()).sendEmailAlert(args[0], args[1]);
+		AlertProvider alertProvider = MainModule.INJECTOR.getInstance(AlertProvider.class);
+		alertProvider.sendEmailAlert(args[0], args[1]);
 	}
 
 	public void sendEmailAlert(String subject, String body, Throwable t) {

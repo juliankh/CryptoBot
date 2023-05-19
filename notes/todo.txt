@@ -1,9 +1,28 @@
 TODO:
 -misc
+    -a single alert with all the processes that are down, instead of 1 for each downed process
+    -how to fix the constant bridge reconnections?
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
 -ML
     -admin
         -ensure ML uses gpu processors
-    -features
-        -add to orderbook snapshot tables: spread size (abs), spread size (% of midprice)
-        -the best orderbook depth to use (500?  100?  10?)
+    -model variations
+        -no derived features vs derived features
+        -training data range: 10 min, 30 min, 60 min, 120 min
+        -prediction scope: 5 min, 10 min, 15 min, 30 min
+        -orderbook depth: 500, 200, 100, 50, 20, 10
+    -derived features
+        -1st order derived
+            -area under curve
+                -absolute area under curve
+                -% diff in area under curve between bids and asks
+                -for different depths (500, 200, 100, 50, 20, 10)
+            -time
+                -minute of hour
+                -hour of day
+                -hour and minute of day
+            -spread size (absolute or relative to midprice)
+        -2nd order derived
+            -% change for some feature vs some previous time (1 min ago, 2 min ago, 5 min ago, 10 min ago, 30 min ago, 60 min ago)
+    -questions
+        -if a feature has no bearing on prediction accuracy, will NN learn to ignore it?  How important is it better to omit that feature?

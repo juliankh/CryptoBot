@@ -23,7 +23,7 @@ public class RedisDataCleaner {
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     public void prune() {
-        List<RedisDataCleanerConfig> configs = dbReadOnlyProvider.retrieveRedisDataCleanerConfig();
+        List<RedisDataCleanerConfig> configs = dbReadOnlyProvider.redisDataCleanerConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         configs.parallelStream().forEach(config -> {
             String redisKey = config.getRedisKey();

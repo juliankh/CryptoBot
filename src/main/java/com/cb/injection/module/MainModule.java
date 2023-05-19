@@ -1,8 +1,5 @@
 package com.cb.injection.module;
 
-import com.cb.injection.provider.KrakenOrderBookPersistJmsConsumerProvider;
-import com.cb.injection.provider.ListProvider;
-import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
 import com.cb.model.json.adapter.InstantAdapter;
 import com.cb.model.json.adapter.LocalDateAdapter;
 import com.cb.property.CryptoProperties;
@@ -22,14 +19,11 @@ import redis.clients.jedis.Jedis;
 import java.sql.DriverManager;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 
 import static com.cb.injection.BindingName.*;
 
 @Slf4j
 public class MainModule extends AbstractModule {
-
-    private static final int NUM_PERSISTERS = 1;
 
     public static Injector INJECTOR = Guice.createInjector(new MainModule());
 
@@ -63,9 +57,6 @@ public class MainModule extends AbstractModule {
 
         bindConstant().annotatedWith(Names.named(REDIS_HOST)).to(cryptoProperties.redisHost());
         bindConstant().annotatedWith(Names.named(REDIS_PORT)).to(cryptoProperties.redisPort());
-
-        log.info("Number of Persisters: " + NUM_PERSISTERS);
-        bind(new TypeLiteral<List<KrakenOrderBookPersistJmsConsumer>>() {}).toProvider(new ListProvider<>(new KrakenOrderBookPersistJmsConsumerProvider(cryptoProperties.jmsKrakenOrderBookSnapshotQueueName()), NUM_PERSISTERS));
     }
 
     @Provides

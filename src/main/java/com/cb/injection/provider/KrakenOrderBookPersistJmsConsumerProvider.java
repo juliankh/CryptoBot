@@ -5,6 +5,7 @@ import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
 import com.google.inject.Provider;
 import lombok.extern.slf4j.Slf4j;
 
+@Deprecated
 @Slf4j
 public class KrakenOrderBookPersistJmsConsumerProvider implements Provider<KrakenOrderBookPersistJmsConsumer> {
 

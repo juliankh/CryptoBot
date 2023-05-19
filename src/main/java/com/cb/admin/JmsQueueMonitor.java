@@ -39,7 +39,7 @@ public class JmsQueueMonitor {
     private String jmsVhost;
 
     public void monitor() {
-        List<QueueMonitorConfig> queueMonitorConfigs = dbReadOnlyProvider.retrieveQueueMonitorConfig();
+        List<QueueMonitorConfig> queueMonitorConfigs = dbReadOnlyProvider.queueMonitorConfig();
         log.info("Configs:\n\t" + queueMonitorConfigs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         queueMonitorConfigs.parallelStream().forEach(this::monitorQueue);
     }

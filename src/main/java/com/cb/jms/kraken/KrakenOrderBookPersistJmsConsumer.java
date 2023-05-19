@@ -17,6 +17,7 @@ import redis.clients.jedis.Jedis;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 @Slf4j
 public class KrakenOrderBookPersistJmsConsumer extends AbstractJmsConsumer {
 

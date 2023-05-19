@@ -39,12 +39,30 @@ public class RedisDataAgeMonitorTest {
     }
 
     @Test
+    public void monitorRedisKey_RedisKeyNotExists() {
+        // setup
+        String redisKey = "redisKey1";
+        int ageLimit_DoesNotMatter = 12;
+        Instant timeToCompare_DoesNotMatter = Instant.now();
+        Jedis jedis = mock(Jedis.class);
+        when(jedis.exists(redisKey)).thenReturn(false);
+
+        // engage test
+        redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, ageLimit_DoesNotMatter, timeToCompare_DoesNotMatter);
+
+        // verify
+        verify(jedis, times(0)).zpopmax(anyString());
+        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+    }
+
+    @Test
     public void monitorRedisKey_ageBelowLimit() {
         // prepare data
         Jedis jedis = mock(Jedis.class);
         String redisKey = "doesn't matter";
         Instant timeToCompare = Instant.now();
         Instant timeOfLastItem = timeToCompare.minus(5, ChronoUnit.MINUTES);
+        when(jedis.exists(redisKey)).thenReturn(true);
         when(jedis.zpopmax(redisKey)).thenReturn(sampleRedisData(timeOfLastItem));
 
         // engage test
@@ -61,6 +79,7 @@ public class RedisDataAgeMonitorTest {
         String redisKey = "doesn't matter";
         Instant timeToCompare = Instant.now();
         Instant timeOfLastItem = timeToCompare.minus(5, ChronoUnit.MINUTES);
+        when(jedis.exists(redisKey)).thenReturn(true);
         when(jedis.zpopmax(redisKey)).thenReturn(sampleRedisData(timeOfLastItem));
 
         // engage test
@@ -77,6 +96,7 @@ public class RedisDataAgeMonitorTest {
         String redisKey = "doesn't matter";
         Instant timeToCompare = Instant.now();
         Instant timeOfLastItem = timeToCompare.minus(5, ChronoUnit.MINUTES);
+        when(jedis.exists(redisKey)).thenReturn(true);
         when(jedis.zpopmax(redisKey)).thenReturn(sampleRedisData(timeOfLastItem));
 
         // engage test

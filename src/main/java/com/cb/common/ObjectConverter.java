@@ -63,56 +63,65 @@ public class ObjectConverter {
         return matrix;
     }
 
-    public DataAgeMonitorConfig convertToDataAgeMonitorConfig(DbDataAgeMonitorConfig rawConfig) {
+    public DataAgeMonitorConfig convertToDataAgeMonitorConfig(DbDataAgeMonitorConfig raw) {
         return new DataAgeMonitorConfig()
-                .setId(rawConfig.getId())
-                .setTableName(rawConfig.getTable_name())
-                .setColumnName(rawConfig.getColumn_name())
-                .setMinsAgeLimit(rawConfig.getMins_age_limit());
+                .setId(raw.getId())
+                .setTableName(raw.getTable_name())
+                .setColumnName(raw.getColumn_name())
+                .setMinsAgeLimit(raw.getMins_age_limit());
     }
 
-    public RedisDataAgeMonitorConfig convertToRedisDataAgeMonitorConfig(DbRedisDataAgeMonitorConfig rawConfig) {
+    public RedisDataAgeMonitorConfig convertToRedisDataAgeMonitorConfig(DbRedisDataAgeMonitorConfig raw) {
         return new RedisDataAgeMonitorConfig()
-                .setId(rawConfig.getId())
-                .setRedisKey(rawConfig.getRedis_key())
-                .setMinsAgeLimit(rawConfig.getMins_age_limit());
+                .setId(raw.getId())
+                .setRedisKey(raw.getRedis_key())
+                .setMinsAgeLimit(raw.getMins_age_limit());
     }
 
-    public DataCleanerConfig convertToDataCleanerConfig(DbDataCleanerConfig rawConfig) {
+    public DataCleanerConfig convertToDataCleanerConfig(DbDataCleanerConfig raw) {
         return new DataCleanerConfig()
-                .setId(rawConfig.getId())
-                .setTableName(rawConfig.getTable_name())
-                .setColumnName(rawConfig.getColumn_name())
-                .setHoursBack(rawConfig.getHours_back());
+                .setId(raw.getId())
+                .setTableName(raw.getTable_name())
+                .setColumnName(raw.getColumn_name())
+                .setHoursBack(raw.getHours_back());
     }
 
-    public RedisDataCleanerConfig convertToRedisDataCleanerConfig(DbRedisDataCleanerConfig rawConfig) {
+    public RedisDataCleanerConfig convertToRedisDataCleanerConfig(DbRedisDataCleanerConfig raw) {
         return new RedisDataCleanerConfig()
-                .setId(rawConfig.getId())
-                .setRedisKey(rawConfig.getRedis_key())
-                .setMinsBack(rawConfig.getMins_back());
+                .setId(raw.getId())
+                .setRedisKey(raw.getRedis_key())
+                .setMinsBack(raw.getMins_back());
     }
 
-    public QueueMonitorConfig convertToQueueMonitorConfig(DbQueueMonitorConfig rawConfig) {
+    // TODO: unit test
+    public SafetyNetConfig convertToSafetyNetConfig(DbSafetyNetConfig raw) {
+        return new SafetyNetConfig()
+                .setId(raw.getId())
+                .setProcessToken(raw.getProcess_token())
+                .setProcessSubToken(raw.getProcess_subtoken())
+                .setActive(raw.isActive());
+    }
+
+    public QueueMonitorConfig convertToQueueMonitorConfig(DbQueueMonitorConfig raw) {
         return new QueueMonitorConfig()
-                .setId(rawConfig.getId())
-                .setQueueName(rawConfig.getQueue_name())
-                .setMessageLimit(rawConfig.getMessage_limit());
+                .setId(raw.getId())
+                .setQueueName(raw.getQueue_name())
+                .setMessageLimit(raw.getMessage_limit());
     }
 
-    public KrakenBridgeOrderBookConfig convertToKrakenBridgeOrderBookConfig(DbKrakenBridgeOrderBookConfig rawConfig) {
+    public KrakenBridgeOrderBookConfig convertToKrakenBridgeOrderBookConfig(DbKrakenBridgeOrderBookConfig raw) {
         return new KrakenBridgeOrderBookConfig()
-                .setId(rawConfig.getId())
-                .setCurrencyPair(currencyResolver.krakenCurrencyPair(rawConfig.getCurrency_base(), rawConfig.getCurrency_counter()))
-                .setBatchSize(rawConfig.getBatch_size())
-                .setSecsTimeout(rawConfig.getSecs_timeout());
+                .setId(raw.getId())
+                .setCurrencyPair(currencyResolver.krakenCurrencyPair(raw.getCurrency_base(), raw.getCurrency_counter()))
+                .setBatchSize(raw.getBatch_size())
+                .setSecsTimeout(raw.getSecs_timeout());
     }
 
-    public MiscConfig convertToMiscConfig(DbMiscConfig rawConfig) {
+    public MiscConfig convertToMiscConfig(DbMiscConfig raw) {
         return new MiscConfig()
-                .setId(rawConfig.getId())
-                .setName(rawConfig.getName())
-                .setValue(rawConfig.getValue());
+                .setId(raw.getId())
+                .setName(raw.getName())
+                .setValue(raw.getValue());
     }
 
     @SneakyThrows
