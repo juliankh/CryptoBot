@@ -25,4 +25,4 @@ TODO:
         -2nd order derived
             -% change for some feature vs some previous time (1 min ago, 2 min ago, 5 min ago, 10 min ago, 30 min ago, 60 min ago)
     -questions
-        -if a feature has no bearing on prediction accuracy, will NN learn to ignore it?  How important is it better to omit that feature?
+        -if a feature has no bearing on prediction accuracy, will NN learn to ignore it?  How important is it to omit that feature?

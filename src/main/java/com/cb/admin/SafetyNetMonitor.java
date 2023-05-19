@@ -74,7 +74,6 @@ public class SafetyNetMonitor {
         return activeSafetyNetMap;
     }
 
-    // TODO: unit test
     public void checkProcessWithoutSubTokens(String token, List<String> output, List<String> processesNotRunning, TreeMap<String, String> processesWithProblemChecking) {
         if (output.size() == 1) {
             String outputString = output.get(0);
@@ -94,7 +93,6 @@ public class SafetyNetMonitor {
         }
     }
 
-    // TODO: unit test
     public void checkProcessWithSubTokens(String processString, Set<String> outputSet, List<String> processesNotRunning) {
         if (outputSet.contains(processString)) {
             log.info("Process [" + processString + "] is running, which is good");
@@ -104,7 +102,6 @@ public class SafetyNetMonitor {
         }
     }
 
-    // TODO: unit test
     public void alertIfNecessary(List<String> processesNotRunning, TreeMap<String, String> processesWithProblemChecking) {
         if (CollectionUtils.isEmpty(processesNotRunning) && MapUtils.isEmpty(processesWithProblemChecking)){
             log.info("ALL GOOD - all processes that are expected to be up, are indeed up and running.");
@@ -117,7 +114,7 @@ public class SafetyNetMonitor {
             }
             if (MapUtils.isNotEmpty(processesWithProblemChecking)) {
                 if (!subjectSb.isEmpty()) {
-                    subjectSb.append(" - ");
+                    subjectSb.append(" & ");
                 }
                 subjectSb.append("Errors While Checking Processes Running");
                 if (!detailsSb.isEmpty()) {
