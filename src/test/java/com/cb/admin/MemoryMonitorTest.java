@@ -47,7 +47,7 @@ public class MemoryMonitorTest {
 
     @Test
     public void ratio() {
-        assertEquals(0.75, memoryMonitor.ratio(25, 100), DOUBLE_COMPARE_DELTA);
+        assertEquals(0.25, memoryMonitor.ratio(25, 100), DOUBLE_COMPARE_DELTA);
     }
 
 }

@@ -28,11 +28,21 @@ public class MemoryMonitor {
         long totalSwapSpaceSize = operatingSystemMXBean.getTotalSwapSpaceSize();
         long freeSwapSpaceSize = operatingSystemMXBean.getFreeSwapSpaceSize();
 
+        String totalMemorySizeString = NumberUtils.numberFormat(totalMemorySize);
+        String committedVirtualMemorySizeString = NumberUtils.numberFormat(committedVirtualMemorySize);
+        String freeMemorySizeString = NumberUtils.numberFormat(freeMemorySize);
+        String totalSwapSpaceSizeString = NumberUtils.numberFormat(totalSwapSpaceSize);
+        String freeSwapSpaceSizeString = NumberUtils.numberFormat(freeSwapSpaceSize);
+
         String committedVirtualOfTotalMemory = percent(committedVirtualMemorySize, totalMemorySize);
         String freeOfTotalMemory = percent(freeMemorySize, totalMemorySize);
         String freeOfTotalSwap = percent(freeSwapSpaceSize, totalSwapSpaceSize);
 
-        log.info("Total Memory Size [" + totalMemorySize + "], Committed Virtual Memory Size [" + committedVirtualMemorySize + "] (" + committedVirtualOfTotalMemory + " of Total), Free Memory Size [" + freeMemorySize + "] (" + freeOfTotalMemory + " of Total), Total Swap Space Size [" + totalSwapSpaceSize + "], Free Swap Space Size [" + freeSwapSpaceSize + "] (" + freeOfTotalSwap + " of Total Swap)");
+        log.info("Total Memory Size [" + totalMemorySizeString + "], " +
+                 "Committed Virtual Memory Size [" + committedVirtualMemorySizeString + "] (" + committedVirtualOfTotalMemory + " of Total), " +
+                 "Free Memory Size [" + freeMemorySizeString + "] (" + freeOfTotalMemory + " of Total), " +
+                 "Total Swap Space Size [" + totalSwapSpaceSizeString + "], " +
+                 "Free Swap Space Size [" + freeSwapSpaceSizeString + "] (" + freeOfTotalSwap + " of Total Swap)");
 
         /*
         // TODO: determine under what conditions to alert
@@ -48,7 +58,7 @@ public class MemoryMonitor {
     }
 
     public double ratio(long numerator, long denominator) {
-        return (double)(denominator - numerator) / (double)denominator;
+        return (double)numerator / (double)denominator;
     }
 
     public void alertIfAboveLimit(double freeRatio, double percentThreshold) {
