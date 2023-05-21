@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ToString
 @EqualsAndHashCode
-public class SafetyNetConfig {
+public class ProcessConfig {
 
     private long id;
     private String processToken;

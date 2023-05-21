@@ -1,9 +1,12 @@
 package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
+import com.cb.db.DbReadOnlyProvider;
+import com.cb.model.config.ProcessConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,15 +15,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SafetyNetMonitorTest {
+
+    @Mock
+    private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Mock
     private AlertProvider alertProvider;;
@@ -30,6 +34,7 @@ public class SafetyNetMonitorTest {
 
     @Before
     public void beforeEachTest() {
+        Mockito.reset(dbReadOnlyProvider);
         Mockito.reset(alertProvider);
     }
 
@@ -191,6 +196,30 @@ public class SafetyNetMonitorTest {
         assertTrue(processesNotRunning.isEmpty());
         assertEquals(1, processesWithProblemChecking.size());
         assertEquals("When checking if process [" + token + "] is running, only 1 output is expected, but got [2]", processesWithProblemChecking.get(token));
+    }
+
+    @Test
+    @SneakyThrows
+    public void activeProcessAndSubProcessMap() {
+        // setup
+        String token1 = "ActiveProcessToken1";
+        String token2 = "ActiveProcessToken2";
+        ProcessConfig config1 = new ProcessConfig().setId(1).setProcessToken(token1).setProcessSubToken(null).setActive(true);
+        ProcessConfig config2 = new ProcessConfig().setId(2).setProcessToken(token2).setProcessSubToken("ActiveProcessSubtoken1").setActive(true);
+        ProcessConfig config3 = new ProcessConfig().setId(3).setProcessToken(token2).setProcessSubToken("ActiveProcessSubtoken2").setActive(true);
+        TreeMap<String, List<ProcessConfig>> activeProcessConfigMap = new TreeMap<>() {{
+            put(token1, Lists.newArrayList(config1));
+            put(token2, Lists.newArrayList(config2, config3));
+        }};
+        when(dbReadOnlyProvider.activeProcessConfigMap()).thenReturn(activeProcessConfigMap);
+
+        // engage test
+        TreeMap<String, TreeSet<String>> result = safetyNetMonitor.activeProcessAndSubProcessMap();
+
+        // verify
+        assertEquals(2, result.size());
+        assertEquals(Collections.emptySet(), result.get("ActiveProcessToken1"));
+        assertEquals(Sets.newTreeSet(Arrays.asList("ActiveProcessSubtoken1", "ActiveProcessSubtoken2")), result.get("ActiveProcessToken2"));
     }
 
 }

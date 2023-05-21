@@ -93,8 +93,8 @@ public class ObjectConverter {
                 .setMinsBack(raw.getMins_back());
     }
 
-    public SafetyNetConfig convertToSafetyNetConfig(DbSafetyNetConfig raw) {
-        return new SafetyNetConfig()
+    public ProcessConfig convertToProcessConfig(DbProcessConfig raw) {
+        return new ProcessConfig()
                 .setId(raw.getId())
                 .setProcessToken(raw.getProcess_token())
                 .setProcessSubToken(raw.getProcess_subtoken())

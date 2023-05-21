@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class DbSafetyNetConfig {
+public class DbProcessConfig {
 
     private long id;
     private String process_token;

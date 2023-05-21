@@ -4,42 +4,40 @@ import com.cb.alert.AlertProvider;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.module.MainModule;
 import com.cb.model.config.ProcessConfig;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Singleton
-public class SafetyNetMonitor {
+public class StuckProcessMonitor {
 
-    private static final Set<Integer> EXPECTED_EXIT_CODES = Sets.newHashSet(0, 1);
+    private static final String LOG_DIR = "/usr/local/var/crypto_bot/log"; // TODO: see if this can somehow be gotten from env-var instead of hardcoding it here
 
     @Inject
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Inject
-    private ShellCommandRunner shellCommandRunner;
-
-    @Inject
     private AlertProvider alertProvider;
 
     public static void main(String[] args) {
-        SafetyNetMonitor monitor = MainModule.INJECTOR.getInstance(SafetyNetMonitor.class);
+        StuckProcessMonitor monitor = MainModule.INJECTOR.getInstance(StuckProcessMonitor.class);
         monitor.monitor();
     }
 
     public void monitor() {
-        TreeMap<String, TreeSet<String>> configs = configs();
-        List<String> processesNotRunning = new ArrayList<>();
-        TreeMap<String, String> processesWithProblemChecking = new TreeMap<>();
-        configs.forEach((token, subTokens) -> {
+        /*
+        TreeMap<String, List<ProcessConfig>> configs = configs();
+        List<String> stuckProcesses = new ArrayList<>();
+        configs.forEach((token, config) -> {
             log.info("-------------------------------------------------------------------------");
             Pair<Integer, List<String>> result = shellCommandRunner.currentlyRunning(token);
             int exitCode = result.getLeft();
@@ -64,21 +62,16 @@ public class SafetyNetMonitor {
         });
         log.info("-------------------------------------------------------------------------");
         alertIfNecessary(processesNotRunning, processesWithProblemChecking);
+        */
     }
 
-    private TreeMap<String, TreeSet<String>> configs() {
-        TreeMap<String, TreeSet<String>> activeProcessAndSubProcessMap = activeProcessAndSubProcessMap();
-        log.info("Safety Nets:\n\t" + activeProcessAndSubProcessMap.entrySet().parallelStream()
+    private TreeMap<String, List<ProcessConfig>> configs() {
+        TreeMap<String, List<ProcessConfig>> activeProcessConfigMap = dbReadOnlyProvider.activeProcessConfigMap();
+        log.info("Safety Nets:\n\t" + activeProcessConfigMap.entrySet().parallelStream()
                 .map(entry -> entry.getKey() + (CollectionUtils.isNotEmpty(entry.getValue()) ? "\n\t\t" + entry.getValue().parallelStream().map(Objects::toString).sorted().collect(Collectors.joining("\n\t\t")) : ""))
                 .sorted()
                 .collect(Collectors.joining("\n\t")));
-        return activeProcessAndSubProcessMap;
-    }
-
-    public TreeMap<String, TreeSet<String>> activeProcessAndSubProcessMap() {
-        TreeMap<String, List<ProcessConfig>> activeProcessConfigMap = dbReadOnlyProvider.activeProcessConfigMap();
-        TreeMap<String, TreeSet<String>> result = activeProcessConfigMap.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().parallelStream().map(ProcessConfig::getProcessSubToken).filter(Objects::nonNull).collect(Collectors.toCollection(TreeSet::new)), (a, b)->a, TreeMap::new));
-        return result;
+        return activeProcessConfigMap;
     }
 
     public void checkProcessWithoutSubTokens(String token, List<String> output, List<String> processesNotRunning, TreeMap<String, String> processesWithProblemChecking) {

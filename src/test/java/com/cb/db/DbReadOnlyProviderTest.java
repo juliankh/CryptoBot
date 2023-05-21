@@ -1,10 +1,9 @@
 package com.cb.db;
 
 import com.cb.common.ObjectConverter;
-import com.cb.model.config.SafetyNetConfig;
-import com.cb.model.config.db.DbSafetyNetConfig;
+import com.cb.model.config.ProcessConfig;
+import com.cb.model.config.db.DbProcessConfig;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -17,7 +16,8 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Connection;
-import java.util.*;
+import java.util.List;
+import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -47,30 +47,30 @@ public class DbReadOnlyProviderTest {
 
     @Test
     @SneakyThrows
-    public void safetyNetConfig() {
+    public void processConfigs() {
         // setup
-        DbSafetyNetConfig dbConfig1 = new DbSafetyNetConfig(1, "ActiveProcessToken1", null, true);
-        DbSafetyNetConfig dbConfig2 = new DbSafetyNetConfig(2, "ActiveProcessToken2", "ActiveProcessSubtoken1", true);
-        DbSafetyNetConfig dbConfig3 = new DbSafetyNetConfig(3, "ActiveProcessToken2", "ActiveProcessSubtoken2", true);
-        DbSafetyNetConfig dbConfig4 = new DbSafetyNetConfig(4, "InactiveProcessToken1", null, false);
-        DbSafetyNetConfig dbConfig5 = new DbSafetyNetConfig(5, "InactiveProcessToken2", "InactiveProcessSubtoken1", false);
-        DbSafetyNetConfig dbConfig6 = new DbSafetyNetConfig(6, "InactiveProcessToken2", "InactiveProcessSubtoken2", false);
-        List<DbSafetyNetConfig> configs = Lists.newArrayList(dbConfig1, dbConfig2, dbConfig3, dbConfig4, dbConfig5, dbConfig6);
+        DbProcessConfig dbConfig1 = new DbProcessConfig(1, "ActiveProcessToken1", null, true);
+        DbProcessConfig dbConfig2 = new DbProcessConfig(2, "ActiveProcessToken2", "ActiveProcessSubtoken1", true);
+        DbProcessConfig dbConfig3 = new DbProcessConfig(3, "ActiveProcessToken2", "ActiveProcessSubtoken2", true);
+        DbProcessConfig dbConfig4 = new DbProcessConfig(4, "InactiveProcessToken1", null, false);
+        DbProcessConfig dbConfig5 = new DbProcessConfig(5, "InactiveProcessToken2", "InactiveProcessSubtoken1", false);
+        DbProcessConfig dbConfig6 = new DbProcessConfig(6, "InactiveProcessToken2", "InactiveProcessSubtoken2", false);
+        List<DbProcessConfig> configs = Lists.newArrayList(dbConfig1, dbConfig2, dbConfig3, dbConfig4, dbConfig5, dbConfig6);
         when(queryRunner.query(any(Connection.class), anyString(), any(BeanListHandler.class))).thenReturn(configs);
 
         // engage test
-        List<SafetyNetConfig> resultActive = dbReadOnlyProvider.safetyNetConfig(true);
-        List<SafetyNetConfig> resultInactive = dbReadOnlyProvider.safetyNetConfig(false);
+        List<ProcessConfig> resultActive = dbReadOnlyProvider.processConfigs(true);
+        List<ProcessConfig> resultInactive = dbReadOnlyProvider.processConfigs(false);
 
         // verify
-        SafetyNetConfig config1 = new SafetyNetConfig().setId(1).setProcessToken("ActiveProcessToken1").setProcessSubToken(null).setActive(true);
-        SafetyNetConfig config2 = new SafetyNetConfig().setId(2).setProcessToken("ActiveProcessToken2").setProcessSubToken("ActiveProcessSubtoken1").setActive(true);
-        SafetyNetConfig config3 = new SafetyNetConfig().setId(3).setProcessToken("ActiveProcessToken2").setProcessSubToken("ActiveProcessSubtoken2").setActive(true);
-        SafetyNetConfig config4 = new SafetyNetConfig().setId(4).setProcessToken("InactiveProcessToken1").setProcessSubToken(null).setActive(false);
-        SafetyNetConfig config5 = new SafetyNetConfig().setId(5).setProcessToken("InactiveProcessToken2").setProcessSubToken("InactiveProcessSubtoken1").setActive(false);
-        SafetyNetConfig config6 = new SafetyNetConfig().setId(6).setProcessToken("InactiveProcessToken2").setProcessSubToken("InactiveProcessSubtoken2").setActive(false);
-        List<SafetyNetConfig> expectedActive = Lists.newArrayList(config1, config2, config3);
-        List<SafetyNetConfig> expectedInactive = Lists.newArrayList(config4, config5, config6);
+        ProcessConfig config1 = new ProcessConfig().setId(1).setProcessToken("ActiveProcessToken1").setProcessSubToken(null).setActive(true);
+        ProcessConfig config2 = new ProcessConfig().setId(2).setProcessToken("ActiveProcessToken2").setProcessSubToken("ActiveProcessSubtoken1").setActive(true);
+        ProcessConfig config3 = new ProcessConfig().setId(3).setProcessToken("ActiveProcessToken2").setProcessSubToken("ActiveProcessSubtoken2").setActive(true);
+        ProcessConfig config4 = new ProcessConfig().setId(4).setProcessToken("InactiveProcessToken1").setProcessSubToken(null).setActive(false);
+        ProcessConfig config5 = new ProcessConfig().setId(5).setProcessToken("InactiveProcessToken2").setProcessSubToken("InactiveProcessSubtoken1").setActive(false);
+        ProcessConfig config6 = new ProcessConfig().setId(6).setProcessToken("InactiveProcessToken2").setProcessSubToken("InactiveProcessSubtoken2").setActive(false);
+        List<ProcessConfig> expectedActive = Lists.newArrayList(config1, config2, config3);
+        List<ProcessConfig> expectedInactive = Lists.newArrayList(config4, config5, config6);
 
         assertEquals(expectedActive, resultActive);
         assertEquals(expectedInactive, resultInactive);
@@ -78,24 +78,28 @@ public class DbReadOnlyProviderTest {
 
     @Test
     @SneakyThrows
-    public void activeSafetyNetConfigMap() {
+    public void activeProcessConfigMap() {
         // setup
-        DbSafetyNetConfig dbConfig1 = new DbSafetyNetConfig(1, "ActiveProcessToken1", null, true);
-        DbSafetyNetConfig dbConfig2 = new DbSafetyNetConfig(2, "ActiveProcessToken2", "ActiveProcessSubtoken1", true);
-        DbSafetyNetConfig dbConfig3 = new DbSafetyNetConfig(3, "ActiveProcessToken2", "ActiveProcessSubtoken2", true);
-        DbSafetyNetConfig dbConfig4 = new DbSafetyNetConfig(4, "InactiveProcessToken1", null, false);
-        DbSafetyNetConfig dbConfig5 = new DbSafetyNetConfig(5, "InactiveProcessToken2", "InactiveProcessSubtoken1", false);
-        DbSafetyNetConfig dbConfig6 = new DbSafetyNetConfig(6, "InactiveProcessToken2", "InactiveProcessSubtoken2", false);
-        List<DbSafetyNetConfig> configs = Lists.newArrayList(dbConfig1, dbConfig2, dbConfig3, dbConfig4, dbConfig5, dbConfig6);
+        DbProcessConfig dbConfig1 = new DbProcessConfig(1, "ActiveProcessToken1", null, true);
+        DbProcessConfig dbConfig2 = new DbProcessConfig(2, "ActiveProcessToken2", "ActiveProcessSubtoken1", true);
+        DbProcessConfig dbConfig3 = new DbProcessConfig(3, "ActiveProcessToken2", "ActiveProcessSubtoken2", true);
+        DbProcessConfig dbConfig4 = new DbProcessConfig(4, "InactiveProcessToken1", null, false);
+        DbProcessConfig dbConfig5 = new DbProcessConfig(5, "InactiveProcessToken2", "InactiveProcessSubtoken1", false);
+        DbProcessConfig dbConfig6 = new DbProcessConfig(6, "InactiveProcessToken2", "InactiveProcessSubtoken2", false);
+        List<DbProcessConfig> configs = Lists.newArrayList(dbConfig1, dbConfig2, dbConfig3, dbConfig4, dbConfig5, dbConfig6);
         when(queryRunner.query(any(Connection.class), anyString(), any(BeanListHandler.class))).thenReturn(configs);
 
         // engage test
-        TreeMap<String, TreeSet<String>> result = dbReadOnlyProvider.activeSafetyNetConfigMap();
+        TreeMap<String, List<ProcessConfig>> result = dbReadOnlyProvider.activeProcessConfigMap();
 
         // verify
+        ProcessConfig expectedConfig1 = new ProcessConfig().setId(1).setProcessToken("ActiveProcessToken1").setProcessSubToken(null).setActive(true);
+        ProcessConfig expectedConfig2 = new ProcessConfig().setId(2).setProcessToken("ActiveProcessToken2").setProcessSubToken("ActiveProcessSubtoken1").setActive(true);
+        ProcessConfig expectedConfig3 = new ProcessConfig().setId(3).setProcessToken("ActiveProcessToken2").setProcessSubToken("ActiveProcessSubtoken2").setActive(true);
+
         assertEquals(2, result.size());
-        assertEquals(Collections.emptySet(), result.get("ActiveProcessToken1"));
-        assertEquals(Sets.newTreeSet(Arrays.asList("ActiveProcessSubtoken1", "ActiveProcessSubtoken2")), result.get("ActiveProcessToken2"));
+        assertEquals(Lists.newArrayList(expectedConfig1), result.get("ActiveProcessToken1"));
+        assertEquals(Lists.newArrayList(expectedConfig2, expectedConfig3), result.get("ActiveProcessToken2"));
     }
 
 }

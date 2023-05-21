@@ -271,18 +271,18 @@ public class ObjectConverterTest {
     }
 
     @Test
-    public void convertToSafetyNetConfig() {
+    public void convertToProcessConfig() {
         // setup data
         long id = 123;
         String processToken = "processToken1";
         String processSubtoken = "processSubtoken1";
-        DbSafetyNetConfig rawConfig = new DbSafetyNetConfig();
+        DbProcessConfig rawConfig = new DbProcessConfig();
         rawConfig.setId(id);
         rawConfig.setProcess_token(processToken);
         rawConfig.setProcess_subtoken(processSubtoken);
 
         // engage test
-        SafetyNetConfig result = objectConverter.convertToSafetyNetConfig(rawConfig);
+        ProcessConfig result = objectConverter.convertToProcessConfig(rawConfig);
 
         // verify results
         assertEquals(id, result.getId());

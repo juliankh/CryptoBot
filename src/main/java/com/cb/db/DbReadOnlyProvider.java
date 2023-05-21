@@ -19,7 +19,10 @@ import org.knowm.xchange.currency.CurrencyPair;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,7 +36,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
     private static final BeanListHandler<DbRedisDataAgeMonitorConfig> BEAN_LIST_HANDLER_REDIS_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbRedisDataAgeMonitorConfig.class);
     private static final BeanListHandler<DbDataCleanerConfig> BEAN_LIST_HANDLER_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbDataCleanerConfig.class);
     private static final BeanListHandler<DbRedisDataCleanerConfig> BEAN_LIST_HANDLER_REDIS_DATA_CLEANER_CONFIG = new BeanListHandler<>(DbRedisDataCleanerConfig.class);
-    private static final BeanListHandler<DbSafetyNetConfig> BEAN_LIST_HANDLER_SAFETY_NET = new BeanListHandler<>(DbSafetyNetConfig.class);
+    private static final BeanListHandler<DbProcessConfig> BEAN_LIST_HANDLER_PROCESS_CONFIG = new BeanListHandler<>(DbProcessConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
     private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
     private static final BeanListHandler<DbMiscConfig> BEAN_LIST_HANDLER_MISC_CONFIG = new BeanListHandler<>(DbMiscConfig.class);
@@ -129,28 +132,27 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
-    public TreeMap<String, TreeSet<String>> activeSafetyNetConfigMap() {
-        List<SafetyNetConfig> activeSafetyNets = activeSafetyNetConfig();
-        TreeMap<String, List<SafetyNetConfig>> activeSafetyNetMap = activeSafetyNets.parallelStream().collect(Collectors.groupingBy(SafetyNetConfig::getProcessToken, TreeMap::new, Collectors.toList()));
-        TreeMap<String, TreeSet<String>> result = activeSafetyNetMap.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().parallelStream().map(SafetyNetConfig::getProcessSubToken).filter(Objects::nonNull).collect(Collectors.toCollection(TreeSet::new)), (a, b)->a, TreeMap::new));
+    public TreeMap<String, List<ProcessConfig>> activeProcessConfigMap() {
+        List<ProcessConfig> activeProcessConfigs = activeProcessConfigs();
+        TreeMap<String, List<ProcessConfig>> result = activeProcessConfigs.parallelStream().collect(Collectors.groupingBy(ProcessConfig::getProcessToken, TreeMap::new, Collectors.toList()));
         return result;
     }
 
-    public List<SafetyNetConfig> activeSafetyNetConfig() {
-        return safetyNetConfig(true);
+    public List<ProcessConfig> activeProcessConfigs() {
+        return processConfigs(true);
     }
 
-    public List<SafetyNetConfig> safetyNetConfig(boolean active) {
-        List<SafetyNetConfig> safetyNets = safetyNetConfig();
+    public List<ProcessConfig> processConfigs(boolean active) {
+        List<ProcessConfig> safetyNets = processConfigs();
         return safetyNets.parallelStream().filter(config -> config.isActive() == active).toList();
     }
 
-    public List<SafetyNetConfig> safetyNetConfig() {
+    public List<ProcessConfig> processConfigs() {
         try {
-            String tableName = "cb.config_safety_net";
+            String tableName = "cb.config_process";
             String sql = "SELECT id, process_token, process_subtoken, active FROM " + tableName + ";";
-            List<DbSafetyNetConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_SAFETY_NET), "Retrieving", tableName);
-            return rawConfigs.parallelStream().map(objectConverter::convertToSafetyNetConfig).toList();
+            List<DbProcessConfig> rawConfigs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_PROCESS_CONFIG), "Retrieving", tableName);
+            return rawConfigs.parallelStream().map(objectConverter::convertToProcessConfig).toList();
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Safety Nets", e);
         }
