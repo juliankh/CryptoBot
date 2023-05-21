@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
-    private static final int SLEEP_SECS_RECONNECT = 15;
+    private static final int SLEEP_SECS_RECONNECT = 5;
     private static final int ORDER_BOOK_DEPTH = 500;
 
     @Inject
@@ -45,8 +45,6 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     private int maxSecsBetweenUpdates;
 
     private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
-
-    private Throwable throwable;
 
     public static void main(String[] args) {
         try {
@@ -86,8 +84,8 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
         ExchangeSpecification exchangeSpecification = new ExchangeSpecification(KrakenStreamingExchange.class);
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
-        Disposable disposable = subscribe(krakenExchange, currencyPair);
-        maintainConnectivity(krakenExchange, disposable);
+        subscribe(krakenExchange, currencyPair);
+        maintainConnectivity(krakenExchange);
     }
 
     @Override
@@ -103,40 +101,32 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
                 .getStreamingMarketDataService()
                 .getOrderBook(currencyPair, ORDER_BOOK_DEPTH)
                 .onTerminateDetach()
-                .doOnEach(orderBookNotification -> {
-                    latestReceive.set(Instant.now());
-                })
                 .subscribe(
-                        orderBook -> processor.process(orderBook, currencyPair, getDriverName()),
+                        orderBook -> {
+                            latestReceive.set(Instant.now());
+                            processor.process(orderBook, currencyPair, getDriverName());
+                        },
                         throwable -> {
-                            log.error("Failed to get OrderBook: {}", throwable.getMessage(), throwable);
-                            this.throwable = throwable;
-                            krakenExchange.disconnect().subscribe(() -> log.info("Exchange Disconnected!"));
+                            String msg = "Error in Process [" + getDriverName() + "] while listening to OrderBooks: " + throwable.getMessage();
+                            log.error(msg, throwable);
+                            alertProvider.sendEmailAlertQuietly(msg, msg, throwable);
+                            krakenExchange.resubscribeChannels();
                         }
                 );
     }
 
-    private void maintainConnectivity(StreamingExchange krakenExchange, Disposable disposable) {
+    private void maintainConnectivity(StreamingExchange krakenExchange) {
         while (true) {
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());
             if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
                 String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
                 log.warn(msg);
-                alertProvider.sendEmailAlertQuietly("Reconnection - " + getDriverName(), msg);
-                disconnect(krakenExchange);
+                alertProvider.sendEmailAlertQuietly("Reconnecting - " + getDriverName(), msg);
                 TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_RECONNECT);
-                subscribe(krakenExchange, currencyPair);
-            }
-            if (disposable.isDisposed()) {
-                disconnect(krakenExchange);
-                throw new RuntimeException("Process [" + getDriverName() + "] unexpectedly stopped", throwable);
+                krakenExchange.resubscribeChannels();
             }
             TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
         }
-    }
-
-    private static void disconnect(StreamingExchange krakenExchange) {
-        krakenExchange.disconnect().subscribe(() -> log.info("Exchange Disconnected!"));
     }
 
 }

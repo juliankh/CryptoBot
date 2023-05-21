@@ -1,11 +1,8 @@
 TODO:
 
 -misc
-    -monitor for stuck processes
     -bridges: if no updates for some time, then completely scrap the connection and start completely from scratch (do the same even in the current reconnection logic)
     -check how slower is the read from redis when it's using large swap
-    -make java utilities for shell commands like
-        -ltro (try to make this a shell command first)
     -how to fix the constant bridge reconnections?
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
 -ML
