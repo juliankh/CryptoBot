@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS cb.config_process
     process_token varchar(256) NOT NULL,
     process_subtoken varchar(256),
     active boolean NOT NULL,
-    log_prefix varchar(256),
     CONSTRAINT config_process_pkey PRIMARY KEY (id)
 )
 
