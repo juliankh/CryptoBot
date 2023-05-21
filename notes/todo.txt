@@ -1,6 +1,10 @@
 TODO:
+
 -misc
-    -a single alert with all the processes that are down, instead of 1 for each downed process
+    -memory monitor: track all parts of memory (swap, etc)
+    -check how slower is the read from redis when it's using large swap
+    -make java utilities for shell commands like
+        -ltro (try to make this a shell command first)
     -how to fix the constant bridge reconnections?
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
 -ML
