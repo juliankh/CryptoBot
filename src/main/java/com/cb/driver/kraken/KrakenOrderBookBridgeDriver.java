@@ -13,7 +13,6 @@ import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import info.bitrich.xchangestream.kraken.KrakenStreamingExchange;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
-import io.reactivex.disposables.Disposable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.ExchangeSpecification;
@@ -28,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
-    private static final int SLEEP_SECS_RECONNECT = 5;
     private static final int ORDER_BOOK_DEPTH = 500;
 
     @Inject
@@ -75,29 +73,29 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     }
 
     @Override
-    public String getDriverName() {
-        return driverName;
-    }
-
-    @Override
     protected void executeCustom() {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
         ExchangeSpecification exchangeSpecification = new ExchangeSpecification(KrakenStreamingExchange.class);
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
-        subscribe(krakenExchange, currencyPair);
-        maintainConnectivity(krakenExchange);
+        subscribe(krakenExchange);
+        latestReceive.set(Instant.now());
+        while (true) {
+            long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());
+            if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
+                String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
+                log.warn(msg);
+                alertProvider.sendEmailAlertQuietly("Re-establishing connection - " + getDriverName(), msg);
+                krakenExchange.disconnect().blockingAwait();
+                subscribe(krakenExchange);
+            }
+            TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
+        }
     }
 
-    @Override
-    protected void cleanup() {
-        log.info("Nothing to cleanup");
-    }
-
-    private Disposable subscribe(StreamingExchange krakenExchange, CurrencyPair currencyPair) {
+    private void subscribe(StreamingExchange krakenExchange) {
         log.info("Subscribing for [" + currencyPair + "]");
         krakenExchange.connect().blockingAwait();
-        latestReceive.set(Instant.now());
-        return krakenExchange
+        krakenExchange
                 .getStreamingMarketDataService()
                 .getOrderBook(currencyPair, ORDER_BOOK_DEPTH)
                 .onTerminateDetach()
@@ -110,28 +108,20 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
                             String msg = "Error in Process [" + getDriverName() + "] while listening to OrderBooks: " + throwable.getMessage();
                             log.error(msg, throwable);
                             alertProvider.sendEmailAlertQuietly(msg, msg, throwable);
-                            resubscribeChannels(krakenExchange);
                         }
                 );
     }
 
-    private void maintainConnectivity(StreamingExchange krakenExchange) {
-        while (true) {
-            long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive.get(), Instant.now());
-            if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
-                String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
-                log.warn(msg);
-                alertProvider.sendEmailAlertQuietly("Reconnecting - " + getDriverName(), msg);
-                TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_RECONNECT);
-                resubscribeChannels(krakenExchange);
-            }
-            TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
-        }
+    @Override
+    public String getDriverName() {
+        return driverName;
     }
 
-    private void resubscribeChannels(StreamingExchange krakenExchange) {
-        krakenExchange.resubscribeChannels();
-        latestReceive.set(Instant.now());
+    @Override
+    protected void cleanup() {
+        log.info("Cleaning up");
+        dbReadOnlyProvider.cleanup();
+        processor.cleanup();
     }
 
 }

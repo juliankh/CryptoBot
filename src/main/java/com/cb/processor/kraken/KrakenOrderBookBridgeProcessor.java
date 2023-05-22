@@ -54,4 +54,9 @@ public class KrakenOrderBookBridgeProcessor {
         log.info("Inserted [" + NumberUtils.numberFormat(numInserted) + "] out of [" + NumberUtils.numberFormat(redisPayloadMap.size()) + "] [" + currencyPair + "] OrderBooks into Redis (" + allOrPartialIndicator + ")");
     }
 
+    public void cleanup() {
+        log.info("Cleaning up");
+        jedis.close();
+    }
+
 }

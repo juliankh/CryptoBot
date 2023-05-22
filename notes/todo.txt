@@ -1,9 +1,11 @@
 TODO:
 
 -misc
-    -bridges: if no updates for some time, then completely scrap the connection and start completely from scratch (do the same even in the current reconnection logic)
-    -check how slower is the read from redis when it's using large swap
     -how to fix the constant bridge reconnections?
+        -establish branch new instance of exchange
+        -check if static ip
+        -perhaps don't rely on xchange and make your own websocket connection
+    -check how slower is the read from redis when it's using large swap
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
 -ML
     -admin
