@@ -110,7 +110,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
                             String msg = "Error in Process [" + getDriverName() + "] while listening to OrderBooks: " + throwable.getMessage();
                             log.error(msg, throwable);
                             alertProvider.sendEmailAlertQuietly(msg, msg, throwable);
-                            krakenExchange.resubscribeChannels();
+                            resubscribeChannels(krakenExchange);
                         }
                 );
     }
@@ -123,10 +123,15 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
                 log.warn(msg);
                 alertProvider.sendEmailAlertQuietly("Reconnecting - " + getDriverName(), msg);
                 TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_RECONNECT);
-                krakenExchange.resubscribeChannels();
+                resubscribeChannels(krakenExchange);
             }
             TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
         }
+    }
+
+    private void resubscribeChannels(StreamingExchange krakenExchange) {
+        krakenExchange.resubscribeChannels();
+        latestReceive.set(Instant.now());
     }
 
 }
