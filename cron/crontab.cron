@@ -2,14 +2,14 @@
 # monitoring
 ###################################################################################
 
-*/4 * * * *  sleep 27;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/safety_net_monitor.sh           # every 4 minutes
-*/5 * * * *  sleep 41;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_age_monitor.sh             # every 5 minutes
-*/27 * * * * sleep 13;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/disk_space_monitor.sh           # every 27 minutes
-*/3 * * * *  sleep 38;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/memory_monitor.sh               # every 3 minutes
+*/4 * * * *  sleep 27;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/safety_net_monitor.sh               # every 4 minutes
+*/5 * * * *  sleep 41;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_age_monitor.sh                 # every 5 minutes
+*/27 * * * * sleep 13;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/disk_space_monitor.sh               # every 27 minutes
+*/3 * * * *  sleep 38;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/memory_monitor.sh                   # every 3 minutes
 
 ###################################################################################
 # cleanup
 ###################################################################################
 
-*/2 * * * *  sleep 51;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_cleaner.sh                 # every 2 minutes
-*/32 * * * *  sleep 57; source ~/.crypto_bot_profile;find $CRYPTO_BOT_LOG_DIR/* -mtime +3 -type f -delete       # prune logs older than 3 days - every 32 mins
+*/2 * * * *  sleep 51;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/data_cleaner.sh                     # every 2 minutes
+*/32 * * * *  sleep 57; source ~/.crypto_bot_profile;find $CRYPTO_BOT_LOG_DIR/ -name "*" -mtime +3 -type f -delete  # prune logs older than 3 days - every 32 mins
