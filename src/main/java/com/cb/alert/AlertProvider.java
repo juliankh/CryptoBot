@@ -4,13 +4,16 @@ import com.cb.injection.module.MainModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Properties;
 
 import static com.cb.injection.BindingName.*;
@@ -115,6 +118,8 @@ public class AlertProvider {
 
 	public void sendAlert(String subject, String body, String recipient, boolean quietly) {
 		try {
+			String hostnamePrefix = hostname(5);
+			subject = hostnamePrefix + ": " + subject;
 			if (!DEFAULT_IS_ON) {
 				log.info("NOT Sending alert with subject [" + subject + "] because the Alert system is OFF");
 				return;
@@ -143,6 +148,16 @@ public class AlertProvider {
 				throw e;
 			}
 		}
+	}
+
+	public String hostname() {
+		return hostname(Integer.MAX_VALUE);
+	}
+
+	@SneakyThrows
+	public String hostname(int lengthLimit) {
+		String hostname = InetAddress.getLocalHost().getHostName();
+		return StringUtils.substring(hostname, 0, lengthLimit);
 	}
 
 	private Properties emailProperties() {
