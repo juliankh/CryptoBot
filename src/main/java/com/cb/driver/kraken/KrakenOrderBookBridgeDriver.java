@@ -62,7 +62,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         currencyPair = argsConverter.getCurrencyPair();
         String currencyToken = currencyResolver.upperCaseToken(currencyPair, "-");
         String driverToken = argsConverter.getDriverToken();
-        driverName = "Kraken OrderBook Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverToken) ? "" : " " + driverToken);
+        driverName = "Kr OB Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverToken) ? "" : " " + driverToken);
         Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbReadOnlyProvider.krakenBridgeOrderBookConfig();
         dbReadOnlyProvider.cleanup();
         KrakenBridgeOrderBookConfig config = configMap.get(currencyPair);
@@ -84,7 +84,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
             if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
                 String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
                 log.warn(msg);
-                alertProvider.sendEmailAlertQuietly("Re-establishing connection - " + getDriverName(), msg);
+                alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
                 krakenExchange.disconnect().blockingAwait();
                 subscribe(krakenExchange);
             }
