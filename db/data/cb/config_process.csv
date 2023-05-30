@@ -1,3 +1,4 @@
+# TODO: put MXC entries back to active=true
 1,"KrakenOrderBookBridgeDriver","ATOM-USD 01",true
 2,"KrakenOrderBookBridgeDriver","ATOM-USD 02",true
 3,"KrakenOrderBookBridgeDriver","ATOM-USD 03",true
@@ -38,16 +39,16 @@
 38,"KrakenOrderBookBridgeDriver","LINK-USD 08",true
 39,"KrakenOrderBookBridgeDriver","LINK-USD 09",true
 40,"KrakenOrderBookBridgeDriver","LINK-USD 10",true
-41,"KrakenOrderBookBridgeDriver","MXC-USD 01",true
-42,"KrakenOrderBookBridgeDriver","MXC-USD 02",true
-43,"KrakenOrderBookBridgeDriver","MXC-USD 03",true
-44,"KrakenOrderBookBridgeDriver","MXC-USD 04",true
-45,"KrakenOrderBookBridgeDriver","MXC-USD 05",true
-46,"KrakenOrderBookBridgeDriver","MXC-USD 06",true
-47,"KrakenOrderBookBridgeDriver","MXC-USD 07",true
-48,"KrakenOrderBookBridgeDriver","MXC-USD 08",true
-49,"KrakenOrderBookBridgeDriver","MXC-USD 09",true
-50,"KrakenOrderBookBridgeDriver","MXC-USD 10",true
+41,"KrakenOrderBookBridgeDriver","MXC-USD 01",false
+42,"KrakenOrderBookBridgeDriver","MXC-USD 02",false
+43,"KrakenOrderBookBridgeDriver","MXC-USD 03",false
+44,"KrakenOrderBookBridgeDriver","MXC-USD 04",false
+45,"KrakenOrderBookBridgeDriver","MXC-USD 05",false
+46,"KrakenOrderBookBridgeDriver","MXC-USD 06",false
+47,"KrakenOrderBookBridgeDriver","MXC-USD 07",false
+48,"KrakenOrderBookBridgeDriver","MXC-USD 08",false
+49,"KrakenOrderBookBridgeDriver","MXC-USD 09",false
+50,"KrakenOrderBookBridgeDriver","MXC-USD 10",false
 51,"KrakenOrderBookBridgeDriver","SOL-USD 01",true
 52,"KrakenOrderBookBridgeDriver","SOL-USD 02",true
 53,"KrakenOrderBookBridgeDriver","SOL-USD 03",true

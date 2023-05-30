@@ -44,7 +44,7 @@ public class RedisQueryPerformanceExp {
         log.info("Retrieving and converting [" + NumberUtils.numberFormat(orderBooks.size()) + "] items took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
 
         Instant start3 = Instant.now();
-        Map<String, Double> payloadMap = orderBooks.parallelStream().collect(Collectors.toMap(gson::toJson, orderbook -> (double)(orderbook.getReceivedNanos()), (a,b)->a));
+        Map<String, Double> payloadMap = orderBooks.parallelStream().collect(Collectors.toMap(gson::toJson, orderbook -> (double)(orderbook.getReceivedMicros()), (a, b)->a));
         Instant end3 = Instant.now();
         double queryRate3 = TimeUtils.ratePerSecond(start3, end3, payloadMap.size());
         log.info("Converting to json [" + NumberUtils.numberFormat(payloadMap.size()) + "] items took [" + TimeUtils.durationMessage(start3, end3) + "] at rate of [" + NumberUtils.numberFormat(queryRate3) + "/sec]");

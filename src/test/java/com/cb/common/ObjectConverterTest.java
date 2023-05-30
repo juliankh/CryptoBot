@@ -5,7 +5,9 @@ import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
-import com.cb.model.kraken.jms.KrakenOrderBook;
+import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
+import com.cb.model.kraken.ws.KrakenOrderBook2Data;
+import com.cb.model.kraken.ws.KrakenOrderBookLevel;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -29,6 +31,7 @@ import java.sql.Array;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -403,7 +406,7 @@ public class ObjectConverterTest {
     }
 
     @Test
-    public void quoteTreeMap() {
+    public void quoteTreeMapFromLimitOrders() {
         // setup data
         double price1 = 10.1;
         double price2 = 10.3;
@@ -420,7 +423,7 @@ public class ObjectConverterTest {
         List<LimitOrder> limitOrders = Lists.newArrayList(limitOrder1, limitOrder2, limitOrder3);
 
         // engage test
-        TreeMap<Double, Double> result = objectConverter.quoteTreeMap(limitOrders);
+        TreeMap<Double, Double> result = objectConverter.quoteTreeMapFromLimitOrders(limitOrders);
 
         // verify results
         List<Map.Entry<Double, Double>> resultList = Lists.newArrayList(result.entrySet());
@@ -442,7 +445,46 @@ public class ObjectConverterTest {
     }
 
     @Test
-    public void convertToCbOrderBook() {
+    public void quoteTreeMapFromLevels() {
+        // setup data
+        double price1 = 10.1;
+        double price2 = 10.3;
+        double price3 = 10.2;
+
+        double quantity1 = 2.3;
+        double quantity2 = 2.4;
+        double quantity3 = 2.5;
+
+        KrakenOrderBookLevel level1 = new KrakenOrderBookLevel().setPrice(price1).setQty(quantity1);
+        KrakenOrderBookLevel level2 = new KrakenOrderBookLevel().setPrice(price2).setQty(quantity2);
+        KrakenOrderBookLevel level3 = new KrakenOrderBookLevel().setPrice(price3).setQty(quantity3);
+
+        List<KrakenOrderBookLevel> levels = Lists.newArrayList(level1, level2, level3);
+
+        // engage test
+        TreeMap<Double, Double> result = objectConverter.quoteTreeMapFromLevels(levels);
+
+        // verify results
+        List<Map.Entry<Double, Double>> resultList = Lists.newArrayList(result.entrySet());
+
+        assertEquals(levels.size(), resultList.size());
+
+        Map.Entry<Double, Double> resultQuote1 = resultList.get(0);
+        Map.Entry<Double, Double> resultQuote2 = resultList.get(1);
+        Map.Entry<Double, Double> resultQuote3 = resultList.get(2);
+
+        assertEquals(price1, resultQuote1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(quantity1, resultQuote1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(price3, resultQuote2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(quantity3, resultQuote2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(price2, resultQuote3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(quantity2, resultQuote3.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToCbOrderBook_fromKrakenOrderBook() {
         // setup data
         double bid1Price = 10.1;
         double bid2Price = 10.3;
@@ -474,7 +516,7 @@ public class ObjectConverterTest {
 
         long micros = 121212L;
 
-        KrakenOrderBook krakenOrderBook = new KrakenOrderBook().setProcess("Process1").setMicroSeconds(micros).setOrderBook(orderBook);
+        XchangeKrakenOrderBook krakenOrderBook = new XchangeKrakenOrderBook().setProcess("Process1").setMicroSeconds(micros).setOrderBook(orderBook);
 
         // engage test
         CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook);
@@ -482,7 +524,7 @@ public class ObjectConverterTest {
         // verify results
         assertEquals(date.toInstant(), result.getExchangeDatetime());
         assertEquals(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()), result.getExchangeDate());
-        assertEquals(micros, result.getReceivedNanos());
+        assertEquals(micros, result.getReceivedMicros());
 
         List<Map.Entry<Double, Double>> resultBidList = Lists.newArrayList(result.getBids().entrySet());
         List<Map.Entry<Double, Double>> resultAskList = Lists.newArrayList(result.getAsks().entrySet());
@@ -518,14 +560,86 @@ public class ObjectConverterTest {
     }
 
     @Test
+    public void convertToCbOrderBook_fromKrakenOrderBook2Data() {
+        // setup data
+        double bid1Price = 10.1;
+        double bid2Price = 10.3;
+        double bid3Price = 10.2;
+
+        double bid1Quantity = 2.3;
+        double bid2Quantity = 2.4;
+        double bid3Quantity = 2.5;
+
+        double ask1Price = 11.77;
+        double ask2Price = 11.55;
+        double ask3Price = 11.66;
+
+        double ask1Quantity = 5.33;
+        double ask2Quantity = 5.44;
+        double ask3Quantity = 5.55;
+
+        Instant timestamp = Instant.now();
+
+        KrakenOrderBookLevel bid1 = new KrakenOrderBookLevel().setPrice(bid1Price).setQty(bid1Quantity);
+        KrakenOrderBookLevel bid2 = new KrakenOrderBookLevel().setPrice(bid2Price).setQty(bid2Quantity);
+        KrakenOrderBookLevel bid3 = new KrakenOrderBookLevel().setPrice(bid3Price).setQty(bid3Quantity);
+        KrakenOrderBookLevel ask1 = new KrakenOrderBookLevel().setPrice(ask1Price).setQty(ask1Quantity);
+        KrakenOrderBookLevel ask2 = new KrakenOrderBookLevel().setPrice(ask2Price).setQty(ask2Quantity);
+        KrakenOrderBookLevel ask3 = new KrakenOrderBookLevel().setPrice(ask3Price).setQty(ask3Quantity);
+        List<KrakenOrderBookLevel> bids = Lists.newArrayList(bid1, bid2, bid3);
+        List<KrakenOrderBookLevel> asks = Lists.newArrayList(ask1, ask2, ask3);
+
+        KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(timestamp).setBids(bids).setAsks(asks);
+
+        // engage test
+        CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook);
+
+        // verify results
+        assertEquals(timestamp, result.getExchangeDatetime());
+        assertEquals(LocalDate.ofInstant(timestamp, ZoneId.systemDefault()), result.getExchangeDate());
+
+        List<Map.Entry<Double, Double>> resultBidList = Lists.newArrayList(result.getBids().entrySet());
+        List<Map.Entry<Double, Double>> resultAskList = Lists.newArrayList(result.getAsks().entrySet());
+
+        assertEquals(bids.size(), resultBidList.size());
+        assertEquals(asks.size(), resultAskList.size());
+
+        Map.Entry<Double, Double> resultBid1 = resultBidList.get(0);
+        Map.Entry<Double, Double> resultBid2 = resultBidList.get(1);
+        Map.Entry<Double, Double> resultBid3 = resultBidList.get(2);
+
+        assertEquals(bid1Price, resultBid1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid1Quantity, resultBid1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(bid3Price, resultBid2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid3Quantity, resultBid2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(bid2Price, resultBid3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid2Quantity, resultBid3.getValue(), DOUBLE_COMPARE_DELTA);
+
+        Map.Entry<Double, Double> resultAsk1 = resultAskList.get(0);
+        Map.Entry<Double, Double> resultAsk2 = resultAskList.get(1);
+        Map.Entry<Double, Double> resultAsk3 = resultAskList.get(2);
+
+        assertEquals(ask2Price, resultAsk1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask2Quantity, resultAsk1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(ask3Price, resultAsk2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask3Quantity, resultAsk2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask1Quantity, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
     public void convertToRedisPayload() {
         // setup
         long micros1 = 123123;
         long micros2 = 34221;
         String json1 = "SomeJson1";
         String json2 = "SomeJson2";
-        CbOrderBook orderBook1 = new CbOrderBook().setReceivedNanos(micros1);
-        CbOrderBook orderBook2 = new CbOrderBook().setReceivedNanos(micros2);
+        CbOrderBook orderBook1 = new CbOrderBook().setReceivedMicros(micros1);
+        CbOrderBook orderBook2 = new CbOrderBook().setReceivedMicros(micros2);
         List<CbOrderBook> orderBooks = Lists.newArrayList(orderBook1, orderBook2);
         when(gson.toJson(orderBook1)).thenReturn(json1);
         when(gson.toJson(orderBook2)).thenReturn(json2);

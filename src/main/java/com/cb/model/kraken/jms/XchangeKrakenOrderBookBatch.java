@@ -11,9 +11,9 @@ import java.util.List;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class KrakenOrderBookBatch implements Serializable {
+public class XchangeKrakenOrderBookBatch implements Serializable {
 
     private final CurrencyPair currencyPair;
-    private final List<KrakenOrderBook> orderbooks;
+    private final List<XchangeKrakenOrderBook> orderbooks;
 
 }

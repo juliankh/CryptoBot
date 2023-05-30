@@ -1,12 +1,15 @@
 package com.cb.common;
 
+import com.cb.common.util.TimeUtils;
 import com.cb.db.DbUtils;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
-import com.cb.model.kraken.jms.KrakenOrderBook;
+import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
+import com.cb.model.kraken.ws.KrakenOrderBook2Data;
+import com.cb.model.kraken.ws.KrakenOrderBookLevel;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -20,6 +23,7 @@ import org.knowm.xchange.dto.trade.LimitOrder;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
@@ -128,26 +132,36 @@ public class ObjectConverter {
         return new CbOrderBook()
                 .setExchangeDatetime(input.getExchange_datetime().toInstant())
                 .setExchangeDate(input.getExchange_date().toLocalDate())
-                .setReceivedNanos(input.getReceived_micros())
+                .setReceivedMicros(input.getReceived_micros())
                 .setBids(DbUtils.doubleMapFromArray(input.getBids()))
                 .setAsks(DbUtils.doubleMapFromArray(input.getAsks()));
     }
 
-    public List<CbOrderBook> convertToCbOrderBooks(Collection<KrakenOrderBook> krakenOrderBooks) {
+    public List<CbOrderBook> convertToCbOrderBooks(Collection<XchangeKrakenOrderBook> krakenOrderBooks) {
         return krakenOrderBooks.parallelStream().map(this::convertToCbOrderBook).toList();
     }
 
-    public CbOrderBook convertToCbOrderBook(KrakenOrderBook krakenOrderBook) {
+    public CbOrderBook convertToCbOrderBook(XchangeKrakenOrderBook krakenOrderBook) {
         OrderBook orderBook = krakenOrderBook.getOrderBook();
         return new CbOrderBook()
                 .setExchangeDatetime(orderBook.getTimeStamp().toInstant())
                 .setExchangeDate(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()))
-                .setReceivedNanos(krakenOrderBook.getMicroSeconds())
-                .setBids(quoteTreeMap(orderBook.getBids()))
-                .setAsks(quoteTreeMap(orderBook.getAsks()));
+                .setReceivedMicros(krakenOrderBook.getMicroSeconds())
+                .setBids(quoteTreeMapFromLimitOrders(orderBook.getBids()))
+                .setAsks(quoteTreeMapFromLimitOrders(orderBook.getAsks()));
     }
 
-    public DbKrakenOrderBook convertToDbKrakenOrderBook(KrakenOrderBook krakenOrderBook, Connection connection) {
+    public CbOrderBook convertToCbOrderBook(KrakenOrderBook2Data krakenOrderBookData) {
+        Instant timestamp = krakenOrderBookData.getTimestamp();
+        return new CbOrderBook()
+                .setExchangeDatetime(timestamp)
+                .setExchangeDate(LocalDate.ofInstant(timestamp, ZoneId.systemDefault()))
+                .setReceivedMicros(TimeUtils.currentMicros())
+                .setBids(quoteTreeMapFromLevels(krakenOrderBookData.getBids()))
+                .setAsks(quoteTreeMapFromLevels(krakenOrderBookData.getAsks()));
+    }
+
+    public DbKrakenOrderBook convertToDbKrakenOrderBook(XchangeKrakenOrderBook krakenOrderBook, Connection connection) {
         OrderBook orderBook = krakenOrderBook.getOrderBook();
 
         List<LimitOrder> orderBookBids = orderBook.getBids();
@@ -182,15 +196,19 @@ public class ObjectConverter {
     }
 
     public Map<String, Double> convertToRedisPayload(Collection<CbOrderBook> orderBooks) {
-        return orderBooks.parallelStream().collect(Collectors.toMap(gson::toJson, orderbook -> (double)(orderbook.getReceivedNanos()), (a,b)->a));
+        return orderBooks.parallelStream().collect(Collectors.toMap(gson::toJson, orderbook -> (double)(orderbook.getReceivedMicros()), (a, b)->a));
     }
 
     public List<Pair<Double, Double>> quoteList(List<LimitOrder> limitOrders) {
         return limitOrders.parallelStream().map(this::priceAndQuantity).toList();
     }
 
-    public TreeMap<Double, Double> quoteTreeMap(List<LimitOrder> limitOrders) {
+    public TreeMap<Double, Double> quoteTreeMapFromLimitOrders(List<LimitOrder> limitOrders) {
         return limitOrders.parallelStream().collect(Collectors.toMap(limitOrder -> limitOrder.getLimitPrice().doubleValue(), limitOrder -> limitOrder.getOriginalAmount().doubleValue(), (a,b)->a, TreeMap::new));
+    }
+
+    public TreeMap<Double, Double> quoteTreeMapFromLevels(List<KrakenOrderBookLevel> levels) {
+        return levels.parallelStream().collect(Collectors.toMap(KrakenOrderBookLevel::getPrice, KrakenOrderBookLevel::getQty, (a,b)->a, TreeMap::new));
     }
 
     @SneakyThrows

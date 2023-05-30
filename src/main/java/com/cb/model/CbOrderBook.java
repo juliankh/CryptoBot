@@ -19,7 +19,7 @@ public class CbOrderBook {
 
     private Instant exchangeDatetime;
     private LocalDate exchangeDate;
-    private long receivedNanos;
+    private long receivedMicros;
     private TreeMap<Double, Double> bids;
     private TreeMap<Double, Double> asks;
 

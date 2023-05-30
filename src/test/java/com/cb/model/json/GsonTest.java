@@ -42,7 +42,7 @@ public class GsonTest {
         CbOrderBook orderBook = new CbOrderBook()
                 .setExchangeDatetime(exchangeDateTime)
                 .setExchangeDate(exchangeDate)
-                .setReceivedNanos(micros)
+                .setReceivedMicros(micros)
                 .setBids(bids)
                 .setAsks(asks);
 
@@ -51,7 +51,7 @@ public class GsonTest {
 
         // verify
         long expectedExchangeDateTimeMillis = exchangeDateTime.toEpochMilli();
-        assertEquals("{\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":\"1995-04-08\",\"receivedNanos\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7}}", result);
+        assertEquals("{\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":\"1995-04-08\",\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7}}", result);
     }
 
 }
