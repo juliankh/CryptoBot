@@ -7,7 +7,7 @@ public class BufferProcessor {
     private final StringBuilder sb = new StringBuilder();
 
     // TODO: unit test
-    public synchronized void process(String data, boolean last, Consumer<String> processor) {
+    public synchronized void process(CharSequence data, boolean last, Consumer<String> processor) {
         sb.append(data);
         if (last) {
             processor.accept(sb.toString());

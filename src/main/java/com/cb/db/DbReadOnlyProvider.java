@@ -180,6 +180,10 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
         }
     }
 
+    public MiscConfig miscConfig(String name) {
+        return miscConfig().get(name);
+    }
+
     public Map<String, MiscConfig> miscConfig() {
         try {
             String sql = "SELECT id, name, value FROM cb.config_misc;";

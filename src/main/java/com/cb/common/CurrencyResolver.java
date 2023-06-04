@@ -1,6 +1,7 @@
 package com.cb.common;
 
 import com.google.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 
@@ -11,12 +12,22 @@ public class CurrencyResolver {
         System.out.println((new CurrencyResolver()).lowerCaseToken(CurrencyPair.BTC_USDT, "_"));
     }
 
+    public String upperCaseToken(CurrencyPair currencyPair, String separator) {
+        return lowerCaseToken(currencyPair, separator).toUpperCase();
+    }
+
     public String lowerCaseToken(CurrencyPair currencyPair, String separator) {
         return currencyPair.getBase().getCurrencyCode().toLowerCase() + separator + currencyPair.getCounter().getCurrencyCode().toLowerCase();
     }
 
-    public String upperCaseToken(CurrencyPair currencyPair, String separator) {
-        return currencyPair.getBase().getCurrencyCode().toUpperCase() + separator + currencyPair.getCounter().getCurrencyCode().toUpperCase();
+    public CurrencyPair krakenCurrencyPair(String pair) {
+        return krakenCurrencyPair(pair, '/');
+    }
+
+    // TODO: unit test
+    public CurrencyPair krakenCurrencyPair(String pair, char separator) {
+        String[] parts = StringUtils.split(pair, separator);
+        return krakenCurrencyPair(parts[0], parts[1]);
     }
 
     public CurrencyPair krakenCurrencyPair(String baseCurrencyCode, String counterCurrencyCode) {

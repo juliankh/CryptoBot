@@ -1,11 +1,13 @@
 package com.cb.test;
 
+import com.cb.common.util.NumberUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
+import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.*;
 
 public class EqualsUtils {
@@ -22,17 +24,17 @@ public class EqualsUtils {
 	}
 	
 	public static boolean equals(double[][] matrix1, double[][] matrix2) {
-		if (!equals(matrix1.length, matrix2.length)) {
+		if (!NumberUtils.equals(matrix1.length, matrix2.length)) {
 			return false;
 		}
 		for (int i = 0; i < matrix1.length; ++i) {
 			double[] inner1 = matrix1[i];
 			double[] inner2 = matrix2[i];
-			if (!equals(inner1.length, inner2.length)) {
+			if (!NumberUtils.equals(inner1.length, inner2.length)) {
 				return false;
 			}
 			for (int j = 0; j < inner1.length; ++j) {
-				if (!equals(matrix1[i][j], matrix2[i][j])) {
+				if (!NumberUtils.equals(matrix1[i][j], matrix2[i][j])) {
 					return false;
 				}
 			}
@@ -51,7 +53,7 @@ public class EqualsUtils {
 		for (int i = 0; i < l1.size(); ++i) {
 			double d1 = l1.get(i);
 			double d2 = l2.get(i);
-			if (!equals(d1, d2)) {
+			if (!NumberUtils.equals(d1, d2)) {
 				return false;
 			}
 		}
@@ -78,10 +80,6 @@ public class EqualsUtils {
 		for (int i = 0; i < expected.size(); ++i) {
 			assertEquals(expected.get(i), actual.get(i), DOUBLE_COMPARE_DELTA);
 		}
-	}
-
-	public static boolean equals(double d1, double d2) {
-		return Math.abs(d1 - d2) < DOUBLE_COMPARE_DELTA;
 	}
 
 }

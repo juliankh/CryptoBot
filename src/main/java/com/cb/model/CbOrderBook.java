@@ -3,20 +3,26 @@ package com.cb.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
 
+@Slf4j
 @Getter
 @Setter
 @Accessors(chain = true)
 @EqualsAndHashCode
-public class CbOrderBook {
+@ToString
+public class CbOrderBook implements Serializable {
 
+    private boolean snapshot;
     private Instant exchangeDatetime;
     private LocalDate exchangeDate;
     private long receivedMicros;

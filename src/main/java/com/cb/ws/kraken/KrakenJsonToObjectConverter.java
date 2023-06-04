@@ -1,8 +1,7 @@
 package com.cb.ws.kraken;
 
+import com.cb.common.ObjectConverter;
 import com.cb.model.kraken.ws.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
@@ -11,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 // TODO: merge this with ObjectConverter (or somehow resolve the fact that there are 2 object converters)
 @Getter
 public class KrakenJsonToObjectConverter {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     private static class JsonIdentifier {
         public static final String ERROR = "error";
@@ -68,15 +65,15 @@ public class KrakenJsonToObjectConverter {
 
         // parse json
         if (json.contains(JsonIdentifier.ERROR)){
-            error = OBJECT_MAPPER.readValue(json, KrakenError.class);
+            error = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenError.class);
         } else if (json.contains(JsonIdentifier.STATUS_UPDATE)) {
-            statusUpdate = OBJECT_MAPPER.readValue(json, KrakenStatusUpdate.class);
+            statusUpdate = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenStatusUpdate.class);
         } else if (json.contains(JsonIdentifier.HEARTBEAT)){
-            heartbeat = OBJECT_MAPPER.readValue(json, KrakenHeartbeat.class);
+            heartbeat = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenHeartbeat.class);
         } else if (json.contains(JsonIdentifier.SUBSCRIPTION_RESPONSE)){
-            subscriptionResponse = OBJECT_MAPPER.readValue(json, KrakenSubscriptionResponse.class);
+            subscriptionResponse = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenSubscriptionResponse.class);
         } else if (json.contains(JsonIdentifier.ORDER_BOOK)){
-            orderBook = OBJECT_MAPPER.readValue(json, KrakenOrderBook.class);
+            orderBook = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenOrderBook.class);
         } else {
             throw new RuntimeException("Don't know how to parse this json: <" + json + ">");
         }

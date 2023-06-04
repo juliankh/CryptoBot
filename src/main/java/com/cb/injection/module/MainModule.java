@@ -2,7 +2,10 @@ package com.cb.injection.module;
 
 import com.cb.model.json.adapter.InstantAdapter;
 import com.cb.model.json.adapter.LocalDateAdapter;
+import com.cb.processor.BufferProcessor;
+import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.property.CryptoProperties;
+import com.cb.ws.WebSocketClient;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.inject.*;
@@ -57,6 +60,8 @@ public class MainModule extends AbstractModule {
 
         bindConstant().annotatedWith(Names.named(REDIS_HOST)).to(cryptoProperties.redisHost());
         bindConstant().annotatedWith(Names.named(REDIS_PORT)).to(cryptoProperties.redisPort());
+
+        bindConstant().annotatedWith(Names.named(KRAKEN_WEBSOCKET_V2_URL)).to(cryptoProperties.krakenWebSocketV2Url());
     }
 
     @Provides
@@ -101,6 +106,12 @@ public class MainModule extends AbstractModule {
         builder.registerTypeAdapter(Instant.class, new InstantAdapter());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
         return builder.create();
+    }
+
+    @Provides
+    @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
+    public WebSocketClient krakenOrderBookWebSocketClient(BufferProcessor bufferProcessor, KrakenJsonOrderBookProcessor orderBookProcessor) {
+        return new WebSocketClient(bufferProcessor, orderBookProcessor);
     }
 
 }

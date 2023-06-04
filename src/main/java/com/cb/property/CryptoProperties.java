@@ -20,8 +20,7 @@ public class CryptoProperties {
 	@SneakyThrows
 	public static void main(String[] a) {
 		CryptoProperties cryptoProperties = CryptoBotPropertiesModule.INJECTOR.getInstance(CryptoProperties.class);
-		System.out.println(cryptoProperties.redisHost());
-		System.out.println(cryptoProperties.redisPort());
+		System.out.println(cryptoProperties.krakenWebSocketV2Url());
 	}
 
 	public String writeDbUser() {
@@ -118,6 +117,10 @@ public class CryptoProperties {
 
 	public int redisPort() {
 		return Integer.parseInt(decryptedProperty("redis.port"));
+	}
+
+	public String krakenWebSocketV2Url() {
+		return decryptedProperty("kraken.websocket.v2.url");
 	}
 
 	// private methods

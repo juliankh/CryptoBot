@@ -15,4 +15,8 @@ public class MiscConfig {
     private String name;
     private double value;
 
+    public int intValue() {
+        return Double.valueOf(value).intValue();
+    }
+
 }

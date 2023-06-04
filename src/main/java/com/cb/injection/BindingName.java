@@ -38,4 +38,7 @@ public interface BindingName {
     String REDIS_HOST = "redisHost";
     String REDIS_PORT = "redisPort";
 
+    String KRAKEN_WEBSOCKET_V2_URL = "krakenWebSocketV2Url";
+    String KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK = "krakenWebSocketV2ClientOrderBook";
+
 }

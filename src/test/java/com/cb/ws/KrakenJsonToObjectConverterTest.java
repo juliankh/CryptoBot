@@ -7,10 +7,11 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
 
-import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
+import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,7 +50,7 @@ public class KrakenJsonToObjectConverterTest {
     @Test
     public void testStatusUpdate() {
         // setup
-        String json = "{\"channel\":\"status\",\"data\":[{\"api_version\":\"v2\",\"connection_id\":8952852591826402279,\"system\":\"online\",\"version\":\"2.0.0\"}],\"type\":\"update\"}";
+        String json = "{\"channel\":\"status\",\"data\":[{\"api_version\":\"v2\",\"connection_id\":10878232658551185331,\"system\":\"online\",\"version\":\"2.0.0\"}],\"type\":\"update\"}";
 
         // engage test
         converter.parseJson(json);
@@ -71,7 +72,7 @@ public class KrakenJsonToObjectConverterTest {
 
         KrakenStatusUpdateData updateData = statusUpdate.getData().get(0);
         assertEquals("v2", updateData.getApi_version());
-        assertEquals(8952852591826402279L, updateData.getConnection_id());
+        assertEquals(new BigInteger("10878232658551185331"), updateData.getConnection_id());
         assertEquals("online", updateData.getSystem());
         assertEquals("2.0.0", updateData.getVersion());
     }

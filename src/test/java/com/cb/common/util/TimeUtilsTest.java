@@ -8,7 +8,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
-import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
+import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.assertEquals;
 
 public class TimeUtilsTest {

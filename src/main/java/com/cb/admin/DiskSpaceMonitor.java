@@ -10,7 +10,6 @@ import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.Map;
 
 @Slf4j
 @Singleton
@@ -27,8 +26,7 @@ public class DiskSpaceMonitor {
         long totalSpace = f.getTotalSpace();
         long usableSpace = f.getFreeSpace();
         double usableRatio = usableRatio(totalSpace, usableSpace);
-        Map<String, MiscConfig> configMap = dbReadOnlyProvider.miscConfig();
-        MiscConfig config = configMap.get(MiscConfigName.FREE_DISK_SPACE_THRESHOLD_PERCENT);
+        MiscConfig config = dbReadOnlyProvider.miscConfig(MiscConfigName.FREE_DISK_SPACE_THRESHOLD_PERCENT);
         double percentThreshold = config.getValue();
         alertIfAboveLimit(usableRatio, percentThreshold);
     }

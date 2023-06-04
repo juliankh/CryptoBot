@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
+import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;

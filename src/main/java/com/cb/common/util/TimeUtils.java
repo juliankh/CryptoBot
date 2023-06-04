@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public final class TimeUtils {
@@ -40,6 +41,11 @@ public final class TimeUtils {
         } catch (InterruptedException e) {
             log.warn("Got interrupted while trying to sleep for " + millis + " millis.  Logging, but otherwise ignoring.", e);
         }
+    }
+
+    @SneakyThrows
+    public static void awaitQuietly(CountDownLatch latch) {
+        latch.await();
     }
 
     public static String durationMessage(Instant start) {

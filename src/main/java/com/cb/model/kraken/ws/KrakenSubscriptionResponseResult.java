@@ -2,9 +2,11 @@ package com.cb.model.kraken.ws;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class KrakenSubscriptionResponseResult {
 
     private String channel;

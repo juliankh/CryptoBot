@@ -1,30 +1,35 @@
 package com.cb.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
+import lombok.*;
 
-@RequiredArgsConstructor
+import java.io.Serializable;
+import java.util.Map;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode
-public class Spread {
+@ToString
+public class Spread implements Serializable {
 
-    private final Pair<Double, Double> bid;
-    private final Pair<Double, Double> ask;
+    private Map.Entry<Double, Double> bid;
+    private Map.Entry<Double, Double> ask;
 
     public double bidPrice() {
-        return bid.getLeft();
+        return bid.getKey();
     }
 
     public double bidVolume() {
-        return bid.getRight();
+        return bid.getValue();
     }
 
     public double askPrice() {
-        return ask.getLeft();
+        return ask.getKey();
     }
 
     public double askVolume() {
-        return ask.getRight();
+        return ask.getValue();
     }
 
 }

@@ -3,7 +3,7 @@ package com.cb.model;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
+import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.assertEquals;
 
 public class SpreadTest {

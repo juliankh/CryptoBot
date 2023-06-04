@@ -1,65 +1,69 @@
 package com.cb.ws;
 
 import com.cb.processor.BufferProcessor;
-import com.google.inject.Inject;
+import com.cb.processor.JsonProcessor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Getter
+@RequiredArgsConstructor
 public class WebSocketClient implements WebSocket.Listener {
 
-    @Inject
-    private BufferProcessor bufferProcessor;
+    private final CountDownLatch latch = new CountDownLatch(1);
+
+    private final BufferProcessor bufferProcessor;
+    private final JsonProcessor jsonProcessor;
+
+    private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
 
     @Override
     public void onOpen(WebSocket webSocket) {
-        log.info("onOpen");
+        log.info("Opening WebSocket");
         WebSocket.Listener.super.onOpen(webSocket);
+        latestReceive.set(Instant.now());
     }
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        System.out.println(data); // TODO: remove
-        /*
-        ++counter;
-        log.info(counter + " (depth " + depth + ") onText (" + last + "): " + data);
-        if (counter % 1000 == 0) {
-            log.info("[" + pair + " " + connectionNum + "] - counter: " + counter);
-        }
-        if (!last) {
-            sb.append(data);
-        } else {
-            sb.setLength(0);
-        }*/
+        latestReceive.set(Instant.now());
+        bufferProcessor.process(data, last, jsonProcessor::process);
         return WebSocket.Listener.super.onText(webSocket, data, last);
     }
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
         log.error("Error", error);
+        // TODO: handle this case (alert?)
+        latch.countDown();
         WebSocket.Listener.super.onError(webSocket, error);
     }
 
     @Override
     public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer message) {
-        log.error("Ping: [" + message + "]");
+        log.info("Ping: [" + message + "]");
         return WebSocket.Listener.super.onPing(webSocket, message);
     }
 
     @Override
     public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
-        log.error("Pong: [" + message + "]");
+        log.info("Pong: [" + message + "]");
         return WebSocket.Listener.super.onPong(webSocket, message);
     }
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-        log.error("Close: statusCode [" + statusCode + "], reason [" + reason + "]");
+        log.info("Close: statusCode [" + statusCode + "], reason [" + reason + "]");
+        latch.countDown();
+        jsonProcessor.cleanup();
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 

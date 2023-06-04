@@ -10,6 +10,8 @@ import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
 import com.cb.model.kraken.ws.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.KrakenOrderBookLevel;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ObjectConverter {
+
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Inject
     private CurrencyResolver currencyResolver;
@@ -130,6 +134,7 @@ public class ObjectConverter {
     @SneakyThrows
     public CbOrderBook convertToDbKrakenOrderBook(DbKrakenOrderBook input) {
         return new CbOrderBook()
+                .setSnapshot(true)
                 .setExchangeDatetime(input.getExchange_datetime().toInstant())
                 .setExchangeDate(input.getExchange_date().toLocalDate())
                 .setReceivedMicros(input.getReceived_micros())
@@ -144,6 +149,7 @@ public class ObjectConverter {
     public CbOrderBook convertToCbOrderBook(XchangeKrakenOrderBook krakenOrderBook) {
         OrderBook orderBook = krakenOrderBook.getOrderBook();
         return new CbOrderBook()
+                .setSnapshot(true)
                 .setExchangeDatetime(orderBook.getTimeStamp().toInstant())
                 .setExchangeDate(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()))
                 .setReceivedMicros(krakenOrderBook.getMicroSeconds())
@@ -151,11 +157,12 @@ public class ObjectConverter {
                 .setAsks(quoteTreeMapFromLimitOrders(orderBook.getAsks()));
     }
 
-    public CbOrderBook convertToCbOrderBook(KrakenOrderBook2Data krakenOrderBookData) {
+    public CbOrderBook convertToCbOrderBook(KrakenOrderBook2Data krakenOrderBookData, boolean snapshot) {
         Instant timestamp = krakenOrderBookData.getTimestamp();
         return new CbOrderBook()
+                .setSnapshot(snapshot)
                 .setExchangeDatetime(timestamp)
-                .setExchangeDate(LocalDate.ofInstant(timestamp, ZoneId.systemDefault()))
+                .setExchangeDate(timestamp == null ? null : LocalDate.ofInstant(timestamp, ZoneId.systemDefault()))
                 .setReceivedMicros(TimeUtils.currentMicros())
                 .setBids(quoteTreeMapFromLevels(krakenOrderBookData.getBids()))
                 .setAsks(quoteTreeMapFromLevels(krakenOrderBookData.getAsks()));

@@ -36,7 +36,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-import static com.cb.test.CryptoBotTestUtils.DOUBLE_COMPARE_DELTA;
+import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
@@ -522,6 +522,7 @@ public class ObjectConverterTest {
         CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook);
 
         // verify results
+        assertTrue(result.isSnapshot());
         assertEquals(date.toInstant(), result.getExchangeDatetime());
         assertEquals(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()), result.getExchangeDate());
         assertEquals(micros, result.getReceivedMicros());
@@ -560,7 +561,7 @@ public class ObjectConverterTest {
     }
 
     @Test
-    public void convertToCbOrderBook_fromKrakenOrderBook2Data() {
+    public void convertToCbOrderBook_fromKrakenOrderBook2Data_Update() {
         // setup data
         double bid1Price = 10.1;
         double bid2Price = 10.3;
@@ -592,11 +593,83 @@ public class ObjectConverterTest {
         KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(timestamp).setBids(bids).setAsks(asks);
 
         // engage test
-        CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook);
+        CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook, false);
 
         // verify results
+        assertFalse(result.isSnapshot());
         assertEquals(timestamp, result.getExchangeDatetime());
         assertEquals(LocalDate.ofInstant(timestamp, ZoneId.systemDefault()), result.getExchangeDate());
+
+        List<Map.Entry<Double, Double>> resultBidList = Lists.newArrayList(result.getBids().entrySet());
+        List<Map.Entry<Double, Double>> resultAskList = Lists.newArrayList(result.getAsks().entrySet());
+
+        assertEquals(bids.size(), resultBidList.size());
+        assertEquals(asks.size(), resultAskList.size());
+
+        Map.Entry<Double, Double> resultBid1 = resultBidList.get(0);
+        Map.Entry<Double, Double> resultBid2 = resultBidList.get(1);
+        Map.Entry<Double, Double> resultBid3 = resultBidList.get(2);
+
+        assertEquals(bid1Price, resultBid1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid1Quantity, resultBid1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(bid3Price, resultBid2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid3Quantity, resultBid2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(bid2Price, resultBid3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(bid2Quantity, resultBid3.getValue(), DOUBLE_COMPARE_DELTA);
+
+        Map.Entry<Double, Double> resultAsk1 = resultAskList.get(0);
+        Map.Entry<Double, Double> resultAsk2 = resultAskList.get(1);
+        Map.Entry<Double, Double> resultAsk3 = resultAskList.get(2);
+
+        assertEquals(ask2Price, resultAsk1.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask2Quantity, resultAsk1.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(ask3Price, resultAsk2.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask3Quantity, resultAsk2.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
+        assertEquals(ask1Quantity, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToCbOrderBook_fromKrakenOrderBook2Data_Snapshot() {
+        // setup data
+        double bid1Price = 10.1;
+        double bid2Price = 10.3;
+        double bid3Price = 10.2;
+
+        double bid1Quantity = 2.3;
+        double bid2Quantity = 2.4;
+        double bid3Quantity = 2.5;
+
+        double ask1Price = 11.77;
+        double ask2Price = 11.55;
+        double ask3Price = 11.66;
+
+        double ask1Quantity = 5.33;
+        double ask2Quantity = 5.44;
+        double ask3Quantity = 5.55;
+
+        KrakenOrderBookLevel bid1 = new KrakenOrderBookLevel().setPrice(bid1Price).setQty(bid1Quantity);
+        KrakenOrderBookLevel bid2 = new KrakenOrderBookLevel().setPrice(bid2Price).setQty(bid2Quantity);
+        KrakenOrderBookLevel bid3 = new KrakenOrderBookLevel().setPrice(bid3Price).setQty(bid3Quantity);
+        KrakenOrderBookLevel ask1 = new KrakenOrderBookLevel().setPrice(ask1Price).setQty(ask1Quantity);
+        KrakenOrderBookLevel ask2 = new KrakenOrderBookLevel().setPrice(ask2Price).setQty(ask2Quantity);
+        KrakenOrderBookLevel ask3 = new KrakenOrderBookLevel().setPrice(ask3Price).setQty(ask3Quantity);
+        List<KrakenOrderBookLevel> bids = Lists.newArrayList(bid1, bid2, bid3);
+        List<KrakenOrderBookLevel> asks = Lists.newArrayList(ask1, ask2, ask3);
+
+        KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(null).setBids(bids).setAsks(asks);
+
+        // engage test
+        CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook, true);
+
+        // verify results
+        assertTrue(result.isSnapshot());
+        assertNull(result.getExchangeDatetime());
+        assertNull(result.getExchangeDate());
 
         List<Map.Entry<Double, Double>> resultBidList = Lists.newArrayList(result.getBids().entrySet());
         List<Map.Entry<Double, Double>> resultAskList = Lists.newArrayList(result.getAsks().entrySet());

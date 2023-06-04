@@ -4,7 +4,6 @@ import com.cb.model.CbOrderBook;
 import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.plexus.util.StringUtils;
 
-import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 // TODO: once the logic of the checksum is established, then optimize it for performance
-@Singleton
 public class ChecksumCalculator {
 
     private static final int NUM_LEVELS = 10;

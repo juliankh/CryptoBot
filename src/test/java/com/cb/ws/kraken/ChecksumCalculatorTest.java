@@ -56,6 +56,8 @@ public class ChecksumCalculatorTest {
         assertEquals("34100010000000", checksumCalculator.digestForLevel(0.3410, 0.10, 6, 8));
     }
 
+    // TODO: make OrderBook tests aware of the relevant Instrument and it's price_precision
+
     @Test
     public void checksum_OrderBook1() {
         TreeMap<Double, Double> bids = new TreeMap<>(){{

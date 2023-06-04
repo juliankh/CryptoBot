@@ -7,6 +7,8 @@ import java.text.NumberFormat;
 @Slf4j
 public class NumberUtils {
 
+    public static double DOUBLE_COMPARE_DELTA = 0.00_000_000_1; // 1 / 1billion
+
     private static final NumberFormat NUMBER_FORMAT = NumberFormat.getNumberInstance();
     private static final NumberFormat PERCENT_FORMAT = NumberFormat.getPercentInstance();
 
@@ -20,6 +22,10 @@ public class NumberUtils {
 
     public static synchronized String percentFormat(double d) {
         return PERCENT_FORMAT.format(d);
+    }
+
+    public static boolean equals(double d1, double d2) {
+        return Math.abs(d1 - d2) < DOUBLE_COMPARE_DELTA;
     }
 
 }
