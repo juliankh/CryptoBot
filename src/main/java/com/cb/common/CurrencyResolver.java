@@ -24,7 +24,6 @@ public class CurrencyResolver {
         return krakenCurrencyPair(pair, '/');
     }
 
-    // TODO: unit test
     public CurrencyPair krakenCurrencyPair(String pair, char separator) {
         String[] parts = StringUtils.split(pair, separator);
         return krakenCurrencyPair(parts[0], parts[1]);

@@ -3,6 +3,8 @@ package com.cb.processor.kraken;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.TimeUtils;
+import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.OrderBookBatch;
 import com.cb.model.kraken.ws.*;
@@ -18,6 +20,7 @@ import org.knowm.xchange.currency.CurrencyPair;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -35,6 +38,9 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
 
     @Inject
     private KrakenJsonToObjectConverter krakenJsonToObjectConverter;
+
+    @Inject
+    private DbWriteProvider dbWriteProvider;
 
     @Inject
     private BatchProcessor<CbOrderBook, OrderBookBatch<CbOrderBook>> batchProcessor;
@@ -67,8 +73,9 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
             Class<?> objectType = krakenJsonToObjectConverter.objectTypeParsed();
             if (objectType == KrakenStatusUpdate.class) {
                 KrakenStatusUpdate statusUpdate = krakenJsonToObjectConverter.getStatusUpdate();
-                log.info("" + statusUpdate);
-                // TODO: save in db
+                int numDatas = Optional.ofNullable(statusUpdate.getData()).map(List::size).orElse(0);
+                log.info("Status Update with [" + numDatas + "] datas: " + statusUpdate);
+                dbWriteProvider.insertKrakenStatusUpdate(statusUpdate);
             } else if (objectType == KrakenHeartbeat.class) {
                 timeOfLastHeartbeat = Instant.now();
             } else if (objectType == KrakenError.class) {
@@ -98,9 +105,8 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
         }
     }
 
-    // TODO: unit test
     public void processOrderBookSnapshot(KrakenOrderBook krakenOrderBook) {
-        int numSnapshotsReceived = krakenOrderBook.getData().size();
+        int numSnapshotsReceived = Optional.ofNullable(krakenOrderBook.getData()).map(List::size).orElse(0);
         if (numSnapshotsReceived != 1) {
             throw new RuntimeException("Got Kraken snapshot OrderBook that has [" + numSnapshotsReceived + "] snapshots instead of 1");
         }
@@ -115,7 +121,6 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
         }
     }
 
-    // TODO: unit test
     public void processOrderBookUpdate(KrakenOrderBook krakenOrderBook) {
         List<KrakenOrderBook2Data> datas = datasWithExpectedCurrencyPair(krakenOrderBook.getData());
         List<CbOrderBook> updates = datas.parallelStream().map(data -> objectConverter.convertToCbOrderBook(data, krakenOrderBook.isSnapshot())).toList();

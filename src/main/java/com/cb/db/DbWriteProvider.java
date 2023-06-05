@@ -3,6 +3,8 @@ package com.cb.db;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
+import com.cb.model.kraken.ws.KrakenStatusUpdate;
+import com.cb.model.kraken.ws.db.DbKrakenStatusUpdate;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import lombok.Getter;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.DB_WRITE_CONNECTION;
@@ -34,6 +37,30 @@ import static java.util.stream.Collectors.toMap;
 public class DbWriteProvider extends AbstractDbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
+
+    public static final Function<DbKrakenStatusUpdate, Object[]> DB_KRAKEN_STATUS_UPDATE_CONVERTER = dbStatusUpdate -> new Object[] {
+            dbStatusUpdate.getChannel(),
+            dbStatusUpdate.getType(),
+            dbStatusUpdate.getApi_version(),
+            dbStatusUpdate.getConnection_id(),
+            dbStatusUpdate.getSystem(),
+            dbStatusUpdate.getVersion()
+    };
+
+    public static final Function<DbKrakenOrderBook, Object[]> DB_KRAKEN_ORDER_BOOK_CONVERTER = orderbook -> new Object[] {
+            orderbook.getProcess(),
+            orderbook.getExchange_datetime(),
+            orderbook.getExchange_date(),
+            orderbook.getReceived_micros(),
+            orderbook.getHighest_bid_price(),
+            orderbook.getHighest_bid_volume(),
+            orderbook.getLowest_ask_price(),
+            orderbook.getLowest_ask_volume(),
+            orderbook.getBids_hash(),
+            orderbook.getAsks_hash(),
+            orderbook.getBids(),
+            orderbook.getAsks()
+    };
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbRedisDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbRedisDataAgeMonitorConfig.class);
@@ -59,9 +86,19 @@ public class DbWriteProvider extends AbstractDbProvider {
         }
     }
 
+    public void insertKrakenStatusUpdate(KrakenStatusUpdate statusUpdate) {
+        List<DbKrakenStatusUpdate> dbStatusUpdates = objectConverter.convertToDbKrakenStatusUpdates(statusUpdate);
+        try {
+            Object[][] payload = objectConverter.matrix(dbStatusUpdates, DB_KRAKEN_STATUS_UPDATE_CONVERTER);
+            queryRunner.batch(writeConnection, "INSERT INTO cb.kraken_status_update (channel, type, api_version, connection_id, system, version) VALUES (?,?,?,?,?,?);", payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem inserting [" + dbStatusUpdates.size() + "] DbKrakenStatusUpdates", e);
+        }
+    }
+
     public void insertKrakenOrderBooks(Collection<DbKrakenOrderBook> orderBooks, CurrencyPair currencyPair) {
         try {
-            Object[][] payload = objectConverter.matrix(orderBooks);
+            Object[][] payload = objectConverter.matrix(orderBooks, DB_KRAKEN_ORDER_BOOK_CONVERTER);
             String tableName = krakenTableNameResolver.krakenOrderBookTable(currencyPair);
             int[] rowCounts = queryRunner.batch(writeConnection,
                     "INSERT INTO " + tableName + " (process, exchange_datetime, exchange_date, received_micros, created, highest_bid_price, highest_bid_volume, lowest_ask_price, lowest_ask_volume, bids_hash, asks_hash, bids, asks) VALUES (?, ?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(received_micros, bids_hash, asks_hash) DO NOTHING;",

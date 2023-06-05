@@ -1,6 +1,7 @@
 package com.cb.common;
 
 import com.cb.common.util.TimeUtils;
+import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
@@ -8,6 +9,9 @@ import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
 import com.cb.model.kraken.ws.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.KrakenOrderBookLevel;
+import com.cb.model.kraken.ws.KrakenStatusUpdate;
+import com.cb.model.kraken.ws.KrakenStatusUpdateData;
+import com.cb.model.kraken.ws.db.DbKrakenStatusUpdate;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -27,6 +31,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.postgresql.jdbc.PgArray;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Array;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -184,7 +189,7 @@ public class ObjectConverterTest {
                 {process2, exchange_datetime2, exchange_date2, received_micros2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
         };
 
-        assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2)));
+        assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2), DbWriteProvider.DB_KRAKEN_ORDER_BOOK_CONVERTER));
     }
 
     @Test
@@ -356,6 +361,51 @@ public class ObjectConverterTest {
         assertEquals(id, result.getId());
         assertEquals(name, result.getName());
         assertEquals(value, result.getValue(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToDbKrakenStatusUpdates() {
+        // setup data
+        String channel = "channelA";
+        String type = "typeA";
+
+        String api_version1 = "api_version1";
+        BigInteger connection_id1 = BigInteger.valueOf(123);
+        String system1 = "system1";
+        String version1 = "version1";
+
+        String api_version2 = "api_version2";
+        BigInteger connection_id2 = BigInteger.valueOf(456);
+        String system2 = "system2";
+        String version2 = "version2";
+
+        KrakenStatusUpdateData data1 = new KrakenStatusUpdateData().setApi_version(api_version1).setConnection_id(connection_id1).setSystem(system1).setVersion(version1);
+        KrakenStatusUpdateData data2 = new KrakenStatusUpdateData().setApi_version(api_version2).setConnection_id(connection_id2).setSystem(system2).setVersion(version2);
+        List<KrakenStatusUpdateData> datas = Lists.newArrayList(data1, data2);
+
+        KrakenStatusUpdate update = new KrakenStatusUpdate().setChannel(channel).setType(type).setData(datas);
+
+        // engage test
+        List<DbKrakenStatusUpdate> resultList = objectConverter.convertToDbKrakenStatusUpdates(update);
+
+        // verify results
+        assertEquals(2, resultList.size());
+
+        DbKrakenStatusUpdate result1 = resultList.get(0);
+        assertEquals(channel, result1.getChannel());
+        assertEquals(type, result1.getType());
+        assertEquals(api_version1, result1.getApi_version());
+        assertEquals(connection_id1, result1.getConnection_id());
+        assertEquals(system1, result1.getSystem());
+        assertEquals(version1, result1.getVersion());
+
+        DbKrakenStatusUpdate result2 = resultList.get(1);
+        assertEquals(channel, result2.getChannel());
+        assertEquals(type, result2.getType());
+        assertEquals(api_version2, result2.getApi_version());
+        assertEquals(connection_id2, result2.getConnection_id());
+        assertEquals(system2, result2.getSystem());
+        assertEquals(version2, result2.getVersion());
     }
 
     @Test

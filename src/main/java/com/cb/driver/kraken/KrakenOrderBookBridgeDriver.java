@@ -69,12 +69,12 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         String driverToken = argsConverter.getDriverToken();
         driverName = "D Kr OB Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverToken) ? "" : " " + driverToken);
         Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbReadOnlyProvider.krakenBridgeOrderBookConfig();
-        dbReadOnlyProvider.cleanup();
         KrakenBridgeOrderBookConfig config = configMap.get(currencyPair);
         log.info("Config: " + config);
         int batchSize = config.getBatchSize();
         maxSecsBetweenUpdates = config.getSecsTimeout();
-        int depth = dbReadOnlyProvider.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue(); // TODO: manually test
+        int depth = dbReadOnlyProvider.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
+        dbReadOnlyProvider.cleanup();
         this.depth = depth;
         ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(currencyPair, depth, batchSize);
     }
@@ -84,6 +84,9 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
         WebSocket webSocket = connect();
         while (true) {
+
+            // TODO: Reconnect logic: have not received any data for some time (ie 60 secs), nor a heartbeat message for some time (ie 10 secs)
+
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(webSocketClient.getLatestReceive().get(), Instant.now());
             if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
                 String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";

@@ -40,4 +40,9 @@ public class CurrencyResolverTest {
         assertEquals(CurrencyPair.LTC_BTC, CURRENCY_RESOLVER.krakenCurrencyPair("LTC", "BTC"));
     }
 
+    @Test
+    public void krakenCurrencyPair_StringWithSeparator() {
+        assertEquals(CurrencyPair.LTC_BTC, CURRENCY_RESOLVER.krakenCurrencyPair("LTC/BTC", '/'));
+    }
+
 }

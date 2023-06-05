@@ -1,10 +1,13 @@
 package com.cb.processor.kraken;
 
 import com.cb.common.CurrencyResolver;
+import com.cb.common.ObjectConverter;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.OrderBookBatch;
+import com.cb.model.kraken.ws.KrakenOrderBook;
 import com.cb.model.kraken.ws.KrakenOrderBook2Data;
 import com.cb.processor.BatchProcessor;
+import com.cb.processor.JedisDelegate;
 import com.cb.processor.SnapshotMaintainer;
 import com.google.common.collect.Lists;
 import org.junit.Before;
@@ -13,14 +16,18 @@ import org.junit.runner.RunWith;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.reset;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KrakenJsonOrderBookProcessorTest {
@@ -29,10 +36,16 @@ public class KrakenJsonOrderBookProcessorTest {
     private CurrencyResolver currencyResolver;
 
     @Mock
+    private ObjectConverter objectConverter;
+
+    @Mock
     private BatchProcessor<CbOrderBook, OrderBookBatch<CbOrderBook>> batchProcessor;
 
     @Mock
     private SnapshotMaintainer snapshotMaintainer;
+
+    @Mock
+    private JedisDelegate jedisDelegate;
 
     @InjectMocks
     private KrakenJsonOrderBookProcessor processor;
@@ -67,12 +80,6 @@ public class KrakenJsonOrderBookProcessorTest {
         assertFalse(processor.hasExpectedCurrencyPair(data));
     }
 
-    /*
-    // TODO: unit test
-    public List<KrakenOrderBook2Data> datasWithExpectedCurrencyPair(List<KrakenOrderBook2Data> datas) {
-        return datas.stream().map(this::dataWithExpectedCurrencyPairOrNull).filter(Objects::nonNull).toList();
-    }
-     */
     @Test
     public void datasWithExpectedCurrencyPair_SomeMatch() {
         // setup
@@ -139,27 +146,34 @@ public class KrakenJsonOrderBookProcessorTest {
         assertSame(data, result);
     }
 
-    /*
-    // TODO: unit test
-    public void processOrderBookSnapshot(KrakenOrderBook krakenOrderBook) {
-        int numSnapshotsReceived = krakenOrderBook.getData().size();
-        if (numSnapshotsReceived != 1) {
-            throw new RuntimeException("Got Kraken snapshot OrderBook that has [" + numSnapshotsReceived + "] snapshots instead of 1");
-        }
-        KrakenOrderBook2Data incomingData = krakenOrderBook.getData().get(0);
-        KrakenOrderBook2Data data = dataWithExpectedCurrencyPairOrNull(incomingData);
-        if (data != null) {
-            CbOrderBook snapshot = objectConverter.convertToCbOrderBook(data, krakenOrderBook.isSnapshot());
-            snapshotMaintainer.setSnapshot(snapshot);
-            processSnapshot(snapshot);
-        } else {
-            throw new RuntimeException("Initial Snapshot received is expected to be of Currency Pair [" + currencyPair + "], but has instead [" + incomingData.getSymbol() + "]");
-        }
-    }
-     */
     @Test
-    public void processOrderBookSnapshot() {
-        // TODO: continue here
+    public void processOrderBookSnapshot_UnexpectedNumSnapshots() {
+        assertThrows(
+                "Got Kraken snapshot OrderBook that has [0] snapshots instead of 1",
+                RuntimeException.class,
+                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(null)));
+        assertThrows(
+                "Got Kraken snapshot OrderBook that has [0] snapshots instead of 1",
+                RuntimeException.class,
+                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(Lists.newArrayList())));
+        assertThrows(
+                "Got Kraken snapshot OrderBook that has [2] snapshots instead of 1",
+                RuntimeException.class,
+                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(Lists.newArrayList(new KrakenOrderBook2Data(), new KrakenOrderBook2Data()))));
+    }
+
+    @Test
+    public void processOrderBookSnapshot_SnapshotWithUnexpectedCurrencyPair() {
+        // setup
+        int depth_doesNotMatter = 123;
+        int batchSize_doesNotMatter = 45;
+        processor.initialize(CurrencyPair.BTC_USDT, depth_doesNotMatter, batchSize_doesNotMatter);
+
+        // engage test and verify
+        assertThrows(
+                "Initial Snapshot received is expected to be of Currency Pair [BTC/USDT], but has instead [LINK/USD]",
+                RuntimeException.class,
+                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(Lists.newArrayList(new KrakenOrderBook2Data().setSymbol("LINK/USD")))));
     }
 
 }

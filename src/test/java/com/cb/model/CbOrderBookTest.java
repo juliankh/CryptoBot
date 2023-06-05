@@ -1,11 +1,14 @@
 package com.cb.model;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class CbOrderBookTest {
 
@@ -25,6 +28,17 @@ public class CbOrderBookTest {
 
         Spread expected = new Spread(Pair.of(5.1, 123.0), Pair.of(12.6, 487.1));
         assertEquals(expected, orderBook.getSpread());
+    }
+
+    @Test
+    public void getSpread_EmptyBidsAndOrAsks() {
+        assertNull(new CbOrderBook().setBids(null).setAsks(null).getSpread());
+
+        assertNull(new CbOrderBook().setBids(null).setAsks(new TreeMap<>(){{put(1.1, 11.1);}}).getSpread());
+        assertNull(new CbOrderBook().setBids(Maps.newTreeMap()).setAsks(new TreeMap<>(){{put(1.1, 11.1);}}).getSpread());
+
+        assertNull(new CbOrderBook().setBids(new TreeMap<>(){{put(1.1, 11.1);}}).setAsks(null).getSpread());
+        assertNull(new CbOrderBook().setBids(new TreeMap<>(){{put(1.1, 11.1);}}).setAsks(Maps.newTreeMap()).getSpread());
     }
 
 }

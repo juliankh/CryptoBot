@@ -6,6 +6,8 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
@@ -33,7 +35,7 @@ public class CbOrderBook implements Serializable {
     private Spread spread;
 
     public synchronized Spread getSpread() {
-        if (spread == null) {
+        if (spread == null && MapUtils.isNotEmpty(bids) && MapUtils.isNotEmpty(asks)) {
             Map.Entry<Double, Double> highestBid = bids.lastEntry();
             Map.Entry<Double, Double> lowestAsk = asks.firstEntry();
             spread = new Spread(Pair.of(highestBid.getKey(), highestBid.getValue()), Pair.of(lowestAsk.getKey(), lowestAsk.getValue()));

@@ -7,7 +7,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-// TODO: merge this with ObjectConverter (or somehow resolve the fact that there are 2 object converters)
 @Getter
 public class KrakenJsonToObjectConverter {
 
@@ -47,8 +46,6 @@ public class KrakenJsonToObjectConverter {
 
         System.out.println();
     }
-
-    // TODO: Reconnect logic: have not received any data for some time (ie 60 secs), nor a heartbeat message for some time (ie 10 secs)
 
     @SneakyThrows
     public void parseJson(String json) {

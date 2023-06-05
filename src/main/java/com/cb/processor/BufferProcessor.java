@@ -6,11 +6,10 @@ public class BufferProcessor {
 
     private final StringBuilder sb = new StringBuilder();
 
-    // TODO: unit test
-    public synchronized void process(CharSequence data, boolean last, Consumer<String> processor) {
+    public synchronized void process(CharSequence data, boolean last, Consumer<String> consumer) {
         sb.append(data);
         if (last) {
-            processor.accept(sb.toString());
+            consumer.accept(sb.toString());
             sb.setLength(0);
         }
     }
