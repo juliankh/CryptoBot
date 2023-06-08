@@ -1,18 +1,18 @@
 package com.cb.admin;
 
 import com.cb.db.DbReadOnlyProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.Jedis;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RedisDataCleanerTest {
 
     @Mock
@@ -21,7 +21,7 @@ public class RedisDataCleanerTest {
     @InjectMocks
     private RedisDataCleaner redisDataCleaner;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         Mockito.reset(dbReadOnlyProvider);
     }

@@ -3,8 +3,12 @@ package com.cb.db;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
-import com.cb.model.kraken.ws.KrakenStatusUpdate;
+import com.cb.model.kraken.ws.db.DbKrakenAsset;
+import com.cb.model.kraken.ws.db.DbKrakenAssetPair;
 import com.cb.model.kraken.ws.db.DbKrakenStatusUpdate;
+import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
+import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
+import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import lombok.Getter;
@@ -38,15 +42,6 @@ public class DbWriteProvider extends AbstractDbProvider {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 
-    public static final Function<DbKrakenStatusUpdate, Object[]> DB_KRAKEN_STATUS_UPDATE_CONVERTER = dbStatusUpdate -> new Object[] {
-            dbStatusUpdate.getChannel(),
-            dbStatusUpdate.getType(),
-            dbStatusUpdate.getApi_version(),
-            dbStatusUpdate.getConnection_id(),
-            dbStatusUpdate.getSystem(),
-            dbStatusUpdate.getVersion()
-    };
-
     public static final Function<DbKrakenOrderBook, Object[]> DB_KRAKEN_ORDER_BOOK_CONVERTER = orderbook -> new Object[] {
             orderbook.getProcess(),
             orderbook.getExchange_datetime(),
@@ -60,6 +55,71 @@ public class DbWriteProvider extends AbstractDbProvider {
             orderbook.getAsks_hash(),
             orderbook.getBids(),
             orderbook.getAsks()
+    };
+
+    public static final Function<DbKrakenStatusUpdate, Object[]> DB_KRAKEN_STATUS_UPDATE_CONVERTER = dbStatusUpdate -> new Object[] {
+            dbStatusUpdate.getChannel(),
+            dbStatusUpdate.getType(),
+            dbStatusUpdate.getApi_version(),
+            dbStatusUpdate.getConnection_id(),
+            dbStatusUpdate.getSystem(),
+            dbStatusUpdate.getVersion()
+    };
+
+    public static final Function<DbKrakenAsset, Object[]> DB_KRAKEN_ASSET_UPSERT_CONVERTER = dbKrakenAsset -> new Object[] {
+            // insert
+            dbKrakenAsset.getKraken_id(),
+            dbKrakenAsset.getStatus(),
+            dbKrakenAsset.getPrecision(),
+            dbKrakenAsset.getPrecision_display(),
+            dbKrakenAsset.isBorrowable(),
+            dbKrakenAsset.getCollateral_value(),
+            dbKrakenAsset.getMargin_rate(),
+
+            // update
+            dbKrakenAsset.getStatus(),
+            dbKrakenAsset.getPrecision(),
+            dbKrakenAsset.getPrecision_display(),
+            dbKrakenAsset.isBorrowable(),
+            dbKrakenAsset.getCollateral_value(),
+            dbKrakenAsset.getMargin_rate()
+    };
+
+    public static final Function<DbKrakenAssetPair, Object[]> DB_KRAKEN_ASSET_PAIR_UPSERT_CONVERTER = dbKrakenAssetPair -> new Object[] {
+            // insert
+            dbKrakenAssetPair.getSymbol(),
+            dbKrakenAssetPair.getBase(),
+            dbKrakenAssetPair.getQuote(),
+            dbKrakenAssetPair.getStatus(),
+            dbKrakenAssetPair.isHas_index(),
+            dbKrakenAssetPair.isMarginable(),
+            dbKrakenAssetPair.getMargin_initial(),
+            dbKrakenAssetPair.getPosition_limit_long(),
+            dbKrakenAssetPair.getPosition_limit_short(),
+            dbKrakenAssetPair.getQty_min(),
+            dbKrakenAssetPair.getQty_precision(),
+            dbKrakenAssetPair.getQty_increment(),
+            dbKrakenAssetPair.getPrice_precision(),
+            dbKrakenAssetPair.getPrice_increment(),
+            dbKrakenAssetPair.getCost_min(),
+            dbKrakenAssetPair.getCost_precision(),
+
+            // update
+            dbKrakenAssetPair.getBase(),
+            dbKrakenAssetPair.getQuote(),
+            dbKrakenAssetPair.getStatus(),
+            dbKrakenAssetPair.isHas_index(),
+            dbKrakenAssetPair.isMarginable(),
+            dbKrakenAssetPair.getMargin_initial(),
+            dbKrakenAssetPair.getPosition_limit_long(),
+            dbKrakenAssetPair.getPosition_limit_short(),
+            dbKrakenAssetPair.getQty_min(),
+            dbKrakenAssetPair.getQty_precision(),
+            dbKrakenAssetPair.getQty_increment(),
+            dbKrakenAssetPair.getPrice_precision(),
+            dbKrakenAssetPair.getPrice_increment(),
+            dbKrakenAssetPair.getCost_min(),
+            dbKrakenAssetPair.getCost_precision()
     };
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
@@ -90,9 +150,35 @@ public class DbWriteProvider extends AbstractDbProvider {
         List<DbKrakenStatusUpdate> dbStatusUpdates = objectConverter.convertToDbKrakenStatusUpdates(statusUpdate);
         try {
             Object[][] payload = objectConverter.matrix(dbStatusUpdates, DB_KRAKEN_STATUS_UPDATE_CONVERTER);
-            queryRunner.batch(writeConnection, "INSERT INTO cb.kraken_status_update (channel, type, api_version, connection_id, system, version) VALUES (?,?,?,?,?,?);", payload);
+            queryRunner.batch(writeConnection, "INSERT INTO cb.kraken_status_update (channel, type, api_version, connection_id, system, version, created) VALUES (?,?,?,?,?,?,now());", payload);
         } catch (Exception e) {
             throw new RuntimeException("Problem inserting [" + dbStatusUpdates.size() + "] DbKrakenStatusUpdates", e);
+        }
+    }
+
+    public void upsertKrakenAssets(List<KrakenAsset> assets) {
+        List<DbKrakenAsset> dbKrakenAssets = objectConverter.convertToDbKrakenAssets(assets);
+        try {
+            Object[][] payload = objectConverter.matrix(dbKrakenAssets, DB_KRAKEN_ASSET_UPSERT_CONVERTER);
+            queryRunner.batch(writeConnection,
+                          "INSERT INTO cb.kraken_asset (kraken_id, status, precision, precision_display, borrowable, collateral_value, margin_rate, created) VALUES (?,?,?,?,?,?,?,now()) " +
+                              "ON CONFLICT(kraken_id) DO UPDATE SET status = ?, precision = ?, precision_display = ?, borrowable = ?, collateral_value = ?, margin_rate = ?, updated = now();",
+                              payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem upserting [" + assets.size() + "] DbKrakenAssets", e);
+        }
+    }
+
+    public void upsertKrakenAssetPairs(List<KrakenAssetPair> assetPairs) {
+        List<DbKrakenAssetPair> dbKrakenAssetPairs = objectConverter.convertToDbKrakenAssetPairs(assetPairs);
+        try {
+            Object[][] payload = objectConverter.matrix(dbKrakenAssetPairs, DB_KRAKEN_ASSET_PAIR_UPSERT_CONVERTER);
+            queryRunner.batch(writeConnection,
+                    "INSERT INTO cb.kraken_asset_pair (symbol, base, quote, status, has_index, marginable, margin_initial, position_limit_long, position_limit_short, qty_min, qty_precision, qty_increment, price_precision, price_increment, cost_min, cost_precision, created) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now()) " +
+                        "ON CONFLICT(symbol) DO UPDATE SET base = ?, quote = ?, status = ?, has_index = ?, marginable = ?, margin_initial = ?, position_limit_long = ?, position_limit_short = ?, qty_min = ?, qty_precision = ?, qty_increment = ?, price_precision = ?, price_increment = ?, cost_min = ?, cost_precision = ?, updated = now();",
+                    payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem upserting [" + assetPairs.size() + "] DbKrakenAssetPairs", e);
         }
     }
 

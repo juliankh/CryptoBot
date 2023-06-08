@@ -4,14 +4,14 @@ import com.cb.alert.AlertProvider;
 import com.cb.common.util.TimeUtils;
 import com.cb.injection.module.MainModule;
 import com.google.gson.Gson;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.resps.Tuple;
 
@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class RedisDataAgeMonitorTest {
 
     @Spy
@@ -33,7 +33,7 @@ public class RedisDataAgeMonitorTest {
     @InjectMocks
     private RedisDataAgeMonitor redisDataAgeMonitor;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         Mockito.reset(alertProvider);
     }

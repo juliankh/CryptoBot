@@ -35,6 +35,10 @@ public final class TimeUtils {
         sleepQuietlyForMillis(mins * MINUTE);
     }
 
+    public static void sleepQuietlyForever() {
+        sleepQuietlyForMins(Integer.MAX_VALUE);
+    }
+
     public static void sleepQuietlyForMillis(long millis) {
         try {
             Thread.sleep(millis);

@@ -9,10 +9,10 @@ import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.injection.module.MainModule;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
+import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequest;
+import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequestParams;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
-import com.cb.ws.kraken.request.OrderBookSubscription;
-import com.cb.ws.kraken.request.OrderBookSubscriptionParams;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -101,9 +101,9 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @SneakyThrows
     private WebSocket connect() {
-        OrderBookSubscription subscription = new OrderBookSubscription()
+        KrakenOrderBookSubscriptionRequest subscription = new KrakenOrderBookSubscriptionRequest()
                 .setReq_id(2746) // TODO: create a new one and save locally, and verify for this value when receiving data
-                .setParams(new OrderBookSubscriptionParams()
+                .setParams(new KrakenOrderBookSubscriptionRequestParams()
                         .setSnapshot(true)
                         .setDepth(depth)
                         .setSymbol(Lists.newArrayList(currencyPair.toString())));

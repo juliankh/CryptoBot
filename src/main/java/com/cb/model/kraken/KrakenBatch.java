@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class OrderBookBatch<T> {
+public class KrakenBatch<T> {
 
     private final CurrencyPair currencyPair;
     private final List<T> orderbooks;

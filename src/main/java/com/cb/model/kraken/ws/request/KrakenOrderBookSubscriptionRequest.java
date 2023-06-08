@@ -1,4 +1,4 @@
-package com.cb.ws.kraken.request;
+package com.cb.model.kraken.ws.request;
 
 import com.cb.common.ObjectConverter;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,16 +11,16 @@ import org.knowm.xchange.currency.CurrencyPair;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class OrderBookSubscription {
+public class KrakenOrderBookSubscriptionRequest {
 
     private String method = "subscribe";
     private Integer req_id;
-    private OrderBookSubscriptionParams params;
+    private KrakenOrderBookSubscriptionRequestParams params;
 
     public static void main(String[] args) throws JsonProcessingException {
-        OrderBookSubscription subscription = new OrderBookSubscription()
+        KrakenOrderBookSubscriptionRequest subscription = new KrakenOrderBookSubscriptionRequest()
                 .setReq_id(2746)
-                .setParams(new OrderBookSubscriptionParams().setSnapshot(true).setDepth(100).setSymbol(Lists.newArrayList(CurrencyPair.BTC_USDT.toString())));
+                .setParams(new KrakenOrderBookSubscriptionRequestParams().setSnapshot(true).setDepth(100).setSymbol(Lists.newArrayList(CurrencyPair.BTC_USDT.toString())));
         System.out.println(ObjectConverter.OBJECT_MAPPER.writer().writeValueAsString(subscription));
     }
 

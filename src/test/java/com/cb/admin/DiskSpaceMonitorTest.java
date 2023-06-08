@@ -2,20 +2,20 @@ package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
 import com.cb.db.DbReadOnlyProvider;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DiskSpaceMonitorTest {
 
     @Mock
@@ -27,7 +27,7 @@ public class DiskSpaceMonitorTest {
     @InjectMocks
     private DiskSpaceMonitor diskSpaceMonitor;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         Mockito.reset(dbReadOnlyProvider);
         Mockito.reset(alertProvider);

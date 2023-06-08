@@ -4,7 +4,7 @@ import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
-import com.cb.model.kraken.OrderBookBatch;
+import com.cb.model.kraken.KrakenBatch;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -22,9 +22,9 @@ public class JedisDelegate {
     @Inject
     private Jedis jedis;
 
-    public void insertBatch(OrderBookBatch<CbOrderBook> batch) {
-        List<CbOrderBook> orderBooks = batch.getOrderbooks();
-        CurrencyPair currencyPair = batch.getCurrencyPair();
+    public void insertBatch(KrakenBatch<CbOrderBook> krakenBatch) {
+        List<CbOrderBook> orderBooks = krakenBatch.getOrderbooks();
+        CurrencyPair currencyPair = krakenBatch.getCurrencyPair();
         Map<String, Double> redisPayloadMap = TimeUtils.runTimedCallable_MapOutput(() -> objectConverter.convertToRedisPayload(orderBooks), "Converting [" + NumberUtils.numberFormat(orderBooks.size()) + " " + currencyPair + " CbOrderBooks] -> Map of", "CbOrderBook Redis Payload");
         long numInserted = TimeUtils.runTimedCallable_NumberedOutput(() -> jedis.zadd(currencyPair.toString(), redisPayloadMap), "Inserting into Redis", currencyPair + " Kraken CbOrderBook");
         String allOrPartialIndicator = numInserted == redisPayloadMap.size() ? "ALL" : "PARTIAL";

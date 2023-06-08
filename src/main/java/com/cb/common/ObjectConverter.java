@@ -8,10 +8,14 @@ import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
-import com.cb.model.kraken.ws.KrakenOrderBook2Data;
-import com.cb.model.kraken.ws.KrakenOrderBookLevel;
-import com.cb.model.kraken.ws.KrakenStatusUpdate;
+import com.cb.model.kraken.ws.db.DbKrakenAsset;
+import com.cb.model.kraken.ws.db.DbKrakenAssetPair;
 import com.cb.model.kraken.ws.db.DbKrakenStatusUpdate;
+import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
+import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookLevel;
+import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.Gson;
@@ -30,10 +34,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -144,6 +145,51 @@ public class ObjectConverter {
                 .setVersion(data.getVersion())).toList();
     }
 
+    public List<DbKrakenAsset> convertToDbKrakenAssets(List<KrakenAsset> krakenAssets) {
+        return Optional.ofNullable(krakenAssets).orElse(Collections.emptyList())
+                .parallelStream()
+                .map(this::convertToDbKrakenAsset)
+                .toList();
+    }
+
+    public DbKrakenAsset convertToDbKrakenAsset(KrakenAsset krakenAsset) {
+        return new DbKrakenAsset()
+                .setKraken_id(krakenAsset.getId())
+                .setStatus(krakenAsset.getStatus())
+                .setPrecision(krakenAsset.getPrecision())
+                .setPrecision_display(krakenAsset.getPrecision_display())
+                .setBorrowable(krakenAsset.isBorrowable())
+                .setCollateral_value(krakenAsset.getCollateral_value())
+                .setMargin_rate(krakenAsset.getMargin_rate());
+    }
+
+    public List<DbKrakenAssetPair> convertToDbKrakenAssetPairs(List<KrakenAssetPair> krakenAssetPairs) {
+        return Optional.ofNullable(krakenAssetPairs).orElse(Collections.emptyList())
+                .parallelStream()
+                .map(this::convertToDbKrakenAssetPair)
+                .toList();
+    }
+
+    public DbKrakenAssetPair convertToDbKrakenAssetPair(KrakenAssetPair krakenAssetPair) {
+        return new DbKrakenAssetPair()
+                .setSymbol(krakenAssetPair.getSymbol())
+                .setBase(krakenAssetPair.getBase())
+                .setQuote(krakenAssetPair.getQuote())
+                .setStatus(krakenAssetPair.getStatus())
+                .setHas_index(krakenAssetPair.isHas_index())
+                .setMarginable(krakenAssetPair.isMarginable())
+                .setMargin_initial(krakenAssetPair.getMargin_initial())
+                .setPosition_limit_long(krakenAssetPair.getPosition_limit_long())
+                .setPosition_limit_short(krakenAssetPair.getPosition_limit_short())
+                .setQty_min(krakenAssetPair.getQty_min())
+                .setQty_precision(krakenAssetPair.getQty_precision())
+                .setQty_increment(krakenAssetPair.getQty_increment())
+                .setPrice_precision(krakenAssetPair.getPrice_precision())
+                .setPrice_increment(krakenAssetPair.getPrice_increment())
+                .setCost_min(krakenAssetPair.getCost_min())
+                .setCost_precision(krakenAssetPair.getCost_precision());
+    }
+
     @SneakyThrows
     public CbOrderBook convertToDbKrakenOrderBook(DbKrakenOrderBook input) {
         return new CbOrderBook()
@@ -243,9 +289,6 @@ public class ObjectConverter {
     }
 
     public <T> Object[][] matrix(Collection<T> items, Function<T, Object[]> converter) {
-        /*  TODO: implementing the method as below because for some reason this doesn't work (figure out why):
-                return orderbooks.parallelStream().map(orderbook -> new Object[] {orderbook.getExchange_datetime(), orderbook.getExchange_date(), orderbook.getBids(), orderbook.getAsks()}).toArray();
-         */
         List<Object[]> list = items.parallelStream().map(converter).toList();
         Object[][] result = new Object[items.size()][];
         for (int i = 0; i < list.size(); ++i) {

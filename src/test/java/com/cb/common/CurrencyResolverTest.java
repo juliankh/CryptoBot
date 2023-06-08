@@ -1,10 +1,10 @@
 package com.cb.common;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.knowm.xchange.currency.CurrencyPair;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CurrencyResolverTest {
 
@@ -29,10 +29,8 @@ public class CurrencyResolverTest {
     @Test
     public void checkKrakenCurrencyExists_NotExists() {
         String currencyCode = "Not Exists!!!";
-        assertThrows(
-                "There is no Kraken Currency for [" + currencyCode + "]",
-                RuntimeException.class,
-                () -> CURRENCY_RESOLVER.checkKrakenCurrencyExists(currencyCode));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> CURRENCY_RESOLVER.checkKrakenCurrencyExists(currencyCode));
+        assertEquals("There is no Kraken Currency for [" + currencyCode + "]", exception.getMessage());
     }
 
     @Test

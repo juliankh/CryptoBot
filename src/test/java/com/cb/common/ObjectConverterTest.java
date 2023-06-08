@@ -7,19 +7,23 @@ import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
-import com.cb.model.kraken.ws.KrakenOrderBook2Data;
-import com.cb.model.kraken.ws.KrakenOrderBookLevel;
-import com.cb.model.kraken.ws.KrakenStatusUpdate;
-import com.cb.model.kraken.ws.KrakenStatusUpdateData;
+import com.cb.model.kraken.ws.db.DbKrakenAsset;
+import com.cb.model.kraken.ws.db.DbKrakenAssetPair;
 import com.cb.model.kraken.ws.db.DbKrakenStatusUpdate;
+import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
+import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookLevel;
+import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
+import com.cb.model.kraken.ws.response.status.KrakenStatusUpdateData;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.OrderBook;
@@ -27,7 +31,7 @@ import org.knowm.xchange.dto.trade.LimitOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.postgresql.jdbc.PgArray;
 
 import java.math.BigDecimal;
@@ -42,11 +46,11 @@ import java.time.ZoneId;
 import java.util.*;
 
 import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ObjectConverterTest {
 
     @Spy
@@ -58,7 +62,7 @@ public class ObjectConverterTest {
     @InjectMocks
     private ObjectConverter objectConverter;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         reset(currencyResolver);
         reset(gson);
@@ -91,34 +95,26 @@ public class ObjectConverterTest {
 
     @Test
     public void matrixOfDoubles_exception_emptyOuterListNull() {
-        assertThrows(
-                "Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + null + "]",
-                RuntimeException.class,
-                () -> objectConverter.matrixOfDoubles(null));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> objectConverter.matrixOfDoubles(null));
+        assertEquals("Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + null + "]", exception.getMessage());
     }
 
     @Test
     public void matrixOfDoubles_exception_emptyOuterListEmpty() {
-        assertThrows(
-                "Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + Collections.emptyList() + "]",
-                RuntimeException.class,
-                () -> objectConverter.matrixOfDoubles(Collections.emptyList()));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> objectConverter.matrixOfDoubles(Collections.emptyList()));
+        assertEquals("Tried to get matrix of doubles based on List of Lists that's empty-equivalent: [" + Collections.emptyList() + "]", exception.getMessage());
     }
 
     @Test
     public void matrixOfDoubles_exception_emptyInnerList() {
-        assertThrows(
-                "Tried to get matrix of doubles based on List of Lists that contains at least 1 inner List that's empty-equivalent",
-                RuntimeException.class,
-                () -> objectConverter.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Collections.emptyList())));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> objectConverter.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Collections.emptyList())));
+        assertEquals("Tried to get matrix of doubles based on List of Lists that contains at least 1 inner List that's empty-equivalent", exception.getMessage());
     }
 
     @Test
     public void matrixOfDoubles_exception_nonUniformLengths() {
-        assertThrows(
-                "Tried to get matrix of doubles based on List of Lists where the inner Lists are not all of the same size.  The inner Lists are of 3 diff sizes",
-                RuntimeException.class,
-                () -> objectConverter.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Arrays.asList(1.1, 2.2, 3.3), Arrays.asList(11.4, 22.5, 33.6, 4.7, 5.8, 6.9))));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> objectConverter.matrixOfDoubles(Arrays.asList(Arrays.asList(1.1, 2.2), Arrays.asList(1.1, 2.2, 3.3), Arrays.asList(11.4, 22.5, 33.6, 4.7, 5.8, 6.9))));
+        assertEquals("Tried to get matrix of doubles based on List of Lists where the inner Lists are not all of the same size.  The inner Lists are of 3 diff sizes", exception.getMessage());
     }
 
     @Test
@@ -774,6 +770,97 @@ public class ObjectConverterTest {
         assertEquals(2, result.size());
         assertEquals(micros1, result.get(json1), DOUBLE_COMPARE_DELTA);
         assertEquals(micros2, result.get(json2), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToDbKrakenAsset() {
+        // setup
+        String id = "BTC";
+        String status = "status1";
+        int precision = 7;
+        int precisionDisplay = 6;
+        boolean borrowable = true;
+        double collateralValue = 123.4;
+        Double marginRate = 0.5;
+        KrakenAsset krakenAsset = new KrakenAsset()
+                .setId(id)
+                .setStatus(status)
+                .setPrecision(precision)
+                .setPrecision_display(precisionDisplay)
+                .setBorrowable(borrowable)
+                .setCollateral_value(collateralValue)
+                .setMargin_rate(marginRate);
+
+        // engage test
+        DbKrakenAsset result = objectConverter.convertToDbKrakenAsset(krakenAsset);
+
+        // verify
+        assertEquals(id, result.getKraken_id());
+        assertEquals(status, result.getStatus());
+        assertEquals(precision, result.getPrecision());
+        assertEquals(precisionDisplay, result.getPrecision_display());
+        assertEquals(borrowable, result.isBorrowable());
+        assertEquals(collateralValue, result.getCollateral_value(), DOUBLE_COMPARE_DELTA);
+        assertEquals(marginRate, result.getMargin_rate(), DOUBLE_COMPARE_DELTA);
+    }
+
+    @Test
+    public void convertToDbKrakenAssetPairs() {
+        // setup
+        String symbol = "EUR/USD";
+        String base = "EUR";
+        String quote = "USD";
+        String status = "status1";
+        boolean has_index = false;
+        boolean marginable = true;
+        Double marginInitial = 0.2;
+        Integer positionLimitLong = 123;
+        Integer positionLimitShort = 456;
+        double qtyMin = 0.5;
+        int qtyPrecision = 8;
+        double qtyIncrement = 0.00001;
+        int pricePrecision = 5;
+        double priceIncrement = 0.00001;
+        double costMin = 0.4;
+        int costPrecision = 4;
+        KrakenAssetPair krakenAssetPair = new KrakenAssetPair()
+                .setSymbol(symbol)
+                .setBase(base)
+                .setQuote(quote)
+                .setStatus(status)
+                .setHas_index(has_index)
+                .setMarginable(marginable)
+                .setMargin_initial(marginInitial)
+                .setPosition_limit_long(positionLimitLong)
+                .setPosition_limit_short(positionLimitShort)
+                .setQty_min(qtyMin)
+                .setQty_precision(qtyPrecision)
+                .setQty_increment(qtyIncrement)
+                .setPrice_precision(pricePrecision)
+                .setPrice_increment(priceIncrement)
+                .setCost_min(costMin)
+                .setCost_precision(costPrecision);
+
+        // engage test
+        DbKrakenAssetPair result = objectConverter.convertToDbKrakenAssetPair(krakenAssetPair);
+
+        // verify
+        assertEquals(symbol, result.getSymbol());
+        assertEquals(base, result.getBase());
+        assertEquals(quote, result.getQuote());
+        assertEquals(status, result.getStatus());
+        assertEquals(has_index, result.isHas_index());
+        assertEquals(marginable, result.isMarginable());
+        assertEquals(marginInitial, result.getMargin_initial());
+        assertEquals(positionLimitLong, result.getPosition_limit_long());
+        assertEquals(positionLimitShort, result.getPosition_limit_short());
+        assertEquals(qtyMin, result.getQty_min(), DOUBLE_COMPARE_DELTA);
+        assertEquals(qtyPrecision, result.getQty_precision());
+        assertEquals(qtyIncrement, result.getQty_increment(), DOUBLE_COMPARE_DELTA);
+        assertEquals(pricePrecision, result.getPrice_precision());
+        assertEquals(priceIncrement, result.getPrice_increment(), DOUBLE_COMPARE_DELTA);
+        assertEquals(costMin, result.getCost_min(), DOUBLE_COMPARE_DELTA);
+        assertEquals(costPrecision, result.getCost_precision());
     }
 
 }

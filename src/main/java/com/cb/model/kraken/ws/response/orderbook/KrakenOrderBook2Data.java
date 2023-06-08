@@ -1,4 +1,4 @@
-package com.cb.model.kraken.ws;
+package com.cb.model.kraken.ws.response.orderbook;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

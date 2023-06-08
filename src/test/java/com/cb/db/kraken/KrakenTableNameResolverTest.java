@@ -1,19 +1,19 @@
 package com.cb.db.kraken;
 
 import com.cb.common.CurrencyResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class KrakenTableNameResolverTest {
 
     @Mock
@@ -22,7 +22,7 @@ public class KrakenTableNameResolverTest {
     @InjectMocks
     private KrakenTableNameResolver krakenTableNameResolver;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         Mockito.reset(currencyResolver);
     }

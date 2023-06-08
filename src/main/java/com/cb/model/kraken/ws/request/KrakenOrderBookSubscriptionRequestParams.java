@@ -1,4 +1,4 @@
-package com.cb.ws.kraken.request;
+package com.cb.model.kraken.ws.request;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class OrderBookSubscriptionParams {
+public class KrakenOrderBookSubscriptionRequestParams {
 
     private String channel = "book";
     private boolean snapshot;

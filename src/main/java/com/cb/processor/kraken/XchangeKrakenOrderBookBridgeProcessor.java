@@ -4,7 +4,7 @@ import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
-import com.cb.model.kraken.OrderBookBatch;
+import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
 import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
@@ -20,7 +20,7 @@ import java.util.List;
 public class XchangeKrakenOrderBookBridgeProcessor {
 
     @Inject
-    private BatchProcessor<XchangeKrakenOrderBook, OrderBookBatch<XchangeKrakenOrderBook>> batchProcessor;
+    private BatchProcessor<XchangeKrakenOrderBook, KrakenBatch<XchangeKrakenOrderBook>> batchProcessor;
 
     @Inject
     private ObjectConverter objectConverter;
@@ -36,18 +36,18 @@ public class XchangeKrakenOrderBookBridgeProcessor {
         if (CollectionUtils.isNotEmpty(orderBook.getBids()) && CollectionUtils.isNotEmpty(orderBook.getAsks())) {
             batchProcessor.process(
                     new XchangeKrakenOrderBook().setProcess(process).setMicroSeconds(TimeUtils.currentMicros()).setOrderBook(orderBook),
-                    (List<XchangeKrakenOrderBook> orderbooks) -> new OrderBookBatch<>(currencyPair, orderbooks),
+                    (List<XchangeKrakenOrderBook> orderbooks) -> new KrakenBatch<>(currencyPair, orderbooks),
                     this::processBatch);
         } else {
             log.warn("Received book with either empty {} bids or empty {} asks, so ignoring it", orderBook.getBids().size(), orderBook.getAsks().size());
         }
     }
 
-    public void processBatch(OrderBookBatch<XchangeKrakenOrderBook> batch) {
-        List<XchangeKrakenOrderBook> krakenOrderBooks = batch.getOrderbooks();
-        CurrencyPair currencyPair = batch.getCurrencyPair();
+    public void processBatch(KrakenBatch<XchangeKrakenOrderBook> krakenBatch) {
+        List<XchangeKrakenOrderBook> krakenOrderBooks = krakenBatch.getOrderbooks();
+        CurrencyPair currencyPair = krakenBatch.getCurrencyPair();
         List<CbOrderBook> orderBooks = TimeUtils.runTimedCallable_CollectionOutput(() -> objectConverter.convertToCbOrderBooks(krakenOrderBooks), "Converting [" + NumberUtils.numberFormat(krakenOrderBooks.size()) + " " + currencyPair + " KrakenOrderBooks] ->", "CbOrderBook");
-        jedisDelegate.insertBatch(new OrderBookBatch<>(currencyPair, orderBooks));
+        jedisDelegate.insertBatch(new KrakenBatch<>(currencyPair, orderBooks));
     }
 
     public void cleanup() {

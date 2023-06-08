@@ -1,6 +1,6 @@
 package com.cb.ws;
 
-import com.cb.processor.BufferProcessor;
+import com.cb.processor.BufferAggregator;
 import com.cb.processor.JsonProcessor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +20,10 @@ public class WebSocketClient implements WebSocket.Listener {
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
-    private final BufferProcessor bufferProcessor;
+    private final BufferAggregator bufferAggregator;
     private final JsonProcessor jsonProcessor;
 
-    private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
+    private final AtomicReference<Instant> latestReceive = new AtomicReference<>(); // TODO: decide what to do with this
 
     @Override
     public void onOpen(WebSocket webSocket) {
@@ -35,7 +35,7 @@ public class WebSocketClient implements WebSocket.Listener {
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         latestReceive.set(Instant.now());
-        bufferProcessor.process(data, last, jsonProcessor::process);
+        bufferAggregator.process(data, last, jsonProcessor::process);
         return WebSocket.Listener.super.onText(webSocket, data, last);
     }
 

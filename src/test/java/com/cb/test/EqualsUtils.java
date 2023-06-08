@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EqualsUtils {
 

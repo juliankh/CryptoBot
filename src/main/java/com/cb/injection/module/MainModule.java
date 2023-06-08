@@ -2,7 +2,8 @@ package com.cb.injection.module;
 
 import com.cb.model.json.adapter.InstantAdapter;
 import com.cb.model.json.adapter.LocalDateAdapter;
-import com.cb.processor.BufferProcessor;
+import com.cb.processor.BufferAggregator;
+import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.property.CryptoProperties;
 import com.cb.ws.WebSocketClient;
@@ -110,8 +111,14 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
-    public WebSocketClient krakenOrderBookWebSocketClient(BufferProcessor bufferProcessor, KrakenJsonOrderBookProcessor orderBookProcessor) {
-        return new WebSocketClient(bufferProcessor, orderBookProcessor);
+    public WebSocketClient krakenOrderBookWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonOrderBookProcessor orderBookProcessor) {
+        return new WebSocketClient(bufferAggregator, orderBookProcessor);
+    }
+
+    @Provides
+    @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
+    public WebSocketClient krakenInstrumentWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonInstrumentProcessor instrumentProcessor) {
+        return new WebSocketClient(bufferAggregator, instrumentProcessor);
     }
 
 }

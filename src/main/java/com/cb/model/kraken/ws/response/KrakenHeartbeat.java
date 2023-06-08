@@ -1,4 +1,4 @@
-package com.cb.model.kraken.ws;
+package com.cb.model.kraken.ws.response;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,7 @@
 package com.cb.common.util;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.Month;
@@ -9,7 +10,8 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class TimeUtilsTest {
 

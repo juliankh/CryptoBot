@@ -7,10 +7,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.math.BigInteger;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
-@Accessors(chain = true) // TODO: will be a problem for DbUtils?
+@Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class DbKrakenStatusUpdate {
@@ -22,5 +23,6 @@ public class DbKrakenStatusUpdate {
     private BigInteger connection_id;
     private String system;
     private String version;
+    private Timestamp created;
 
 }

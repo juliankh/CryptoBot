@@ -1,59 +1,73 @@
 package com.cb.processor.kraken;
 
 import com.cb.common.CurrencyResolver;
-import com.cb.common.ObjectConverter;
 import com.cb.model.CbOrderBook;
-import com.cb.model.kraken.OrderBookBatch;
-import com.cb.model.kraken.ws.KrakenOrderBook;
-import com.cb.model.kraken.ws.KrakenOrderBook2Data;
+import com.cb.model.kraken.KrakenBatch;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
+import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
 import com.cb.processor.BatchProcessor;
-import com.cb.processor.JedisDelegate;
 import com.cb.processor.SnapshotMaintainer;
+import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
 import com.google.common.collect.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class KrakenJsonOrderBookProcessorTest {
 
     @Spy
     private CurrencyResolver currencyResolver;
 
     @Mock
-    private ObjectConverter objectConverter;
+    private KrakenJsonOrderBookObjectConverter jsonObjectConverter;
 
     @Mock
-    private BatchProcessor<CbOrderBook, OrderBookBatch<CbOrderBook>> batchProcessor;
+    private BatchProcessor<CbOrderBook, KrakenBatch<CbOrderBook>> batchProcessor;
 
     @Mock
     private SnapshotMaintainer snapshotMaintainer;
 
-    @Mock
-    private JedisDelegate jedisDelegate;
-
     @InjectMocks
     private KrakenJsonOrderBookProcessor processor;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
+        reset(jsonObjectConverter);
         reset(batchProcessor);
         reset(snapshotMaintainer);
+    }
+
+    @Test
+    public void processSubscriptionResponse_Successful() {
+        assertDoesNotThrow(() -> processor.processSubscriptionResponse(subscriptionResponse(true)));
+    }
+
+    @Test
+    public void processSubscriptionResponse_Unsuccessful() {
+        KrakenSubscriptionResponseOrderBook unsuccessfulResponse = subscriptionResponse(false);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.processSubscriptionResponse(unsuccessfulResponse));
+        assertEquals("Error when trying to subscribe to Kraken OrderBook channel: " + unsuccessfulResponse, exception.getMessage());
+    }
+
+    private static KrakenSubscriptionResponseOrderBook subscriptionResponse(boolean successful) {
+        KrakenSubscriptionResponseOrderBook response = new KrakenSubscriptionResponseOrderBook();
+        response.setSuccess(successful);
+        return response;
     }
 
     @Test
@@ -148,18 +162,14 @@ public class KrakenJsonOrderBookProcessorTest {
 
     @Test
     public void processOrderBookSnapshot_UnexpectedNumSnapshots() {
-        assertThrows(
-                "Got Kraken snapshot OrderBook that has [0] snapshots instead of 1",
-                RuntimeException.class,
-                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(null)));
-        assertThrows(
-                "Got Kraken snapshot OrderBook that has [0] snapshots instead of 1",
-                RuntimeException.class,
-                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(Lists.newArrayList())));
-        assertThrows(
-                "Got Kraken snapshot OrderBook that has [2] snapshots instead of 1",
-                RuntimeException.class,
-                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(Lists.newArrayList(new KrakenOrderBook2Data(), new KrakenOrderBook2Data()))));
+        RuntimeException exception1 = assertThrows(RuntimeException.class, () -> processor.processOrderBookSnapshot(new KrakenOrderBookInfo().setData(null)));
+        assertEquals("Got Kraken snapshot OrderBook Info that has [0] snapshots instead of 1", exception1.getMessage());
+
+        RuntimeException exception2 = assertThrows(RuntimeException.class, () -> processor.processOrderBookSnapshot(new KrakenOrderBookInfo().setData(Lists.newArrayList())));
+        assertEquals("Got Kraken snapshot OrderBook Info that has [0] snapshots instead of 1", exception2.getMessage());
+
+        RuntimeException exception3 = assertThrows(RuntimeException.class, () -> processor.processOrderBookSnapshot(new KrakenOrderBookInfo().setData(Lists.newArrayList(new KrakenOrderBook2Data(), new KrakenOrderBook2Data()))));
+        assertEquals("Got Kraken snapshot OrderBook Info that has [2] snapshots instead of 1", exception3.getMessage());
     }
 
     @Test
@@ -170,10 +180,29 @@ public class KrakenJsonOrderBookProcessorTest {
         processor.initialize(CurrencyPair.BTC_USDT, depth_doesNotMatter, batchSize_doesNotMatter);
 
         // engage test and verify
-        assertThrows(
-                "Initial Snapshot received is expected to be of Currency Pair [BTC/USDT], but has instead [LINK/USD]",
-                RuntimeException.class,
-                () -> processor.processOrderBookSnapshot(new KrakenOrderBook().setData(Lists.newArrayList(new KrakenOrderBook2Data().setSymbol("LINK/USD")))));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.processOrderBookSnapshot(new KrakenOrderBookInfo().setData(Lists.newArrayList(new KrakenOrderBook2Data().setSymbol("LINK/USD")))));
+        assertEquals("Initial Snapshot received is expected to be of Currency Pair [BTC/USDT], but has instead [LINK/USD]", exception.getMessage());
+    }
+
+    @Test
+    public void processCustom_UnknownObjectTypeParsed() {
+        // setup
+        Class<?> unknownClass = BigDecimal.class;
+
+        // engage test and verify
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.processCustom(unknownClass));
+        assertEquals("Unknown object type parsed: [" + unknownClass + "]", exception.getMessage());
+    }
+
+    @Test
+    public void process_ExceptionThrown() {
+        // setup
+        String json = "some json";
+        doThrow(NullPointerException.class).when(jsonObjectConverter).parse(json);
+
+        // engage test and verify
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.process(json));
+        assertEquals("Problem processing json: [" + json + "]", exception.getMessage());
     }
 
 }

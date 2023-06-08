@@ -2,17 +2,17 @@ package com.cb.processor.kraken;
 
 import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
+import com.cb.common.util.GeneralUtils;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbReadOnlyProvider;
-import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
-import com.cb.model.kraken.OrderBookBatch;
-import com.cb.model.kraken.ws.*;
+import com.cb.model.kraken.KrakenBatch;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
+import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
+import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
 import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
-import com.cb.processor.JsonProcessor;
 import com.cb.processor.SnapshotMaintainer;
-import com.cb.ws.kraken.KrakenJsonToObjectConverter;
+import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.currency.CurrencyPair;
@@ -24,11 +24,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
-public class KrakenJsonOrderBookProcessor implements JsonProcessor {
+public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
 
     private static final int SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK = 10;
-
-    private Instant timeOfLastHeartbeat = Instant.now();
 
     @Inject
     private CurrencyResolver currencyResolver;
@@ -37,13 +35,10 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
     private ObjectConverter objectConverter;
 
     @Inject
-    private KrakenJsonToObjectConverter krakenJsonToObjectConverter;
+    private KrakenJsonOrderBookObjectConverter jsonObjectConverter;
 
     @Inject
-    private DbWriteProvider dbWriteProvider;
-
-    @Inject
-    private BatchProcessor<CbOrderBook, OrderBookBatch<CbOrderBook>> batchProcessor;
+    private BatchProcessor<CbOrderBook, KrakenBatch<CbOrderBook>> batchProcessor;
 
     @Inject
     private SnapshotMaintainer snapshotMaintainer;
@@ -65,55 +60,53 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
         });
     }
 
-    // TODO: unit test
     @Override
     public synchronized void process(String json) {
         try {
-            krakenJsonToObjectConverter.parseJson(json);
-            Class<?> objectType = krakenJsonToObjectConverter.objectTypeParsed();
-            if (objectType == KrakenStatusUpdate.class) {
-                KrakenStatusUpdate statusUpdate = krakenJsonToObjectConverter.getStatusUpdate();
-                int numDatas = Optional.ofNullable(statusUpdate.getData()).map(List::size).orElse(0);
-                log.info("Status Update with [" + numDatas + "] datas: " + statusUpdate);
-                dbWriteProvider.insertKrakenStatusUpdate(statusUpdate);
-            } else if (objectType == KrakenHeartbeat.class) {
-                timeOfLastHeartbeat = Instant.now();
-            } else if (objectType == KrakenError.class) {
-                KrakenError error = krakenJsonToObjectConverter.getError();
-                log.error("" + error);
-                throw new RuntimeException("Got error from Kraken: " + error);
-            } else if (objectType == KrakenSubscriptionResponse.class) {
-                KrakenSubscriptionResponse subscriptionResponse = krakenJsonToObjectConverter.getSubscriptionResponse();
-                log.info("" + subscriptionResponse);
-                if (!subscriptionResponse.isSuccess()) {
-                    throw new RuntimeException("Error when trying to subscribe to Kraken: " + subscriptionResponse);
-                }
-            } else if (objectType == KrakenOrderBook.class) {
-                processOrderBook(krakenJsonToObjectConverter.getOrderBook());
+            jsonObjectConverter.parse(json);
+            Class<?> objectType = jsonObjectConverter.objectTypeParsed();
+            if (!processCommon(objectType, jsonObjectConverter)) {
+                processCustom(objectType);
             }
         } catch (Exception e) {
             log.error("Problem processing json: [" + json + "]", e);
-            throw e;
+            throw new RuntimeException("Problem processing json: [" + GeneralUtils.truncateStringIfNecessary(json, 100) + "]", e);
         }
     }
 
-    public void processOrderBook(KrakenOrderBook krakenOrderBook) {
-        if (krakenOrderBook.isSnapshot()) {
-            processOrderBookSnapshot(krakenOrderBook);
+    public void processCustom(Class<?> objectType) {
+        if (objectType == KrakenSubscriptionResponseOrderBook.class) {
+            processSubscriptionResponse(jsonObjectConverter.getSubscriptionResponse());
+        } else if (objectType == KrakenOrderBookInfo.class) {
+            processOrderBookInfo(jsonObjectConverter.getOrderBookInfo());
+        }
+        throw new RuntimeException("Unknown object type parsed: [" + objectType + "]");
+    }
+
+    public void processSubscriptionResponse(KrakenSubscriptionResponseOrderBook subscriptionResponse) {
+        log.info("" + subscriptionResponse);
+        if (!subscriptionResponse.isSuccess()) {
+            throw new RuntimeException("Error when trying to subscribe to Kraken OrderBook channel: " + subscriptionResponse);
+        }
+    }
+
+    public void processOrderBookInfo(KrakenOrderBookInfo krakenOrderBookInfo) {
+        if (krakenOrderBookInfo.isSnapshot()) {
+            processOrderBookSnapshot(krakenOrderBookInfo);
         } else {
-            processOrderBookUpdate(krakenOrderBook);
+            processOrderBookUpdate(krakenOrderBookInfo);
         }
     }
 
-    public void processOrderBookSnapshot(KrakenOrderBook krakenOrderBook) {
-        int numSnapshotsReceived = Optional.ofNullable(krakenOrderBook.getData()).map(List::size).orElse(0);
+    public void processOrderBookSnapshot(KrakenOrderBookInfo krakenOrderBookInfo) {
+        int numSnapshotsReceived = Optional.ofNullable(krakenOrderBookInfo.getData()).map(List::size).orElse(0);
         if (numSnapshotsReceived != 1) {
-            throw new RuntimeException("Got Kraken snapshot OrderBook that has [" + numSnapshotsReceived + "] snapshots instead of 1");
+            throw new RuntimeException("Got Kraken snapshot OrderBook Info that has [" + numSnapshotsReceived + "] snapshots instead of 1");
         }
-        KrakenOrderBook2Data incomingData = krakenOrderBook.getData().get(0);
+        KrakenOrderBook2Data incomingData = krakenOrderBookInfo.getData().get(0);
         KrakenOrderBook2Data data = dataWithExpectedCurrencyPairOrNull(incomingData);
         if (data != null) {
-            CbOrderBook snapshot = objectConverter.convertToCbOrderBook(data, krakenOrderBook.isSnapshot());
+            CbOrderBook snapshot = objectConverter.convertToCbOrderBook(data, krakenOrderBookInfo.isSnapshot());
             snapshotMaintainer.setSnapshot(snapshot);
             processSnapshot(snapshot);
         } else {
@@ -121,9 +114,9 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
         }
     }
 
-    public void processOrderBookUpdate(KrakenOrderBook krakenOrderBook) {
-        List<KrakenOrderBook2Data> datas = datasWithExpectedCurrencyPair(krakenOrderBook.getData());
-        List<CbOrderBook> updates = datas.parallelStream().map(data -> objectConverter.convertToCbOrderBook(data, krakenOrderBook.isSnapshot())).toList();
+    public void processOrderBookUpdate(KrakenOrderBookInfo krakenOrderBookInfo) {
+        List<KrakenOrderBook2Data> datas = datasWithExpectedCurrencyPair(krakenOrderBookInfo.getData());
+        List<CbOrderBook> updates = datas.parallelStream().map(data -> objectConverter.convertToCbOrderBook(data, krakenOrderBookInfo.isSnapshot())).toList();
         List<CbOrderBook> snapshots = snapshotMaintainer.updateAndGetLatestSnapshots(updates, true);
         processSnapshots(snapshots);
     }
@@ -152,13 +145,14 @@ public class KrakenJsonOrderBookProcessor implements JsonProcessor {
     private void processSnapshot(CbOrderBook snapshot) {
         batchProcessor.process(
                 snapshot,
-                (List<CbOrderBook> orderbooks) -> new OrderBookBatch<>(currencyPair, orderbooks),
+                (List<CbOrderBook> orderbooks) -> new KrakenBatch<>(currencyPair, orderbooks),
                 jedisDelegate::insertBatch);
     }
 
     @Override
     public void cleanup() {
         log.info("Cleaning up");
+        super.cleanup();
         jedisDelegate.cleanup();
     }
 

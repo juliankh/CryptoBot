@@ -2,7 +2,7 @@ package com.cb.processor;
 
 import java.util.function.Consumer;
 
-public class BufferProcessor {
+public class BufferAggregator {
 
     private final StringBuilder sb = new StringBuilder();
 

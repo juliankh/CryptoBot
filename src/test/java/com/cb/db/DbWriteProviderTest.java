@@ -5,17 +5,20 @@ import com.cb.model.kraken.db.DbKrakenOrderBook;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Triple;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(MockitoJUnitRunner.class)
+
+
+@ExtendWith(MockitoExtension.class)
 public class DbWriteProviderTest {
 
     @InjectMocks
@@ -81,9 +84,10 @@ public class DbWriteProviderTest {
         assertEquals(2, dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 0}));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void checkUpsertRowCounts_Exception() {
-        assertEquals(1, dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 2}));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 2}));
+        assertEquals("1 RowCounts have value different from the expected [0 or 1] after insertion into db: 2", exception.getMessage());
     }
 
     @Test
