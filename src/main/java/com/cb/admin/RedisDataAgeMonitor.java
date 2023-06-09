@@ -1,11 +1,12 @@
 package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
+import com.cb.common.JsonSerializer;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.module.MainModule;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.RedisDataAgeMonitorConfig;
-import com.google.gson.Gson;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.resps.Tuple;
@@ -25,7 +26,7 @@ public class RedisDataAgeMonitor {
     private DbReadOnlyProvider dbProvider;
 
     @Inject
-    private Gson gson;
+    private JsonSerializer jsonSerializer;
 
     @Inject
     private AlertProvider alertProvider;
@@ -43,11 +44,14 @@ public class RedisDataAgeMonitor {
         });
     }
 
+    @SneakyThrows
     public void monitorRedisKey(Jedis jedis, String redisKey, int ageLimit, Instant timeToCompare) {
         if (jedis.exists(redisKey)) {
             Tuple oldest = jedis.zpopmax(redisKey);
             String jsonOldest = oldest.getElement();
-            CbOrderBook oldestOrderBook = gson.fromJson(jsonOldest, CbOrderBook.class);
+            CbOrderBook oldestOrderBook = jsonSerializer.deserializeFromJson(jsonOldest, CbOrderBook.class);
+
+
             Instant exchangeDatetime = oldestOrderBook.getExchangeDatetime();
             long minsAge = ChronoUnit.MINUTES.between(exchangeDatetime, timeToCompare);
             if (minsAge > ageLimit) {

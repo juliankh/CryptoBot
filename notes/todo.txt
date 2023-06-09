@@ -9,10 +9,10 @@ TODO:
                 -amount of data received
             -req_id: every time a bridge starts up, come up with a new req_id and check for it on responses
             -always get only updates after the initial snapshot?
-            -is it better to store initial snapshot and subsequent update and recreate the sequence of snapshots in java, or convert to snapshots before storing?
     -check how slower is the read from redis when it's using large swap
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
     -auto-restart processes after restarting computer
+    -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
 -ML
     -admin
         -ensure ML uses gpu processors

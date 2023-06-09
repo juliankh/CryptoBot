@@ -1,16 +1,20 @@
 package com.cb.ws.kraken.json_converter;
 
-import com.cb.common.ObjectConverter;
+import com.cb.common.JsonSerializer;
 import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseInstrument;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
+import javax.inject.Inject;
 import java.util.List;
 
 @Getter
 public class KrakenJsonInstrumentObjectConverter extends KrakenAbstractJsonObjectConverter {
+
+    @Inject
+    private JsonSerializer jsonSerializer;
 
     private static class JsonIdentifier {
         public static final String SUBSCRIPTION_RESPONSE = "\"method\":\"subscribe\"";
@@ -35,9 +39,9 @@ public class KrakenJsonInstrumentObjectConverter extends KrakenAbstractJsonObjec
     @Override
     protected boolean parseCustom(String json) {
         if (json.contains(JsonIdentifier.SUBSCRIPTION_RESPONSE)) {
-            subscriptionResponse = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenSubscriptionResponseInstrument.class);
+            subscriptionResponse = jsonSerializer.deserializeFromJson(json, KrakenSubscriptionResponseInstrument.class);
         } else if (json.contains(JsonIdentifier.INSTRUMENT)) {
-            instrumentInfo = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenInstrumentInfo.class);
+            instrumentInfo = jsonSerializer.deserializeFromJson(json, KrakenInstrumentInfo.class);
         } else {
             return false;
         }

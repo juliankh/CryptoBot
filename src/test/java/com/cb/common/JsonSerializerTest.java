@@ -1,23 +1,25 @@
-package com.cb.model.json;
+package com.cb.common;
 
 import com.cb.common.util.TimeUtils;
 import com.cb.injection.module.MainModule;
 import com.cb.model.CbOrderBook;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
+import org.knowm.xchange.currency.CurrencyPair;
 
 import java.time.*;
 import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class GsonTest {
+public class JsonSerializerTest {
 
-    private final Gson gson = MainModule.INJECTOR.getInstance(Gson.class);
+    private final JsonSerializer jsonSerializer = MainModule.INJECTOR.getInstance(JsonSerializer.class);
 
     @Test
     public void toJson() {
         // setup data
+        CurrencyPair currencyPair = CurrencyPair.LTC_USD;
+
         int year = 1995;
         Month month = Month.APRIL;
         int dayOfMonth = 8;
@@ -42,6 +44,7 @@ public class GsonTest {
         long checksum = 145897;
 
         CbOrderBook orderBook = new CbOrderBook()
+                .setCurrencyPair(currencyPair)
                 .setSnapshot(true)
                 .setExchangeDatetime(exchangeDateTime)
                 .setExchangeDate(exchangeDate)
@@ -51,11 +54,11 @@ public class GsonTest {
                 .setChecksum(checksum);
 
         // engage test
-        String result = gson.toJson(orderBook);
+        String result = jsonSerializer.serializeToJson(orderBook);
 
         // verify
         long expectedExchangeDateTimeMillis = exchangeDateTime.toEpochMilli();
-        assertEquals("{\"snapshot\":true,\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":\"1995-04-08\",\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7},\"checksum\":" + checksum + "}", result);
+        assertEquals("{\"currencyPair\":\"LTC/USD\",\"snapshot\":true,\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":[1995,4,8],\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7},\"checksum\":" + checksum + ",\"spread\":{\"bid\":{\"10.3\":0.9},\"ask\":{\"10.5\":1.89}}}", result);
     }
 
 }

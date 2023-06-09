@@ -1,6 +1,6 @@
 package com.cb.driver.kraken;
 
-import com.cb.common.ObjectConverter;
+import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.DbWriteProvider;
 import com.cb.driver.AbstractDriver;
@@ -30,6 +30,9 @@ public class KrakenInstrumentBridgeDriver extends AbstractDriver {
     private DbWriteProvider dbWriteProvider;
 
     @Inject
+    private JsonSerializer jsonSerializer;
+
+    @Inject
     @Named(KRAKEN_WEBSOCKET_V2_URL)
     private String webSocketUrl;
 
@@ -51,7 +54,7 @@ public class KrakenInstrumentBridgeDriver extends AbstractDriver {
     @SneakyThrows
     private void connect() {
         KrakenInstrumentSubscriptionRequest subscriptionRequest = new KrakenInstrumentSubscriptionRequest().setReq_id(134679); // TODO: create a new one and save locally, and verify for this value when receiving data
-        String subscriptionString = ObjectConverter.OBJECT_MAPPER.writer().writeValueAsString(subscriptionRequest);
+        String subscriptionString = jsonSerializer.serializeToJson(subscriptionRequest);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
         WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();
         CompletableFuture.runAsync(() -> {

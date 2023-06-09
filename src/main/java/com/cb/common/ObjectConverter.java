@@ -16,9 +16,6 @@ import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookLevel;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,13 +39,11 @@ import java.util.stream.Collectors;
 @Singleton
 public class ObjectConverter {
 
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
-
     @Inject
     private CurrencyResolver currencyResolver;
 
     @Inject
-    private Gson gson;
+    private JsonSerializer jsonSerializer;
 
     public double[] primitiveArray(Collection<Double> collection) {
         return ArrayUtils.toPrimitive(collection.toArray(new Double[0]));
@@ -294,7 +289,7 @@ public class ObjectConverter {
     }
 
     public Map<String, Double> convertToRedisPayload(Collection<CbOrderBook> orderBooks) {
-        return orderBooks.parallelStream().collect(Collectors.toMap(gson::toJson, orderbook -> (double)(orderbook.getReceivedMicros()), (a, b)->a));
+        return orderBooks.parallelStream().collect(Collectors.toMap(jsonSerializer::serializeToJson, orderbook -> (double)(orderbook.getReceivedMicros()), (a, b)->a));
     }
 
     public List<Pair<Double, Double>> quoteList(List<LimitOrder> limitOrders) {

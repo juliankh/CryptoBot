@@ -1,12 +1,11 @@
 package com.cb.processor;
 
-import com.cb.common.ObjectConverter;
+import com.cb.common.JsonSerializer;
 import com.cb.common.util.GeneralUtils;
 import com.cb.common.util.NumberUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.ChecksumVerifier;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import org.apache.commons.collections4.MapUtils;
 
@@ -21,6 +20,9 @@ public class SnapshotMaintainer {
 
     @Inject
     private ChecksumVerifier checksumVerifier;
+
+    @Inject
+    private JsonSerializer jsonSerializer;
 
     private CbOrderBook snapshot;
     private int depth;
@@ -81,9 +83,9 @@ public class SnapshotMaintainer {
 
     public CbOrderBook snapshotCopy() {
         try {
-            String json = ObjectConverter.OBJECT_MAPPER.writer().writeValueAsString(snapshot);
-            return ObjectConverter.OBJECT_MAPPER.readValue(json, CbOrderBook.class);
-        } catch (JsonProcessingException e) {
+            String json = jsonSerializer.serializeToJson(snapshot);
+            return jsonSerializer.deserializeFromJson(json, CbOrderBook.class);
+        } catch (Exception e) {
             throw new RuntimeException("Problem doing deep-copy of CbOrderBook", e);
         }
     }

@@ -1,5 +1,6 @@
 package com.cb.processor;
 
+import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.processor.checksum.ChecksumCalculator;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
@@ -31,6 +33,9 @@ public class SnapshotMaintainerTest {
 
     @Mock
     private ChecksumCalculator checksumCalculator;
+
+    @Spy
+    private JsonSerializer jsonSerializer;
 
     @InjectMocks
     private SnapshotMaintainer snapshotMaintainer;

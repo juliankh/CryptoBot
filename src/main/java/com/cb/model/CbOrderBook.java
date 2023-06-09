@@ -1,5 +1,9 @@
 package com.cb.model;
 
+import com.cb.model.json.adapter.InstantToLongConverter;
+import com.cb.model.json.adapter.LongToInstantConverter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +30,11 @@ public class CbOrderBook implements Serializable {
 
     private CurrencyPair currencyPair;
     private boolean snapshot;
+
+    @JsonDeserialize(converter = LongToInstantConverter.class)
+    @JsonSerialize(converter = InstantToLongConverter.class)
     private Instant exchangeDatetime;
+
     private LocalDate exchangeDate;
     private long receivedMicros;
     private TreeMap<Double, Double> bids;

@@ -1,7 +1,7 @@
 package com.cb.driver.kraken;
 
 import com.cb.common.CurrencyResolver;
-import com.cb.common.ObjectConverter;
+import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.MiscConfigName;
@@ -42,6 +42,9 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @Inject
     private CurrencyResolver currencyResolver;
+
+    @Inject
+    private JsonSerializer jsonSerializer;
 
     @Inject
     @Named(KRAKEN_CHECKSUM_CALCULATOR)
@@ -111,7 +114,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
                         .setSnapshot(true)
                         .setDepth(depth)
                         .setSymbol(Lists.newArrayList(currencyPair.toString())));
-        String subscriptionString = ObjectConverter.OBJECT_MAPPER.writer().writeValueAsString(subscription);
+        String subscriptionString = jsonSerializer.serializeToJson(subscription);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
         WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();
         CompletableFuture.runAsync(() -> {

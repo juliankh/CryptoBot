@@ -18,7 +18,6 @@ import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdateData;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,15 +56,14 @@ public class ObjectConverterTest {
     private CurrencyResolver currencyResolver;
 
     @Mock
-    private Gson gson;
+    private JsonSerializer jsonSerializer;
 
     @InjectMocks
     private ObjectConverter objectConverter;
 
     @BeforeEach
     public void beforeEachTest() {
-        reset(currencyResolver);
-        reset(gson);
+        reset(jsonSerializer);
     }
 
     @Test
@@ -770,8 +768,8 @@ public class ObjectConverterTest {
         CbOrderBook orderBook1 = new CbOrderBook().setReceivedMicros(micros1);
         CbOrderBook orderBook2 = new CbOrderBook().setReceivedMicros(micros2);
         List<CbOrderBook> orderBooks = Lists.newArrayList(orderBook1, orderBook2);
-        when(gson.toJson(orderBook1)).thenReturn(json1);
-        when(gson.toJson(orderBook2)).thenReturn(json2);
+        when(jsonSerializer.serializeToJson(orderBook1)).thenReturn(json1);
+        when(jsonSerializer.serializeToJson(orderBook2)).thenReturn(json2);
 
         // engage test
         Map<String, Double> result = objectConverter.convertToRedisPayload(orderBooks);

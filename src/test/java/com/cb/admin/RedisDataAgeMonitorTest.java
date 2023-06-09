@@ -1,9 +1,8 @@
 package com.cb.admin;
 
 import com.cb.alert.AlertProvider;
+import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
-import com.cb.injection.module.MainModule;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,11 +23,11 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class RedisDataAgeMonitorTest {
 
-    @Spy
-    private Gson gson = MainModule.INJECTOR.getInstance(Gson.class);
-
     @Mock
     private AlertProvider alertProvider;
+
+    @Spy
+    private JsonSerializer jsonSerializer;
 
     @InjectMocks
     private RedisDataAgeMonitor redisDataAgeMonitor;

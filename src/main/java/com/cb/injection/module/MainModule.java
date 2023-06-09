@@ -2,8 +2,6 @@ package com.cb.injection.module;
 
 import com.cb.common.CurrencyResolver;
 import com.cb.db.DbReadOnlyProvider;
-import com.cb.model.json.adapter.InstantAdapter;
-import com.cb.model.json.adapter.LocalDateAdapter;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.processor.BufferAggregator;
 import com.cb.processor.checksum.ChecksumCalculator;
@@ -12,8 +10,6 @@ import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.property.CryptoProperties;
 import com.cb.ws.WebSocketClient;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -31,10 +27,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 
 import javax.inject.Named;
-import javax.inject.Singleton;
 import java.sql.DriverManager;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -113,15 +106,6 @@ public class MainModule extends AbstractModule {
     @Provides
     public Jedis jedis(@Named(REDIS_HOST) String host, @Named(REDIS_PORT) int port) {
         return new Jedis(host, port, DefaultJedisClientConfig.builder().connectionTimeoutMillis(Integer.MAX_VALUE).socketTimeoutMillis(Integer.MAX_VALUE).build());
-    }
-
-    @Provides
-    @Singleton
-    public Gson gson() {
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(Instant.class, new InstantAdapter());
-        builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
-        return builder.create();
     }
 
     @Provides

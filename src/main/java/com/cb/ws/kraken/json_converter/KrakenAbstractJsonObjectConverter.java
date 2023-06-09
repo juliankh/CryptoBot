@@ -1,6 +1,6 @@
 package com.cb.ws.kraken.json_converter;
 
-import com.cb.common.ObjectConverter;
+import com.cb.common.JsonSerializer;
 import com.cb.common.util.GeneralUtils;
 import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
@@ -11,11 +11,15 @@ import lombok.SneakyThrows;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Objects;
 
 @Getter
 public abstract class KrakenAbstractJsonObjectConverter implements KrakenJsonObjectConverter {
+
+    @Inject
+    private JsonSerializer jsonSerializer;
 
     private static class JsonIdentifier {
         public static final String ERROR = "error";
@@ -23,9 +27,9 @@ public abstract class KrakenAbstractJsonObjectConverter implements KrakenJsonObj
         public static final String HEARTBEAT = "\"channel\":\"heartbeat\"";
     }
 
-    private KrakenError error;
-    private KrakenStatusUpdate statusUpdate;
-    private KrakenHeartbeat heartbeat;
+    protected KrakenError error;
+    protected KrakenStatusUpdate statusUpdate;
+    protected KrakenHeartbeat heartbeat;
 
     @SneakyThrows
     @Override
@@ -39,11 +43,11 @@ public abstract class KrakenAbstractJsonObjectConverter implements KrakenJsonObj
 
         // parse json
         if (json.contains(JsonIdentifier.ERROR)) {
-            error = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenError.class);
+            error = jsonSerializer.deserializeFromJson(json, KrakenError.class);
         } else if (json.contains(JsonIdentifier.STATUS_UPDATE)) {
-            statusUpdate = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenStatusUpdate.class);
+            statusUpdate = jsonSerializer.deserializeFromJson(json, KrakenStatusUpdate.class);
         } else if (json.contains(JsonIdentifier.HEARTBEAT)) {
-            heartbeat = ObjectConverter.OBJECT_MAPPER.readValue(json, KrakenHeartbeat.class);
+            heartbeat = jsonSerializer.deserializeFromJson(json, KrakenHeartbeat.class);
         } else {
             if (!parseCustom(json)) {
                 throw new RuntimeException("Don't know how to parse this json: <" + GeneralUtils.truncateStringIfNecessary(json, 100) + ">");

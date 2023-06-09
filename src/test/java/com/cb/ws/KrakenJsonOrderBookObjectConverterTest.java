@@ -1,5 +1,6 @@
 package com.cb.ws;
 
+import com.cb.common.JsonSerializer;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookLevel;
@@ -9,6 +10,7 @@ import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
@@ -19,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class KrakenJsonOrderBookObjectConverterTest {
+
+    @Spy
+    private JsonSerializer jsonSerializer;
 
     @InjectMocks
     private KrakenJsonOrderBookObjectConverter converter;

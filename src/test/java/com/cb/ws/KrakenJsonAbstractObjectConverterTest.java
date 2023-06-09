@@ -1,5 +1,6 @@
 package com.cb.ws;
 
+import com.cb.common.JsonSerializer;
 import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
@@ -8,6 +9,7 @@ import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigInteger;
@@ -17,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class KrakenJsonAbstractObjectConverterTest {
+
+    @Spy
+    private JsonSerializer jsonSerializer;
 
     @InjectMocks
     private KrakenJsonOrderBookObjectConverter converter; // using KrakenOrderBookJsonObjectConverter instead of KrakenAbstractJsonObjectConverter because can't instantiate an abstract class
