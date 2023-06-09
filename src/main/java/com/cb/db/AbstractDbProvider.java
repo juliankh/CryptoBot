@@ -2,8 +2,8 @@ package com.cb.db;
 
 import com.cb.common.ObjectConverter;
 import com.cb.db.kraken.KrakenTableNameResolver;
-import com.google.inject.Inject;
 
+import javax.inject.Inject;
 import java.util.Collections;
 
 public abstract class AbstractDbProvider {

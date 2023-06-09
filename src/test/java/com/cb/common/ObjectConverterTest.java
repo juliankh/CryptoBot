@@ -636,7 +636,9 @@ public class ObjectConverterTest {
         List<KrakenOrderBookLevel> bids = Lists.newArrayList(bid1, bid2, bid3);
         List<KrakenOrderBookLevel> asks = Lists.newArrayList(ask1, ask2, ask3);
 
-        KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(timestamp).setBids(bids).setAsks(asks);
+        long checksum = 456987321;
+
+        KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(timestamp).setBids(bids).setAsks(asks).setChecksum(checksum).setSymbol("BTC/USD");
 
         // engage test
         CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook, false);
@@ -677,6 +679,9 @@ public class ObjectConverterTest {
 
         assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
         assertEquals(ask1Quantity, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(checksum, result.getChecksum());
+        assertEquals(CurrencyPair.BTC_USD, result.getCurrencyPair());
     }
 
     @Test
@@ -707,7 +712,9 @@ public class ObjectConverterTest {
         List<KrakenOrderBookLevel> bids = Lists.newArrayList(bid1, bid2, bid3);
         List<KrakenOrderBookLevel> asks = Lists.newArrayList(ask1, ask2, ask3);
 
-        KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(null).setBids(bids).setAsks(asks);
+        long checksum = 95621476;
+
+        KrakenOrderBook2Data krakenOrderBook = new KrakenOrderBook2Data().setTimestamp(null).setBids(bids).setAsks(asks).setChecksum(checksum).setSymbol("BTC/USDT");
 
         // engage test
         CbOrderBook result = objectConverter.convertToCbOrderBook(krakenOrderBook, true);
@@ -748,6 +755,9 @@ public class ObjectConverterTest {
 
         assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
         assertEquals(ask1Quantity, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(checksum, result.getChecksum());
+        assertEquals(CurrencyPair.BTC_USDT, result.getCurrencyPair());
     }
 
     @Test
@@ -843,6 +853,65 @@ public class ObjectConverterTest {
 
         // engage test
         DbKrakenAssetPair result = objectConverter.convertToDbKrakenAssetPair(krakenAssetPair);
+
+        // verify
+        assertEquals(symbol, result.getSymbol());
+        assertEquals(base, result.getBase());
+        assertEquals(quote, result.getQuote());
+        assertEquals(status, result.getStatus());
+        assertEquals(has_index, result.isHas_index());
+        assertEquals(marginable, result.isMarginable());
+        assertEquals(marginInitial, result.getMargin_initial());
+        assertEquals(positionLimitLong, result.getPosition_limit_long());
+        assertEquals(positionLimitShort, result.getPosition_limit_short());
+        assertEquals(qtyMin, result.getQty_min(), DOUBLE_COMPARE_DELTA);
+        assertEquals(qtyPrecision, result.getQty_precision());
+        assertEquals(qtyIncrement, result.getQty_increment(), DOUBLE_COMPARE_DELTA);
+        assertEquals(pricePrecision, result.getPrice_precision());
+        assertEquals(priceIncrement, result.getPrice_increment(), DOUBLE_COMPARE_DELTA);
+        assertEquals(costMin, result.getCost_min(), DOUBLE_COMPARE_DELTA);
+        assertEquals(costPrecision, result.getCost_precision());
+    }
+
+    @Test
+    public void convertToKrakenAssetPairs() {
+        // setup
+        String symbol = "EUR/USD";
+        String base = "EUR";
+        String quote = "USD";
+        String status = "status1";
+        boolean has_index = false;
+        boolean marginable = true;
+        Double marginInitial = 0.2;
+        Integer positionLimitLong = 123;
+        Integer positionLimitShort = 456;
+        double qtyMin = 0.5;
+        int qtyPrecision = 8;
+        double qtyIncrement = 0.00001;
+        int pricePrecision = 5;
+        double priceIncrement = 0.00001;
+        double costMin = 0.4;
+        int costPrecision = 4;
+        DbKrakenAssetPair dbKrakenAssetPair = new DbKrakenAssetPair();
+        dbKrakenAssetPair.setSymbol(symbol);
+        dbKrakenAssetPair.setBase(base);
+        dbKrakenAssetPair.setQuote(quote);
+        dbKrakenAssetPair.setStatus(status);
+        dbKrakenAssetPair.setHas_index(has_index);
+        dbKrakenAssetPair.setMarginable(marginable);
+        dbKrakenAssetPair.setMargin_initial(marginInitial);
+        dbKrakenAssetPair.setPosition_limit_long(positionLimitLong);
+        dbKrakenAssetPair.setPosition_limit_short(positionLimitShort);
+        dbKrakenAssetPair.setQty_min(qtyMin);
+        dbKrakenAssetPair.setQty_precision(qtyPrecision);
+        dbKrakenAssetPair.setQty_increment(qtyIncrement);
+        dbKrakenAssetPair.setPrice_precision(pricePrecision);
+        dbKrakenAssetPair.setPrice_increment(priceIncrement);
+        dbKrakenAssetPair.setCost_min(costMin);
+        dbKrakenAssetPair.setCost_precision(costPrecision);
+
+        // engage test
+        KrakenAssetPair result = objectConverter.convertToKrakenAssetPair(dbKrakenAssetPair);
 
         // verify
         assertEquals(symbol, result.getSymbol());

@@ -4,13 +4,13 @@ import com.cb.alert.AlertProvider;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.config.QueueMonitorConfig;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.rabbitmq.http.client.Client;
 import com.rabbitmq.http.client.domain.QueueInfo;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;

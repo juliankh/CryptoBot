@@ -12,11 +12,12 @@ import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOr
 import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
 import com.cb.processor.SnapshotMaintainer;
+import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.currency.CurrencyPair;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -48,9 +49,9 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
 
     private CurrencyPair currencyPair;
 
-    public void initialize(CurrencyPair currencyPair, int depth, int batchSize) {
+    public void initialize(CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
         this.currencyPair = currencyPair;
-        snapshotMaintainer.initialize(depth);
+        snapshotMaintainer.initialize(depth, checksumCalculator);
         batchProcessor.initialize(batchSize);
         CompletableFuture.runAsync(() -> {
             while (true) {
@@ -79,8 +80,9 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
             processSubscriptionResponse(jsonObjectConverter.getSubscriptionResponse());
         } else if (objectType == KrakenOrderBookInfo.class) {
             processOrderBookInfo(jsonObjectConverter.getOrderBookInfo());
+        } else {
+            throw new RuntimeException("Unknown object type parsed: [" + objectType + "]");
         }
-        throw new RuntimeException("Unknown object type parsed: [" + objectType + "]");
     }
 
     public void processSubscriptionResponse(KrakenSubscriptionResponseOrderBook subscriptionResponse) {

@@ -4,10 +4,10 @@ import com.cb.common.util.NumberUtils;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.config.DataCleanerConfig;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.stream.Collectors;
 

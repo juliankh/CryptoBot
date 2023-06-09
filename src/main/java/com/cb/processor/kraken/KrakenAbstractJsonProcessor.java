@@ -6,9 +6,9 @@ import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.processor.JsonProcessor;
 import com.cb.ws.kraken.json_converter.KrakenAbstractJsonObjectConverter;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;

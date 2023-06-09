@@ -9,8 +9,6 @@ import com.cb.model.kraken.ws.db.DbKrakenStatusUpdate;
 import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +20,8 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.tuple.Triple;
 import org.knowm.xchange.currency.CurrencyPair;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.Instant;

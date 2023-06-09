@@ -2,13 +2,13 @@ package com.cb.jms.common;
 
 import com.cb.alert.AlertProvider;
 import com.cb.common.util.TimeUtils;
-import com.google.inject.Inject;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.ShutdownSignalException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
 import java.time.Instant;
 
 @Slf4j

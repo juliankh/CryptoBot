@@ -3,11 +3,11 @@ package com.cb.admin;
 import com.cb.alert.AlertProvider;
 import com.cb.common.util.NumberUtils;
 import com.cb.db.DbReadOnlyProvider;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.sun.management.OperatingSystemMXBean;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.management.ManagementFactory;
 
 @Slf4j

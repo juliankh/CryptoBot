@@ -1,7 +1,6 @@
 package com.cb.injection.provider;
 
-import com.google.inject.Provider;
-
+import javax.inject.Provider;
 import java.util.List;
 import java.util.stream.Stream;
 

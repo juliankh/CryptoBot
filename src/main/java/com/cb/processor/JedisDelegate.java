@@ -5,11 +5,11 @@ import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.KrakenBatch;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.currency.CurrencyPair;
 import redis.clients.jedis.Jedis;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 

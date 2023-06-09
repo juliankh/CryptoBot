@@ -7,11 +7,11 @@ import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.cb.model.kraken.ws.request.KrakenInstrumentSubscriptionRequest;
 import com.cb.ws.WebSocketClient;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;

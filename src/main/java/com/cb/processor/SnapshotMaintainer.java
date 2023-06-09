@@ -4,12 +4,13 @@ import com.cb.common.ObjectConverter;
 import com.cb.common.util.GeneralUtils;
 import com.cb.common.util.NumberUtils;
 import com.cb.model.CbOrderBook;
-import com.cb.ws.kraken.ChecksumCalculator;
+import com.cb.processor.checksum.ChecksumCalculator;
+import com.cb.processor.checksum.ChecksumVerifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.inject.Inject;
 import lombok.Getter;
 import org.apache.commons.collections4.MapUtils;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -19,13 +20,14 @@ import java.util.NavigableMap;
 public class SnapshotMaintainer {
 
     @Inject
-    private ChecksumCalculator checksumCalculator;
+    private ChecksumVerifier checksumVerifier;
 
     private CbOrderBook snapshot;
     private int depth;
 
-    public void initialize(int depth) {
+    public void initialize(int depth, ChecksumCalculator checksumCalculator) {
         this.depth = depth;
+        checksumVerifier.initialize(checksumCalculator);
     }
 
     public void setSnapshot(CbOrderBook snapshot) {
@@ -34,8 +36,12 @@ public class SnapshotMaintainer {
 
     public void setSnapshot(CbOrderBook snapshot, boolean verifyChecksum) {
         this.snapshot = snapshot;
-        if (verifyChecksum) {
-            // TODO: verify checksum;
+        verifyChecksumIfNecessary(snapshot, verifyChecksum);
+    }
+
+    public void verifyChecksumIfNecessary(CbOrderBook snapshot, boolean verifyChecksum) {
+        if (verifyChecksum && !checksumVerifier.checksumMatches(snapshot)) {
+            throw new RuntimeException("Checksum derived is different from the one provided");
         }
     }
 
@@ -57,9 +63,7 @@ public class SnapshotMaintainer {
         snapshot.setExchangeDatetime(update.getExchangeDatetime())
                 .setExchangeDate(update.getExchangeDate())
                 .setReceivedMicros(update.getReceivedMicros());
-        if (verifyChecksum) {
-            // TODO: verify checksum
-        }
+        verifyChecksumIfNecessary(snapshot, verifyChecksum);
     }
 
     public void updateLevels(NavigableMap<Double, Double> levels, NavigableMap<Double, Double> updates, boolean isBids) {

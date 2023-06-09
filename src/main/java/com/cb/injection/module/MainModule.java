@@ -1,28 +1,43 @@
 package com.cb.injection.module;
 
+import com.cb.common.CurrencyResolver;
+import com.cb.db.DbReadOnlyProvider;
 import com.cb.model.json.adapter.InstantAdapter;
 import com.cb.model.json.adapter.LocalDateAdapter;
+import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.processor.BufferAggregator;
+import com.cb.processor.checksum.ChecksumCalculator;
+import com.cb.processor.checksum.KrakenChecksumCalculator;
 import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.property.CryptoProperties;
 import com.cb.ws.WebSocketClient;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.inject.*;
-import com.google.inject.name.Named;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
 import com.google.inject.name.Names;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.http.client.Client;
 import com.rabbitmq.http.client.ClientParameters;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.knowm.xchange.currency.Currency;
+import org.knowm.xchange.currency.CurrencyPair;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.sql.DriverManager;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.*;
 
@@ -107,6 +122,21 @@ public class MainModule extends AbstractModule {
         builder.registerTypeAdapter(Instant.class, new InstantAdapter());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
         return builder.create();
+    }
+
+    @Provides
+    @Named(KRAKEN_CHECKSUM_CALCULATOR)
+    public ChecksumCalculator krakenChecksumCalculator(DbReadOnlyProvider dbReadOnlyProvider, CurrencyResolver currencyResolver) {
+        List<KrakenAssetPair> krakenAssetPairs = dbReadOnlyProvider.krakenAssetPairs();
+        Map<CurrencyPair, Pair<Integer, Integer>> precisionMap = krakenAssetPairs
+                .stream()
+                .filter(assetPair -> Currency.getAvailableCurrencyCodes().contains(assetPair.getBase()))
+                .filter(assetPair -> Currency.getAvailableCurrencyCodes().contains(assetPair.getQuote()))
+                .collect(Collectors.toMap(assetPair -> currencyResolver.krakenCurrencyPair(assetPair.getSymbol()),
+                                          assetPair -> Pair.of(assetPair.getPrice_precision(), assetPair.getQty_precision())));
+        KrakenChecksumCalculator checksumCalculator = new KrakenChecksumCalculator();
+        checksumCalculator.initialize(precisionMap);
+        return checksumCalculator;
     }
 
     @Provides

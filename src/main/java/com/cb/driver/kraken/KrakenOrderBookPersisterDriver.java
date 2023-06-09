@@ -3,9 +3,9 @@ package com.cb.driver.kraken;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
 import java.util.List;
 
 @Deprecated

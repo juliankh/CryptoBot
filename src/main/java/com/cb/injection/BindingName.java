@@ -42,4 +42,6 @@ public interface BindingName {
     String KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK = "krakenWebSocketV2ClientOrderBook";
     String KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT = "krakenWebSocketV2ClientInstrument";
 
+    String KRAKEN_CHECKSUM_CALCULATOR = "krakenChecksumCalculator";
+
 }

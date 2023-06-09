@@ -7,9 +7,9 @@ import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentData;
 import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseInstrument;
 import com.cb.ws.kraken.json_converter.KrakenJsonInstrumentObjectConverter;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.inject.Inject;
 import java.util.List;
 
 @Slf4j
@@ -37,8 +37,9 @@ public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
             processSubscriptionResponse(converter.getSubscriptionResponse());
         } else if (objectType == KrakenInstrumentInfo.class) {
             processInstrumentInfo(converter.getInstrumentInfo());
+        } else {
+            throw new RuntimeException("Unknown object type parsed: [" + objectType + "]");
         }
-        throw new RuntimeException("Unknown object type parsed: [" + objectType + "]");
     }
 
     public void processSubscriptionResponse(KrakenSubscriptionResponseInstrument subscriptionResponse) {

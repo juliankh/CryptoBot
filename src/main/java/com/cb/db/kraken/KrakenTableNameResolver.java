@@ -1,9 +1,10 @@
 package com.cb.db.kraken;
 
 import com.cb.common.CurrencyResolver;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import org.knowm.xchange.currency.CurrencyPair;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class KrakenTableNameResolver {

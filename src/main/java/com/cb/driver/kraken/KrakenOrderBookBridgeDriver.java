@@ -11,16 +11,17 @@ import com.cb.injection.module.MainModule;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequest;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequestParams;
+import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
 import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.currency.CurrencyPair;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -29,8 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK;
-import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_URL;
+import static com.cb.injection.BindingName.*;
 
 @Slf4j
 public class KrakenOrderBookBridgeDriver extends AbstractDriver {
@@ -42,6 +42,10 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @Inject
     private CurrencyResolver currencyResolver;
+
+    @Inject
+    @Named(KRAKEN_CHECKSUM_CALCULATOR)
+    private ChecksumCalculator checksumCalculator;
 
     @Inject
     @Named(KRAKEN_WEBSOCKET_V2_URL)
@@ -76,7 +80,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         int depth = dbReadOnlyProvider.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
         dbReadOnlyProvider.cleanup();
         this.depth = depth;
-        ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(currencyPair, depth, batchSize);
+        ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(currencyPair, depth, batchSize, checksumCalculator);
     }
 
     @Override

@@ -3,8 +3,9 @@ package com.cb.driver.admin;
 import com.cb.admin.SafetyNetMonitor;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.inject.Inject;
 
 @Slf4j
 public class SafetyNetMonitorDriver extends AbstractDriver {

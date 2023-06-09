@@ -19,15 +19,16 @@ import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.Gson;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.trade.LimitOrder;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.Timestamp;
@@ -171,7 +172,35 @@ public class ObjectConverter {
     }
 
     public DbKrakenAssetPair convertToDbKrakenAssetPair(KrakenAssetPair krakenAssetPair) {
-        return new DbKrakenAssetPair()
+        DbKrakenAssetPair dbAssetPair = new DbKrakenAssetPair();
+        dbAssetPair.setSymbol(krakenAssetPair.getSymbol());
+        dbAssetPair.setBase(krakenAssetPair.getBase());
+        dbAssetPair.setQuote(krakenAssetPair.getQuote());
+        dbAssetPair.setStatus(krakenAssetPair.getStatus());
+        dbAssetPair.setHas_index(krakenAssetPair.isHas_index());
+        dbAssetPair.setMarginable(krakenAssetPair.isMarginable());
+        dbAssetPair.setMargin_initial(krakenAssetPair.getMargin_initial());
+        dbAssetPair.setPosition_limit_long(krakenAssetPair.getPosition_limit_long());
+        dbAssetPair.setPosition_limit_short(krakenAssetPair.getPosition_limit_short());
+        dbAssetPair.setQty_min(krakenAssetPair.getQty_min());
+        dbAssetPair.setQty_precision(krakenAssetPair.getQty_precision());
+        dbAssetPair.setQty_increment(krakenAssetPair.getQty_increment());
+        dbAssetPair.setPrice_precision(krakenAssetPair.getPrice_precision());
+        dbAssetPair.setPrice_increment(krakenAssetPair.getPrice_increment());
+        dbAssetPair.setCost_min(krakenAssetPair.getCost_min());
+        dbAssetPair.setCost_precision(krakenAssetPair.getCost_precision());
+        return dbAssetPair;
+    }
+
+    public List<KrakenAssetPair> convertToKrakenAssetPairs(List<DbKrakenAssetPair> krakenAssetPairs) {
+        return Optional.ofNullable(krakenAssetPairs).orElse(Collections.emptyList())
+                .parallelStream()
+                .map(this::convertToKrakenAssetPair)
+                .toList();
+    }
+
+    public KrakenAssetPair convertToKrakenAssetPair(DbKrakenAssetPair krakenAssetPair) {
+        return new KrakenAssetPair()
                 .setSymbol(krakenAssetPair.getSymbol())
                 .setBase(krakenAssetPair.getBase())
                 .setQuote(krakenAssetPair.getQuote())
@@ -218,13 +247,16 @@ public class ObjectConverter {
 
     public CbOrderBook convertToCbOrderBook(KrakenOrderBook2Data krakenOrderBookData, boolean snapshot) {
         Instant timestamp = krakenOrderBookData.getTimestamp();
+        CurrencyPair currencyPair = currencyResolver.krakenCurrencyPair(krakenOrderBookData.getSymbol());
         return new CbOrderBook()
+                .setCurrencyPair(currencyPair)
                 .setSnapshot(snapshot)
                 .setExchangeDatetime(timestamp)
                 .setExchangeDate(timestamp == null ? null : LocalDate.ofInstant(timestamp, ZoneId.systemDefault()))
                 .setReceivedMicros(TimeUtils.currentMicros())
                 .setBids(quoteTreeMapFromLevels(krakenOrderBookData.getBids()))
-                .setAsks(quoteTreeMapFromLevels(krakenOrderBookData.getAsks()));
+                .setAsks(quoteTreeMapFromLevels(krakenOrderBookData.getAsks()))
+                .setChecksum(krakenOrderBookData.getChecksum());
     }
 
     public DbKrakenOrderBook convertToDbKrakenOrderBook(XchangeKrakenOrderBook krakenOrderBook, Connection connection) {

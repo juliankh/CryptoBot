@@ -1,31 +1,42 @@
-package com.cb.ws.kraken;
+package com.cb.processor.checksum;
 
 import com.cb.model.CbOrderBook;
 import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.plexus.util.StringUtils;
+import org.knowm.xchange.currency.CurrencyPair;
 
+import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 // TODO: once the logic of the checksum is established, then optimize it for performance
-public class ChecksumCalculator {
+@Singleton
+public class KrakenChecksumCalculator implements ChecksumCalculator {
 
     private static final int NUM_LEVELS = 10;
-    private static final int PRICE_PRECISION = 6;
-    private static final int QUANTITY_PRECISION = 8;
 
     private static final Checksum CHECKSUM = new CRC32();
 
+    private Map<CurrencyPair, Pair<Integer, Integer>> precisionMap;
+
+    public void initialize(Map<CurrencyPair, Pair<Integer, Integer>> precisionMap) {
+        this.precisionMap = precisionMap;
+    }
+
+    @Override
     public long checksum(CbOrderBook orderBook) {
-        String asksDigest = digestForLevels(orderBook.getAsks(), NUM_LEVELS, PRICE_PRECISION, QUANTITY_PRECISION);
-        String bidsDigest = digestForLevels(orderBook.getBids().descendingMap(), NUM_LEVELS, PRICE_PRECISION, QUANTITY_PRECISION);
+        Pair<Integer, Integer> precisions = precisionMap.get(orderBook.getCurrencyPair());
+        int pricePrecision = precisions.getLeft();
+        int quantityPrecision = precisions.getRight();
+        String asksDigest = digestForLevels(orderBook.getAsks(), NUM_LEVELS, pricePrecision, quantityPrecision);
+        String bidsDigest = digestForLevels(orderBook.getBids().descendingMap(), NUM_LEVELS, pricePrecision, quantityPrecision);
         String digest = asksDigest + bidsDigest;
-        System.out.println(digest); // TODO: remove
         return checksum(digest);
     }
 
@@ -52,22 +63,17 @@ public class ChecksumCalculator {
     public String digestForLevel(double price, double quantity, int pricePrecision, int quantityPrecision) {
         String priceDigest = digestForNumber(price, pricePrecision);
         String quantityDigest = digestForNumber(quantity, quantityPrecision);
-        System.out.println(priceDigest + " " + quantityDigest);
         return priceDigest + quantityDigest;
     }
 
     public String digestForNumber(double num, int precision) {
         BigDecimal bd = BigDecimal.valueOf(num);
-        if (num > 1.0) {
-            String s = replaceDecimalAndStripLeadingZeros(bd);
-            return StringUtils.rightPad(s, precision, "0");
-        }
         bd = bd.setScale(precision, RoundingMode.HALF_UP);
         return replaceDecimalAndStripLeadingZeros(bd);
     }
 
     public String replaceDecimalAndStripLeadingZeros(BigDecimal bd) {
-        String s = bd.toString();
+        String s = bd.toPlainString();
         s = s.replace(".", "");
         return StringUtils.stripStart(s, "0");
     }

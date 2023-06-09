@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.knowm.xchange.currency.CurrencyPair;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -23,12 +24,14 @@ import java.util.TreeMap;
 @ToString
 public class CbOrderBook implements Serializable {
 
+    private CurrencyPair currencyPair;
     private boolean snapshot;
     private Instant exchangeDatetime;
     private LocalDate exchangeDate;
     private long receivedMicros;
     private TreeMap<Double, Double> bids;
     private TreeMap<Double, Double> asks;
+    private long checksum;
 
     // lazy loaded
     private Spread spread;

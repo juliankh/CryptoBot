@@ -2,11 +2,11 @@ package com.cb.admin;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.inject.Singleton;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;

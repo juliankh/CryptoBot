@@ -2,10 +2,10 @@ package com.cb.property;
 
 import com.cb.encryption.EncryptionProcessor;
 import com.cb.injection.module.CryptoBotPropertiesModule;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import lombok.SneakyThrows;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Properties;
 
 @Singleton

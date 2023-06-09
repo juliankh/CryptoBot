@@ -6,8 +6,8 @@ import com.cb.model.CbOrderBook;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.cb.model.kraken.ws.db.DbKrakenAssetPair;
+import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
@@ -16,6 +16,8 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.knowm.xchange.currency.CurrencyPair;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -39,6 +41,7 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
     private static final BeanListHandler<DbProcessConfig> BEAN_LIST_HANDLER_PROCESS_CONFIG = new BeanListHandler<>(DbProcessConfig.class);
     private static final BeanListHandler<DbQueueMonitorConfig> BEAN_LIST_HANDLER_QUEUE_MONITOR_CONFIG = new BeanListHandler<>(DbQueueMonitorConfig.class);
     private static final BeanListHandler<DbKrakenBridgeOrderBookConfig> BEAN_LIST_HANDLER_KRAKEN_BRIDGE_ORDERBOOK_CONFIG = new BeanListHandler<>(DbKrakenBridgeOrderBookConfig.class);
+    private static final BeanListHandler<DbKrakenAssetPair> BEAN_LIST_HANDLER_KRAKEN_ASSET_PAIR = new BeanListHandler<>(DbKrakenAssetPair.class);
     private static final BeanListHandler<DbMiscConfig> BEAN_LIST_HANDLER_MISC_CONFIG = new BeanListHandler<>(DbMiscConfig.class);
 
     private static final ScalarHandler<Timestamp> TIMESTAMP_SCALAR_HANDLER = new ScalarHandler<>();
@@ -177,6 +180,17 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
             return rawConfigs.parallelStream().map(objectConverter::convertToKrakenBridgeOrderBookConfig).collect(Collectors.toMap(KrakenBridgeOrderBookConfig::getCurrencyPair, c -> c));
         } catch (Exception e) {
             throw new RuntimeException("Problem retrieving Kraken Bridge OrderBook Config", e);
+        }
+    }
+
+    public List<KrakenAssetPair> krakenAssetPairs() {
+        try {
+            String tableName = "cb.kraken_asset_pair";
+            String sql = "SELECT id, symbol, base, quote, status, has_index, marginable, margin_initial, position_limit_long, position_limit_short, qty_min, qty_precision, qty_increment, price_precision, price_increment, cost_min, cost_precision, created, updated FROM " + tableName + ";";
+            List<DbKrakenAssetPair> assetPairs = TimeUtils.runTimedCallable_CollectionOutput(() -> queryRunner.query(readConnection, sql, BEAN_LIST_HANDLER_KRAKEN_ASSET_PAIR), "Retrieving", tableName);
+            return objectConverter.convertToKrakenAssetPairs(assetPairs);
+        } catch (Exception e) {
+            throw new RuntimeException("Problem retrieving Kraken Asset Pairs", e);
         }
     }
 

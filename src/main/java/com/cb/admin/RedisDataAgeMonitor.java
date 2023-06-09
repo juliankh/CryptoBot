@@ -6,12 +6,12 @@ import com.cb.injection.module.MainModule;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.RedisDataAgeMonitorConfig;
 import com.google.gson.Gson;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.resps.Tuple;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

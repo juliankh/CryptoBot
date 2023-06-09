@@ -2,8 +2,9 @@ package com.cb.injection.provider;
 
 import com.cb.injection.module.MainModule;
 import com.cb.jms.kraken.KrakenOrderBookPersistJmsConsumer;
-import com.google.inject.Provider;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.inject.Provider;
 
 @Deprecated
 @Slf4j

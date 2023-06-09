@@ -4,13 +4,13 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 
+import javax.inject.Named;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;

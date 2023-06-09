@@ -1,9 +1,10 @@
 package com.cb.encryption;
 
 import com.cb.injection.module.CryptoBotPropertiesModule;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class EncryptionProcessor {

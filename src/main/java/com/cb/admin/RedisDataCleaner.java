@@ -5,11 +5,11 @@ import com.cb.common.util.TimeUtils;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.module.MainModule;
 import com.cb.model.config.RedisDataCleanerConfig;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

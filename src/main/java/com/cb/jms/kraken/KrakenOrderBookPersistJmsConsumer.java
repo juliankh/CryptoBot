@@ -8,12 +8,12 @@ import com.cb.jms.common.AbstractJmsConsumer;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
-import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.SerializationUtils;
 import org.knowm.xchange.currency.CurrencyPair;
 import redis.clients.jedis.Jedis;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
