@@ -4,6 +4,8 @@ source ~/.crypto_bot_profile
 
 cd ${CRYPTO_BOT_BIN_SCRIPT_DIR}
 
+./direct_kraken_bridge_instrument.sh & sleep 2
+
 ./start_processes_xchange_kraken_bridge_orderbook_btc_usdt.sh & sleep 10
 ./start_processes_direct_kraken_bridge_orderbook_btc_usdt.sh & sleep 10
 
