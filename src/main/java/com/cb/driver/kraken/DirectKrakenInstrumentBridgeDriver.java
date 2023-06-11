@@ -20,9 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT;
 import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_URL;
 
-// TODO: create safety net for this
 @Slf4j
-public class KrakenInstrumentBridgeDriver extends AbstractDriver {
+public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
 
     private static final String DRIVER_NAME = "Kraken Instrument Bridge";
 
@@ -41,7 +40,7 @@ public class KrakenInstrumentBridgeDriver extends AbstractDriver {
     private WebSocketClient webSocketClient;
 
     public static void main(String[] args) {
-        KrakenInstrumentBridgeDriver driver = MainModule.INJECTOR.getInstance(KrakenInstrumentBridgeDriver.class);
+        DirectKrakenInstrumentBridgeDriver driver = MainModule.INJECTOR.getInstance(DirectKrakenInstrumentBridgeDriver.class);
         driver.execute();
     }
 

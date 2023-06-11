@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.cb.injection.BindingName.*;
 
 @Slf4j
-public class KrakenOrderBookBridgeDriver extends AbstractDriver {
+public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
 
@@ -64,7 +64,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     private int maxSecsBetweenUpdates;
 
     public static void main(String[] args) {
-        KrakenOrderBookBridgeDriver driver = MainModule.INJECTOR.getInstance(KrakenOrderBookBridgeDriver.class);
+        DirectKrakenOrderBookBridgeDriver driver = MainModule.INJECTOR.getInstance(DirectKrakenOrderBookBridgeDriver.class);
         driver.initialize(args);
         driver.execute();
     }
@@ -91,15 +91,20 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
         WebSocket webSocket = connect();
         while (true) {
-            long secsSinceLastUpdate = ChronoUnit.SECONDS.between(webSocketClient.getLatestReceive().get(), Instant.now());
-            if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
-                String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
-                log.warn(msg);
-                alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
-                webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
-                webSocket = connect();
+            Instant latestReceive = webSocketClient.getLatestReceive().get();
+            if (latestReceive != null) {
+                long secsSinceLastUpdate = ChronoUnit.SECONDS.between(webSocketClient.getLatestReceive().get(), Instant.now());
+                if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
+                    String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
+                    log.warn(msg);
+                    alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
+                    webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
+                    webSocket = connect();
+                }
+                TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
+            } else {
+                log.info("Haven't yet received orderbook data");
             }
-            TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
         }
     }
 

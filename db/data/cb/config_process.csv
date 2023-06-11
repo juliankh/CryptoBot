@@ -1,4 +1,3 @@
-# TODO: put MXC entries back to active=true
 1,"XchangeKrakenOrderBookBridgeDriver","ATOM-USD 01",true
 2,"XchangeKrakenOrderBookBridgeDriver","ATOM-USD 02",true
 3,"XchangeKrakenOrderBookBridgeDriver","ATOM-USD 03",true
@@ -59,14 +58,14 @@
 58,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 08",true
 59,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 09",true
 60,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 10",true
-61,"KrakenOrderBookBridgeDriver","BTC-USDT 01",true
-62,"KrakenOrderBookBridgeDriver","BTC-USDT 02",true
-63,"KrakenOrderBookBridgeDriver","BTC-USDT 03",true
-64,"KrakenOrderBookBridgeDriver","BTC-USDT 04",true
-65,"KrakenOrderBookBridgeDriver","BTC-USDT 05",true
-66,"KrakenOrderBookBridgeDriver","BTC-USDT 06",true
-67,"KrakenOrderBookBridgeDriver","BTC-USDT 07",true
-68,"KrakenOrderBookBridgeDriver","BTC-USDT 08",true
-69,"KrakenOrderBookBridgeDriver","BTC-USDT 09",true
-70,"KrakenOrderBookBridgeDriver","BTC-USDT 10",true
-71,"KrakenInstrumentBridgeDriver",null,true
+61,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 01",true
+62,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 02",true
+63,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 03",true
+64,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 04",true
+65,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 05",true
+66,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 06",true
+67,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 07",true
+68,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 08",true
+69,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 09",true
+70,"DirectKrakenOrderBookBridgeDriver","BTC-USDT 10",true
+71,"DirectKrakenInstrumentBridgeDriver",,true

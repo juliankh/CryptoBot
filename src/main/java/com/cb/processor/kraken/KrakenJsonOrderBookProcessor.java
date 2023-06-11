@@ -56,6 +56,7 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
         CompletableFuture.runAsync(() -> {
             while (true) {
                 log.info(snapshotMaintainer.snapshotAgeLogMsg(Instant.now()));
+                // TODO: if the snapshot age is beyond a certain limit, then send alert
                 TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK);
             }
         });
