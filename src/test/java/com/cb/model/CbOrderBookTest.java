@@ -26,18 +26,18 @@ public class CbOrderBookTest {
         CbOrderBook orderBook = new CbOrderBook().setBids(bids).setAsks(asks);
 
         Spread expected = new Spread(Pair.of(5.1, 123.0), Pair.of(12.6, 487.1));
-        assertEquals(expected, orderBook.getSpread());
+        assertEquals(expected, orderBook.spread());
     }
 
     @Test
     public void getSpread_EmptyBidsAndOrAsks() {
-        assertNull(new CbOrderBook().setBids(null).setAsks(null).getSpread());
+        assertNull(new CbOrderBook().setBids(null).setAsks(null).spread());
 
-        assertNull(new CbOrderBook().setBids(null).setAsks(new TreeMap<>(){{put(1.1, 11.1);}}).getSpread());
-        assertNull(new CbOrderBook().setBids(Maps.newTreeMap()).setAsks(new TreeMap<>(){{put(1.1, 11.1);}}).getSpread());
+        assertNull(new CbOrderBook().setBids(null).setAsks(new TreeMap<>(){{put(1.1, 11.1);}}).spread());
+        assertNull(new CbOrderBook().setBids(Maps.newTreeMap()).setAsks(new TreeMap<>(){{put(1.1, 11.1);}}).spread());
 
-        assertNull(new CbOrderBook().setBids(new TreeMap<>(){{put(1.1, 11.1);}}).setAsks(null).getSpread());
-        assertNull(new CbOrderBook().setBids(new TreeMap<>(){{put(1.1, 11.1);}}).setAsks(Maps.newTreeMap()).getSpread());
+        assertNull(new CbOrderBook().setBids(new TreeMap<>(){{put(1.1, 11.1);}}).setAsks(null).spread());
+        assertNull(new CbOrderBook().setBids(new TreeMap<>(){{put(1.1, 11.1);}}).setAsks(Maps.newTreeMap()).spread());
     }
 
 }

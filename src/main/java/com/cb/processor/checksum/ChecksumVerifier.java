@@ -10,8 +10,10 @@ public class ChecksumVerifier {
         this.checksumCalculator = checksumCalculator;
     }
 
-    public boolean checksumMatches(CbOrderBook orderBook) {
-        return checksumCalculator.checksum(orderBook) == orderBook.getChecksum();
+    // If checksum matches, then return null.  If checksum doesn't match, then returns the derived checksum (which doesn't match the checksum included in the snapshot)
+    public Long confirmChecksum(CbOrderBook orderBook) {
+        long derivedChecksum = checksumCalculator.checksum(orderBook);
+        return derivedChecksum == orderBook.getChecksum() ?  null : derivedChecksum;
     }
 
 }

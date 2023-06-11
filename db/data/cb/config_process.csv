@@ -59,3 +59,14 @@
 58,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 08",true
 59,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 09",true
 60,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 10",true
+61,"KrakenOrderBookBridgeDriver","BTC-USDT 01",true
+62,"KrakenOrderBookBridgeDriver","BTC-USDT 02",true
+63,"KrakenOrderBookBridgeDriver","BTC-USDT 03",true
+64,"KrakenOrderBookBridgeDriver","BTC-USDT 04",true
+65,"KrakenOrderBookBridgeDriver","BTC-USDT 05",true
+66,"KrakenOrderBookBridgeDriver","BTC-USDT 06",true
+67,"KrakenOrderBookBridgeDriver","BTC-USDT 07",true
+68,"KrakenOrderBookBridgeDriver","BTC-USDT 08",true
+69,"KrakenOrderBookBridgeDriver","BTC-USDT 09",true
+70,"KrakenOrderBookBridgeDriver","BTC-USDT 10",true
+71,"KrakenInstrumentBridgeDriver",null,true

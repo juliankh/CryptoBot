@@ -41,16 +41,13 @@ public class CbOrderBook implements Serializable {
     private TreeMap<Double, Double> asks;
     private long checksum;
 
-    // lazy loaded
-    private Spread spread;
-
-    public synchronized Spread getSpread() {
-        if (spread == null && MapUtils.isNotEmpty(bids) && MapUtils.isNotEmpty(asks)) {
+    public synchronized Spread spread() {
+        if (MapUtils.isNotEmpty(bids) && MapUtils.isNotEmpty(asks)) {
             Map.Entry<Double, Double> highestBid = bids.lastEntry();
             Map.Entry<Double, Double> lowestAsk = asks.firstEntry();
-            spread = new Spread(Pair.of(highestBid.getKey(), highestBid.getValue()), Pair.of(lowestAsk.getKey(), lowestAsk.getValue()));
+            return new Spread(Pair.of(highestBid.getKey(), highestBid.getValue()), Pair.of(lowestAsk.getKey(), lowestAsk.getValue()));
         }
-        return spread;
+        return null;
     }
 
 }

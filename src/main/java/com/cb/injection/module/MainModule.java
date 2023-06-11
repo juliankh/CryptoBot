@@ -30,6 +30,7 @@ import javax.inject.Named;
 import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.*;
@@ -126,13 +127,18 @@ public class MainModule extends AbstractModule {
     @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
     public WebSocketClient krakenOrderBookWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonOrderBookProcessor orderBookProcessor) {
-        return new WebSocketClient(bufferAggregator, orderBookProcessor);
+        return new WebSocketClient(bufferAggregator, orderBookProcessor, newRandomReqId());
     }
 
     @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
     public WebSocketClient krakenInstrumentWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonInstrumentProcessor instrumentProcessor) {
-        return new WebSocketClient(bufferAggregator, instrumentProcessor);
+        return new WebSocketClient(bufferAggregator, instrumentProcessor, newRandomReqId());
+    }
+
+    private static int newRandomReqId() {
+        Random random = new Random();
+        return Math.abs(random.nextInt());
     }
 
 }

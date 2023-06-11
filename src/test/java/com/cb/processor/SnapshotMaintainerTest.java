@@ -47,6 +47,66 @@ public class SnapshotMaintainerTest {
     }
 
     @Test
+    public void setSnapshot_setSnapshot() {
+        // confirm that before doing anything, the snapshot is null
+        assertNull(snapshotMaintainer.getSnapshot());
+
+        // setup - initial update
+        CbOrderBook snapshot = new CbOrderBook()
+                .setSnapshot(true)
+                .setExchangeDatetime(TimeUtils.instant(1999, Month.APRIL, 10, 7, 23, 45))
+                .setExchangeDate(LocalDate.now().minusDays(5))
+                .setReceivedMicros(456123)
+                .setBids(new TreeMap<>(){{
+                    put(1.1, 11.1);
+                    put(2.2, 22.2);
+                    put(3.3, 33.3);
+                }})
+                .setAsks(new TreeMap<>(){{
+                    put(5.5, 55.5);
+                    put(6.6, 66.6);
+                    put(7.7, 77.7);
+                }});
+
+        // setup - subsequent update
+        Instant updateExchangeDatetime = TimeUtils.instant(2021, Month.JANUARY, 18, 13, 5, 11);
+        LocalDate updateExchangeDate = LocalDate.now();
+        long updateReceivedMicros = 23456687;
+        CbOrderBook update = new CbOrderBook()
+                .setSnapshot(false)
+                .setExchangeDatetime(updateExchangeDatetime)
+                .setExchangeDate(updateExchangeDate)
+                .setReceivedMicros(updateReceivedMicros)
+                .setBids(new TreeMap<>(){{
+                    put(0.5, 0.555);
+                    put(1.1, 111.1);
+                    put(3.3, 0.0);
+                    put(4.4, 444.4);
+                }})
+                .setAsks(new TreeMap<>(){{
+                    put(5.4, 54.123);
+                    put(5.5, 0.0);
+                    put(7.7, 77.7);
+                    put(8.8, 88.8);
+                }});
+
+        // set initial snapshot
+        snapshotMaintainer.setSnapshot(snapshot, false);
+
+        // verify that initial snapshot is set as expected, and that previousSnapshot is null
+        assertSame(snapshot, snapshotMaintainer.getSnapshot());
+        assertNull(snapshotMaintainer.getPreviousSnapshot());
+
+        // apply update
+        snapshot = snapshotMaintainer.snapshotCopy(); // keep a seaparte copy of the original snapshot, because otherwise the update will change it, and it won't be the same as what you originally set
+        snapshotMaintainer.applyUpdate(update, false);
+
+        // verify that update was processed such that the pre-update snapshot was saved to previousSnapshot and the new latest snapshot has the update applied
+        assertEquals(snapshot, snapshotMaintainer.getPreviousSnapshot());
+        assertNotEquals(snapshotMaintainer.getPreviousSnapshot(), snapshotMaintainer.getSnapshot()); // check that the new latest snapshot is different from the saved previousSnapshot
+    }
+
+    @Test
     public void updateLevels_Empty() {
         // setup
         NavigableMap<Double, Double> levels = Collections.emptyNavigableMap();
@@ -132,13 +192,15 @@ public class SnapshotMaintainerTest {
                     put(5.5, 55.5);
                     put(6.6, 66.6);
                     put(7.7, 77.7);
-                }});
+                }})
+                .setChecksum(123123);
         snapshotMaintainer.setSnapshot(snapshot, false);
         snapshotMaintainer.initialize(3, checksumCalculator);
 
         Instant updateExchangeDatetime = TimeUtils.instant(2021, Month.JANUARY, 18, 13, 5, 11);
         LocalDate updateExchangeDate = LocalDate.now();
         long updateReceivedMicros = 23456687;
+        long newChecksum = 8765432;
         CbOrderBook update = new CbOrderBook()
                 .setSnapshot(false)
                 .setExchangeDatetime(updateExchangeDatetime)
@@ -155,7 +217,8 @@ public class SnapshotMaintainerTest {
                     put(5.5, 0.0);
                     put(7.7, 77.7);
                     put(8.8, 88.8);
-                }});
+                }})
+                .setChecksum(newChecksum);
 
         // engage test
         snapshotMaintainer.applyUpdate(update, false);
@@ -175,7 +238,8 @@ public class SnapshotMaintainerTest {
                     put(5.4, 54.123);
                     put(6.6, 66.6);
                     put(7.7, 77.7);
-                }});
+                }})
+                .setChecksum(newChecksum);
         assertEquals(expected, snapshotMaintainer.getSnapshot());
     }
 
@@ -399,7 +463,7 @@ public class SnapshotMaintainerTest {
         snapshotMaintainer.setSnapshot(new CbOrderBook().setExchangeDatetime(exchangeDatetime), false);
 
         // engage test and verify
-        assertEquals("Latest OrderBook Snapshot was generated [9] secs ago", snapshotMaintainer.snapshotAgeLogMsg(exchangeDatetime.plusSeconds(9)));
+        assertEquals("Latest OrderBook Snapshot was generated [9] secs ago within the exchange", snapshotMaintainer.snapshotAgeLogMsg(exchangeDatetime.plusSeconds(9)));
     }
 
     @Test
@@ -459,7 +523,7 @@ public class SnapshotMaintainerTest {
     public void verifyChecksumIfNecessary_checksumVerifiedAndMatches() {
         // setup
         CbOrderBook orderBook = new CbOrderBook();
-        when(checksumVerifier.checksumMatches(any(CbOrderBook.class))).thenReturn(true);
+        when(checksumVerifier.confirmChecksum(any(CbOrderBook.class))).thenReturn(null);
 
         // engage and verify
         assertDoesNotThrow(() -> snapshotMaintainer.verifyChecksumIfNecessary(orderBook, true));
@@ -468,12 +532,14 @@ public class SnapshotMaintainerTest {
     @Test
     public void verifyChecksumIfNecessary_checksumVerifiedAndDoesNotMatches() {
         // setup
-        CbOrderBook orderBook = new CbOrderBook();
-        when(checksumVerifier.checksumMatches(any(CbOrderBook.class))).thenReturn(false);
+        long snapshotChecksum = 87645;
+        long derivedChecksumDifferent = 19284587;
+        CbOrderBook orderBook = new CbOrderBook().setChecksum(snapshotChecksum);
+        when(checksumVerifier.confirmChecksum(any(CbOrderBook.class))).thenReturn(derivedChecksumDifferent);
 
         // checksum verified and doesn't match
         RuntimeException exception = assertThrows(RuntimeException.class, () -> snapshotMaintainer.verifyChecksumIfNecessary(orderBook, true));
-        assertEquals("Checksum derived is different from the one provided", exception.getMessage());
+        assertEquals("Checksum derived [" + derivedChecksumDifferent + "] is different from the one provided in the snapshot [" + snapshotChecksum + "]", exception.getMessage());
     }
 
     private <K,V> void assertMapNotSame(Map<K,V> original, Map<K,V> copy) {

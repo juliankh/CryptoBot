@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-// TODO: once the logic of the checksum is established, then optimize it for performance
 @Singleton
 public class KrakenChecksumCalculator implements ChecksumCalculator {
 
@@ -46,7 +45,6 @@ public class KrakenChecksumCalculator implements ChecksumCalculator {
         return CHECKSUM.getValue();
     }
 
-    // TODO: unit test
     public String digestForLevels(NavigableMap<Double, Double> map, int numEntries, int pricePrecision, int quantityPrecision) {
         List<Pair<Double, Double>> levels = topNEntries(map, numEntries);
         return levels.stream().map(entry -> {

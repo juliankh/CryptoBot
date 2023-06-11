@@ -7,6 +7,7 @@ import com.cb.model.CbOrderBook;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.ChecksumVerifier;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 
 import javax.inject.Inject;
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NavigableMap;
 
+@Slf4j
 @Getter
 public class SnapshotMaintainer {
 
@@ -24,6 +26,7 @@ public class SnapshotMaintainer {
     @Inject
     private JsonSerializer jsonSerializer;
 
+    private CbOrderBook previousSnapshot;
     private CbOrderBook snapshot;
     private int depth;
 
@@ -37,13 +40,22 @@ public class SnapshotMaintainer {
     }
 
     public void setSnapshot(CbOrderBook snapshot, boolean verifyChecksum) {
+        this.previousSnapshot = this.snapshot;
         this.snapshot = snapshot;
         verifyChecksumIfNecessary(snapshot, verifyChecksum);
     }
 
     public void verifyChecksumIfNecessary(CbOrderBook snapshot, boolean verifyChecksum) {
-        if (verifyChecksum && !checksumVerifier.checksumMatches(snapshot)) {
-            throw new RuntimeException("Checksum derived is different from the one provided");
+        if (verifyChecksum) {
+            Long derivedChecksum = checksumVerifier.confirmChecksum(snapshot);
+            if (derivedChecksum != null) {
+                // derivedChecksum will be non-null only if it doesn't match the one in the snapshot
+                String briefMessage = "Checksum derived [" + derivedChecksum + "] is different from the one provided in the snapshot [" + snapshot.getChecksum() + "]";
+                String previousSnapshotJson = jsonSerializer.serializeToJson(previousSnapshot);
+                String latestSnapshotJson = jsonSerializer.serializeToJson(snapshot);
+                log.error(briefMessage + ":\n\tPrevious Snapshot: " + previousSnapshotJson + "\n\tLatest Snapshot: " + latestSnapshotJson);
+                throw new RuntimeException(briefMessage);
+            }
         }
     }
 
@@ -60,11 +72,13 @@ public class SnapshotMaintainer {
         if (snapshot == null) {
             throw new RuntimeException("Can't process update on top of snapshot because the snapshot is null");
         }
+        previousSnapshot = snapshotCopy();
         updateLevels(snapshot.getBids(), update.getBids(), true);
         updateLevels(snapshot.getAsks(), update.getAsks(), false);
         snapshot.setExchangeDatetime(update.getExchangeDatetime())
                 .setExchangeDate(update.getExchangeDate())
-                .setReceivedMicros(update.getReceivedMicros());
+                .setReceivedMicros(update.getReceivedMicros())
+                .setChecksum(update.getChecksum());
         verifyChecksumIfNecessary(snapshot, verifyChecksum);
     }
 
@@ -93,7 +107,7 @@ public class SnapshotMaintainer {
     public String snapshotAgeLogMsg(Instant timeToCompareTo) {
         if (snapshot != null) {
             long secsDiff = ChronoUnit.SECONDS.between(snapshot.getExchangeDatetime(), timeToCompareTo);
-            return "Latest OrderBook Snapshot was generated [" + secsDiff + "] secs ago";
+            return "Latest OrderBook Snapshot was generated [" + secsDiff + "] secs ago within the exchange";
         } else {
             return "Latest OrderBook Snapshot hasn't been set yet";
         }

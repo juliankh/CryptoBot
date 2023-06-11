@@ -58,7 +58,7 @@ public class JsonSerializerTest {
 
         // verify
         long expectedExchangeDateTimeMillis = exchangeDateTime.toEpochMilli();
-        assertEquals("{\"currencyPair\":\"LTC/USD\",\"snapshot\":true,\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":[1995,4,8],\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7},\"checksum\":" + checksum + ",\"spread\":{\"bid\":{\"10.3\":0.9},\"ask\":{\"10.5\":1.89}}}", result);
+        assertEquals("{\"currencyPair\":\"LTC/USD\",\"snapshot\":true,\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":[1995,4,8],\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7},\"checksum\":" + checksum + "}", result);
     }
 
 }

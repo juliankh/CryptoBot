@@ -55,8 +55,8 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
         batchProcessor.initialize(batchSize);
         CompletableFuture.runAsync(() -> {
             while (true) {
-                log.info(snapshotMaintainer.snapshotAgeLogMsg(Instant.now())); // TODO: manually verify
-                TimeUtils.sleepQuietlyForMins(SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK);
+                log.info(snapshotMaintainer.snapshotAgeLogMsg(Instant.now()));
+                TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK);
             }
         });
     }

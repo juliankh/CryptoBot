@@ -53,7 +53,7 @@ public class KrakenInstrumentBridgeDriver extends AbstractDriver {
 
     @SneakyThrows
     private void connect() {
-        KrakenInstrumentSubscriptionRequest subscriptionRequest = new KrakenInstrumentSubscriptionRequest().setReq_id(134679); // TODO: create a new one and save locally, and verify for this value when receiving data
+        KrakenInstrumentSubscriptionRequest subscriptionRequest = new KrakenInstrumentSubscriptionRequest().setReq_id(webSocketClient.getReqId());
         String subscriptionString = jsonSerializer.serializeToJson(subscriptionRequest);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
         WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();

@@ -7,12 +7,12 @@ TODO:
             -compare
                 -frequency of socket drops
                 -amount of data received
-            -req_id: every time a bridge starts up, come up with a new req_id and check for it on responses
             -always get only updates after the initial snapshot?
     -check how slower is the read from redis when it's using large swap
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
     -auto-restart processes after restarting computer
     -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
+    -if the snapshot age log msgs show that a time delay develops (presumably because processing of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
 -ML
     -admin
         -ensure ML uses gpu processors

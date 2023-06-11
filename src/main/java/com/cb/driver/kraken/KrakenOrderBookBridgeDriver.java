@@ -91,9 +91,6 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
         WebSocket webSocket = connect();
         while (true) {
-
-            // TODO: Reconnect logic: have not received any data for some time (ie 60 secs), nor a heartbeat message for some time (ie 10 secs)
-
             long secsSinceLastUpdate = ChronoUnit.SECONDS.between(webSocketClient.getLatestReceive().get(), Instant.now());
             if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
                 String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
@@ -109,7 +106,7 @@ public class KrakenOrderBookBridgeDriver extends AbstractDriver {
     @SneakyThrows
     private WebSocket connect() {
         KrakenOrderBookSubscriptionRequest subscription = new KrakenOrderBookSubscriptionRequest()
-                .setReq_id(2746) // TODO: create a new one and save locally, and verify for this value when receiving data
+                .setReq_id(webSocketClient.getReqId()) // for now req_id is not verified as there is no need to because each process will make only 1 subscription
                 .setParams(new KrakenOrderBookSubscriptionRequestParams()
                         .setSnapshot(true)
                         .setDepth(depth)

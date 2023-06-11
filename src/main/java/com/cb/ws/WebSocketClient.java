@@ -22,14 +22,14 @@ public class WebSocketClient implements WebSocket.Listener {
 
     private final BufferAggregator bufferAggregator;
     private final JsonProcessor jsonProcessor;
+    private final int reqId;
 
-    private final AtomicReference<Instant> latestReceive = new AtomicReference<>(); // TODO: decide what to do with this
+    private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
 
     @Override
     public void onOpen(WebSocket webSocket) {
         log.info("Opening WebSocket");
         WebSocket.Listener.super.onOpen(webSocket);
-        latestReceive.set(Instant.now());
     }
 
     @Override
@@ -42,7 +42,6 @@ public class WebSocketClient implements WebSocket.Listener {
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
         log.error("Error", error);
-        // TODO: handle this case (alert?)
         latch.countDown();
         WebSocket.Listener.super.onError(webSocket, error);
     }
