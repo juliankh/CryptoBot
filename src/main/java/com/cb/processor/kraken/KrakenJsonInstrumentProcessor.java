@@ -6,7 +6,7 @@ import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentData;
 import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseInstrument;
-import com.cb.ws.kraken.json_converter.KrakenJsonInstrumentObjectConverter;
+import com.cb.ws.kraken.KrakenJsonInstrumentObjectConverter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;

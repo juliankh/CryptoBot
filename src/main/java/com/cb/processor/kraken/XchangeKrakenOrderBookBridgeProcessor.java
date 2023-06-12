@@ -8,13 +8,19 @@ import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
 import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
+import com.cb.processor.OrderBookDelegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 
 import javax.inject.Inject;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 @Slf4j
 public class XchangeKrakenOrderBookBridgeProcessor {
@@ -28,12 +34,24 @@ public class XchangeKrakenOrderBookBridgeProcessor {
     @Inject
     private JedisDelegate jedisDelegate;
 
+    @Inject
+    private OrderBookDelegate orderBookDelegate;
+
+    @Inject
+    private AtomicReference<OrderBook> latestOrderBook;
+
     public void initialize(int batchSize) {
         batchProcessor.initialize(batchSize);
+        orderBookDelegate.engageLatestOrderBookAgeMonitor(latestOrderBookExchangeDateTimeSupplier());
+    }
+
+    public Supplier<Instant> latestOrderBookExchangeDateTimeSupplier() {
+        return () -> Optional.ofNullable(latestOrderBook.get()).map(OrderBook::getTimeStamp).map(Date::toInstant).orElse(null);
     }
 
     public void process(OrderBook orderBook, CurrencyPair currencyPair, String process) {
         if (CollectionUtils.isNotEmpty(orderBook.getBids()) && CollectionUtils.isNotEmpty(orderBook.getAsks())) {
+            latestOrderBook.set(orderBook);
             batchProcessor.process(
                     new XchangeKrakenOrderBook().setProcess(process).setMicroSeconds(TimeUtils.currentMicros()).setOrderBook(orderBook),
                     (List<XchangeKrakenOrderBook> orderbooks) -> new KrakenBatch<>(currencyPair, orderbooks),

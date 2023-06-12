@@ -1,7 +1,6 @@
-package com.cb.ws.kraken;
+package com.cb.processor.checksum;
 
 import com.cb.model.CbOrderBook;
-import com.cb.processor.checksum.KrakenChecksumCalculator;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;

@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 
 import javax.inject.Inject;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NavigableMap;
 
@@ -101,15 +99,6 @@ public class SnapshotMaintainer {
             return jsonSerializer.deserializeFromJson(json, CbOrderBook.class);
         } catch (Exception e) {
             throw new RuntimeException("Problem doing deep-copy of CbOrderBook", e);
-        }
-    }
-
-    public String snapshotAgeLogMsg(Instant timeToCompareTo) {
-        if (snapshot != null) {
-            long secsDiff = ChronoUnit.SECONDS.between(snapshot.getExchangeDatetime(), timeToCompareTo);
-            return "Latest OrderBook Snapshot was generated [" + secsDiff + "] secs ago within the exchange";
-        } else {
-            return "Latest OrderBook Snapshot hasn't been set yet";
         }
     }
 

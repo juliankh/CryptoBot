@@ -448,25 +448,6 @@ public class SnapshotMaintainerTest {
     }
 
     @Test
-    public void snapshotAgeLogMsg_SnapshotNotYetSet() {
-        // setup
-        Instant timeToCompareTo_doesNotMatter = Instant.now();
-
-        // engage test and verify
-        assertEquals("Latest OrderBook Snapshot hasn't been set yet", snapshotMaintainer.snapshotAgeLogMsg(timeToCompareTo_doesNotMatter));
-    }
-
-    @Test
-    public void snapshotAgeLogMsg_SnapshotIsSet() {
-        // setup
-        Instant exchangeDatetime = TimeUtils.instant(2023, Month.JANUARY, 5, 12, 15, 45);
-        snapshotMaintainer.setSnapshot(new CbOrderBook().setExchangeDatetime(exchangeDatetime), false);
-
-        // engage test and verify
-        assertEquals("Latest OrderBook Snapshot was generated [9] secs ago within the exchange", snapshotMaintainer.snapshotAgeLogMsg(exchangeDatetime.plusSeconds(9)));
-    }
-
-    @Test
     public void snapshotCopy() {
         // setup
         boolean isSnapshot = true;

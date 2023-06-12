@@ -1,11 +1,10 @@
-package com.cb.ws;
+package com.cb.ws.kraken;
 
 import com.cb.common.JsonSerializer;
 import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdateData;
-import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

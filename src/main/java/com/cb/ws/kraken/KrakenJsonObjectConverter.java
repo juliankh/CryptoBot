@@ -1,4 +1,4 @@
-package com.cb.ws.kraken.json_converter;
+package com.cb.ws.kraken;
 
 public interface KrakenJsonObjectConverter {
 

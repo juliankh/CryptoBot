@@ -1,4 +1,4 @@
-package com.cb.ws.kraken.json_converter;
+package com.cb.ws.kraken;
 
 import com.cb.common.JsonSerializer;
 import com.cb.common.util.GeneralUtils;

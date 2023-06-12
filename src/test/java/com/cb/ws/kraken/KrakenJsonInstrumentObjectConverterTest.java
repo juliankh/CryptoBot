@@ -1,4 +1,4 @@
-package com.cb.ws;
+package com.cb.ws.kraken;
 
 import com.cb.common.JsonSerializer;
 import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
@@ -7,7 +7,6 @@ import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentData;
 import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseInstrument;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseInstrumentResult;
-import com.cb.ws.kraken.json_converter.KrakenJsonInstrumentObjectConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

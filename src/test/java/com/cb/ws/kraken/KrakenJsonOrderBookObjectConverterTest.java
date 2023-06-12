@@ -1,4 +1,4 @@
-package com.cb.ws;
+package com.cb.ws.kraken;
 
 import com.cb.common.JsonSerializer;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
@@ -6,7 +6,6 @@ import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookLevel;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBookResult;
-import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

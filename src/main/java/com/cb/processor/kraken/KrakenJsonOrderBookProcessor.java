@@ -3,7 +3,6 @@ package com.cb.processor.kraken;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.GeneralUtils;
-import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
@@ -11,9 +10,10 @@ import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
 import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
+import com.cb.processor.OrderBookDelegate;
 import com.cb.processor.SnapshotMaintainer;
 import com.cb.processor.checksum.ChecksumCalculator;
-import com.cb.ws.kraken.json_converter.KrakenJsonOrderBookObjectConverter;
+import com.cb.ws.kraken.KrakenJsonOrderBookObjectConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.currency.CurrencyPair;
 
@@ -22,12 +22,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 @Slf4j
 public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
-
-    private static final int SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK = 10;
 
     @Inject
     private CurrencyResolver currencyResolver;
@@ -47,6 +45,9 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
     @Inject
     private JedisDelegate jedisDelegate;
 
+    @Inject
+    private OrderBookDelegate orderBookDelegate;
+
     private CurrencyPair currencyPair;
 
     public void initialize(int requestId, CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
@@ -54,13 +55,11 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
         this.currencyPair = currencyPair;
         snapshotMaintainer.initialize(depth, checksumCalculator);
         batchProcessor.initialize(batchSize);
-        CompletableFuture.runAsync(() -> {
-            while (true) {
-                log.info(snapshotMaintainer.snapshotAgeLogMsg(Instant.now()));
-                // TODO: if the snapshot age is beyond a certain limit, then send alert
-                TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK);
-            }
-        });
+        orderBookDelegate.engageLatestOrderBookAgeMonitor(latestOrderBookExchangeDateTimeSupplier());
+    }
+
+    public Supplier<Instant> latestOrderBookExchangeDateTimeSupplier() {
+        return () -> Optional.ofNullable(snapshotMaintainer.getSnapshot()).map(CbOrderBook::getExchangeDatetime).orElse(null);
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.processor.JsonProcessor;
-import com.cb.ws.kraken.json_converter.KrakenAbstractJsonObjectConverter;
+import com.cb.ws.kraken.KrakenAbstractJsonObjectConverter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
