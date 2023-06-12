@@ -12,6 +12,7 @@ TODO:
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
     -auto-restart processes after restarting computer
     -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
+    -if there is no use case to use jms, then remove jms-related code
     -if the snapshot age log msgs show that a time delay develops (presumably because processing of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
 -ML
     -admin
