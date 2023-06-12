@@ -83,7 +83,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         int depth = dbReadOnlyProvider.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
         dbReadOnlyProvider.cleanup();
         this.depth = depth;
-        ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(currencyPair, depth, batchSize, checksumCalculator);
+        ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(webSocketClient.getRequestId(), currencyPair, depth, batchSize, checksumCalculator);
     }
 
     @Override
@@ -111,7 +111,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @SneakyThrows
     private WebSocket connect() {
         KrakenOrderBookSubscriptionRequest subscription = new KrakenOrderBookSubscriptionRequest()
-                .setReq_id(webSocketClient.getReqId()) // for now req_id is not verified as there is no need to because each process will make only 1 subscription
+                .setReq_id(webSocketClient.getRequestId())
                 .setParams(new KrakenOrderBookSubscriptionRequestParams()
                         .setSnapshot(true)
                         .setDepth(depth)

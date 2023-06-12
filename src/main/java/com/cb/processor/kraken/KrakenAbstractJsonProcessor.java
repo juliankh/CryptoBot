@@ -20,6 +20,15 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
     protected DbWriteProvider dbWriteProvider;
 
     protected Instant timeOfLastHeartbeat = Instant.now();
+    protected int requestId;
+
+    public void initialize(int requestId) {
+        this.requestId = requestId;
+    }
+
+    protected boolean requestIdMatches(int requestId) {
+        return this.requestId == requestId;
+    }
 
     public boolean processCommon(Class<?> objectType, KrakenAbstractJsonObjectConverter jsonObjectConverter) {
         if (objectType == KrakenStatusUpdate.class) {
@@ -32,11 +41,18 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             timeOfLastHeartbeat = Instant.now();
             return true;
         } else if (objectType == KrakenError.class) {
-            KrakenError error = jsonObjectConverter.getError();
-            log.error("" + error);
-            throw new RuntimeException("Got error from Kraken: " + error);
+            processError(jsonObjectConverter.getError());
         }
         return false;
+    }
+
+    public boolean processError(KrakenError error) {
+        boolean requestIdMatches = requestIdMatches(error.getReq_id());
+        log.error(requestIdMatches ? "": "Got Error where Request ID returned [" + error.getReq_id() + "] does not equal the original Request ID [" + requestId + "], so will log the error but otherwise ignore: " + error);
+        if (!requestIdMatches) {
+            throw new RuntimeException("Got error from Kraken: " + error);
+        }
+        return true;
     }
 
     @Override

@@ -18,6 +18,10 @@ public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
     @Inject
     private KrakenJsonInstrumentObjectConverter converter;
 
+    public void initialize(int requestId) {
+        super.initialize(requestId);
+    }
+
     @Override
     public synchronized void process(String json) {
         try {
@@ -43,8 +47,9 @@ public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
     }
 
     public void processSubscriptionResponse(KrakenSubscriptionResponseInstrument subscriptionResponse) {
-        log.info("" + subscriptionResponse);
-        if (!subscriptionResponse.isSuccess()) {
+        boolean requestIdMatches = requestIdMatches(subscriptionResponse.getReq_id());
+        log.info(requestIdMatches ? "": "Got Subscription Response where Request ID returned [" + subscriptionResponse.getReq_id() + "] does not equal the original Request ID [" + requestId + "], so will log the response but otherwise ignore: " + subscriptionResponse);
+        if (requestIdMatches && !subscriptionResponse.isSuccess()) {
             throw new RuntimeException("Error when trying to subscribe to Kraken Instrument channel: " + subscriptionResponse);
         }
     }

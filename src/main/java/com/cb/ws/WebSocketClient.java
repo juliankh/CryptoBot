@@ -22,7 +22,7 @@ public class WebSocketClient implements WebSocket.Listener {
 
     private final BufferAggregator bufferAggregator;
     private final JsonProcessor jsonProcessor;
-    private final int reqId; // TODO: check that responses have the expected reqId
+    private final int requestId;
 
     private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
 

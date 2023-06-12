@@ -127,16 +127,16 @@ public class MainModule extends AbstractModule {
     @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
     public WebSocketClient krakenOrderBookWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonOrderBookProcessor orderBookProcessor) {
-        return new WebSocketClient(bufferAggregator, orderBookProcessor, newRandomReqId());
+        return new WebSocketClient(bufferAggregator, orderBookProcessor, newRandomRequestId());
     }
 
     @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
     public WebSocketClient krakenInstrumentWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonInstrumentProcessor instrumentProcessor) {
-        return new WebSocketClient(bufferAggregator, instrumentProcessor, newRandomReqId());
+        return new WebSocketClient(bufferAggregator, instrumentProcessor, newRandomRequestId());
     }
 
-    private static int newRandomReqId() {
+    private static int newRandomRequestId() {
         Random random = new Random();
         return Math.abs(random.nextInt());
     }

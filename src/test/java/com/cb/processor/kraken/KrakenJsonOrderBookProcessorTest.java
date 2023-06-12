@@ -31,6 +31,12 @@ import static org.mockito.Mockito.reset;
 @ExtendWith(MockitoExtension.class)
 public class KrakenJsonOrderBookProcessorTest {
 
+    private static final int DEPTH_DOES_NOT_MATTER = 123;
+    private static final int BATCH_SIZE_DOES_NOT_MATTER = 45;
+
+    private static final int REQUEST_ID = 102938;
+    private static final int REQUEST_ID_DIFFERENT = 876543345;
+
     @Spy
     private CurrencyResolver currencyResolver;
 
@@ -49,31 +55,41 @@ public class KrakenJsonOrderBookProcessorTest {
     @InjectMocks
     private KrakenJsonOrderBookProcessor processor;
 
-    private static int DEPTH_DOES_NOT_MATTER = 123;
-    private static int BATCH_SIZE_DOES_NOT_MATTER = 45;
-
     @BeforeEach
     public void beforeEachTest() {
         reset(jsonObjectConverter);
         reset(batchProcessor);
         reset(snapshotMaintainer);
+        processor.initialize(REQUEST_ID);
     }
 
     @Test
-    public void processSubscriptionResponse_Successful() {
-        assertDoesNotThrow(() -> processor.processSubscriptionResponse(subscriptionResponse(true)));
+    public void processSubscriptionResponse_Successful_RequestIdMatches() {
+        assertDoesNotThrow(() -> processor.processSubscriptionResponse(subscriptionResponse(true, REQUEST_ID)));
     }
 
     @Test
-    public void processSubscriptionResponse_Unsuccessful() {
-        KrakenSubscriptionResponseOrderBook unsuccessfulResponse = subscriptionResponse(false);
+    public void processSubscriptionResponse_Successful_RequestIdDoesNotMatch() {
+        assertDoesNotThrow(() -> processor.processSubscriptionResponse(subscriptionResponse(true, REQUEST_ID_DIFFERENT)));
+    }
+
+    @Test
+    public void processSubscriptionResponse_Unsuccessful_RequestIdMatches() {
+        KrakenSubscriptionResponseOrderBook unsuccessfulResponse = subscriptionResponse(false, REQUEST_ID);
         RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.processSubscriptionResponse(unsuccessfulResponse));
         assertEquals("Error when trying to subscribe to Kraken OrderBook channel: " + unsuccessfulResponse, exception.getMessage());
     }
 
-    private static KrakenSubscriptionResponseOrderBook subscriptionResponse(boolean successful) {
+    @Test
+    public void processSubscriptionResponse_Unsuccessful_RequestIdDoesNotMatch() {
+        KrakenSubscriptionResponseOrderBook unsuccessfulResponse = subscriptionResponse(false, REQUEST_ID_DIFFERENT);
+        assertDoesNotThrow(() -> processor.processSubscriptionResponse(unsuccessfulResponse));
+    }
+
+    private static KrakenSubscriptionResponseOrderBook subscriptionResponse(boolean successful, int requestId) {
         KrakenSubscriptionResponseOrderBook response = new KrakenSubscriptionResponseOrderBook();
         response.setSuccess(successful);
+        response.setReq_id(requestId);
         return response;
     }
 
@@ -81,7 +97,7 @@ public class KrakenJsonOrderBookProcessorTest {
     public void hasExpectedCurrencyPair_Yes() {
         // setup
         KrakenOrderBook2Data data = new KrakenOrderBook2Data().setSymbol("BTC/USDT");
-        processor.initialize(CurrencyPair.BTC_USDT, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.BTC_USDT, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
 
         // engage test
         assertTrue(processor.hasExpectedCurrencyPair(data));
@@ -91,7 +107,7 @@ public class KrakenJsonOrderBookProcessorTest {
     public void hasExpectedCurrencyPair_No() {
         // setup
         KrakenOrderBook2Data data = new KrakenOrderBook2Data().setSymbol("BTC/USDT");
-        processor.initialize(CurrencyPair.LINK_USD, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.LINK_USD, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
 
         // engage test
         assertFalse(processor.hasExpectedCurrencyPair(data));
@@ -102,7 +118,7 @@ public class KrakenJsonOrderBookProcessorTest {
         // setup
         KrakenOrderBook2Data data1 = new KrakenOrderBook2Data().setSymbol("BTC/USDT");
         KrakenOrderBook2Data data2 = new KrakenOrderBook2Data().setSymbol("LINK/USD");
-        processor.initialize(CurrencyPair.LINK_USD, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.LINK_USD, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
         List<KrakenOrderBook2Data> datas = Lists.newArrayList(data1, data2);
 
         // engage test
@@ -118,7 +134,7 @@ public class KrakenJsonOrderBookProcessorTest {
         // setup
         KrakenOrderBook2Data data1 = new KrakenOrderBook2Data().setSymbol("BTC/USDT");
         KrakenOrderBook2Data data2 = new KrakenOrderBook2Data().setSymbol("LINK/USD");
-        processor.initialize(CurrencyPair.ADA_BTC, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.ADA_BTC, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
         List<KrakenOrderBook2Data> datas = Lists.newArrayList(data1, data2);
 
         // engage test
@@ -132,7 +148,7 @@ public class KrakenJsonOrderBookProcessorTest {
     public void dataWithExpectedCurrencyPairOrNull_Null() {
         // setup
         KrakenOrderBook2Data data = new KrakenOrderBook2Data().setSymbol("BTC/USDT");
-        processor.initialize(CurrencyPair.LINK_USD, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.LINK_USD, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
 
         // engage test
         KrakenOrderBook2Data result = processor.dataWithExpectedCurrencyPairOrNull(data);
@@ -145,7 +161,7 @@ public class KrakenJsonOrderBookProcessorTest {
     public void dataWithExpectedCurrencyPairOrNull_NonNull() {
         // setup
         KrakenOrderBook2Data data = new KrakenOrderBook2Data().setSymbol("BTC/USDT");
-        processor.initialize(CurrencyPair.BTC_USDT, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.BTC_USDT, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
 
         // engage test
         KrakenOrderBook2Data result = processor.dataWithExpectedCurrencyPairOrNull(data);
@@ -170,7 +186,7 @@ public class KrakenJsonOrderBookProcessorTest {
     @Test
     public void processOrderBookSnapshot_SnapshotWithUnexpectedCurrencyPair() {
         // setup
-        processor.initialize(CurrencyPair.BTC_USDT, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
+        processor.initialize(REQUEST_ID, CurrencyPair.BTC_USDT, DEPTH_DOES_NOT_MATTER, BATCH_SIZE_DOES_NOT_MATTER, checksumCalculator);
 
         // engage test and verify
         RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.processOrderBookSnapshot(new KrakenOrderBookInfo().setData(Lists.newArrayList(new KrakenOrderBook2Data().setSymbol("LINK/USD")))));

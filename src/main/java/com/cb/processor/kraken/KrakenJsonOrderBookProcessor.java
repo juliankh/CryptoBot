@@ -49,7 +49,8 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
 
     private CurrencyPair currencyPair;
 
-    public void initialize(CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
+    public void initialize(int requestId, CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
+        super.initialize(requestId);
         this.currencyPair = currencyPair;
         snapshotMaintainer.initialize(depth, checksumCalculator);
         batchProcessor.initialize(batchSize);
@@ -87,8 +88,9 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
     }
 
     public void processSubscriptionResponse(KrakenSubscriptionResponseOrderBook subscriptionResponse) {
-        log.info("" + subscriptionResponse);
-        if (!subscriptionResponse.isSuccess()) {
+        boolean requestIdMatches = requestIdMatches(subscriptionResponse.getReq_id());
+        log.info(requestIdMatches ? "": "Got Subscription Response where Request ID returned [" + subscriptionResponse.getReq_id() + "] does not equal the original Request ID [" + requestId + "], so will log the response but otherwise ignore: " + subscriptionResponse);
+        if (requestIdMatches && !subscriptionResponse.isSuccess()) {
             throw new RuntimeException("Error when trying to subscribe to Kraken OrderBook channel: " + subscriptionResponse);
         }
     }

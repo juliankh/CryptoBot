@@ -6,6 +6,7 @@ import com.cb.db.DbWriteProvider;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.cb.model.kraken.ws.request.KrakenInstrumentSubscriptionRequest;
+import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
 import com.cb.ws.WebSocketClient;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,12 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
 
     public static void main(String[] args) {
         DirectKrakenInstrumentBridgeDriver driver = MainModule.INJECTOR.getInstance(DirectKrakenInstrumentBridgeDriver.class);
+        driver.initialize();
         driver.execute();
+    }
+
+    public void initialize() {
+        ((KrakenJsonInstrumentProcessor)webSocketClient.getJsonProcessor()).initialize(webSocketClient.getRequestId());
     }
 
     @Override
@@ -52,7 +58,7 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
 
     @SneakyThrows
     private void connect() {
-        KrakenInstrumentSubscriptionRequest subscriptionRequest = new KrakenInstrumentSubscriptionRequest().setReq_id(webSocketClient.getReqId());
+        KrakenInstrumentSubscriptionRequest subscriptionRequest = new KrakenInstrumentSubscriptionRequest().setReq_id(webSocketClient.getRequestId());
         String subscriptionString = jsonSerializer.serializeToJson(subscriptionRequest);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
         WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();
