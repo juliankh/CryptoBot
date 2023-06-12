@@ -103,6 +103,7 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
     }
 
     public void processOrderBookSnapshot(KrakenOrderBookInfo krakenOrderBookInfo) {
+        log.info("Received OrderBook Snapshot");
         int numSnapshotsReceived = Optional.ofNullable(krakenOrderBookInfo.getData()).map(List::size).orElse(0);
         if (numSnapshotsReceived != 1) {
             throw new RuntimeException("Got Kraken snapshot OrderBook Info that has [" + numSnapshotsReceived + "] snapshots instead of 1");

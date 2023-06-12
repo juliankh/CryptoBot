@@ -13,7 +13,6 @@ public class OrderBookDelegate {
 
     private static final int SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK = 10;
 
-    // TODO: manually test
     public void engageLatestOrderBookAgeMonitor(Supplier<Instant> exchangeDateTimeSupplier) {
         CompletableFuture.runAsync(() -> {
             while (true) {
@@ -31,7 +30,6 @@ public class OrderBookDelegate {
         }
         long ageInSecs = ChronoUnit.SECONDS.between(exchangeDateTime, timeToCompareTo);
         log.info("Latest OrderBook Snapshot was generated [" + ageInSecs + "] secs ago within the exchange");
-        // TODO: perhaps alert if the ageInSecs is above some limit (in which case, unit test)
     }
 
 }

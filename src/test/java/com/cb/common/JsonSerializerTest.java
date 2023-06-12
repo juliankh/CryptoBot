@@ -42,6 +42,7 @@ public class JsonSerializerTest {
         asks.put(10.7, 21.7);
 
         long checksum = 145897;
+        String misc = "misc1234";
 
         CbOrderBook orderBook = new CbOrderBook()
                 .setCurrencyPair(currencyPair)
@@ -51,14 +52,15 @@ public class JsonSerializerTest {
                 .setReceivedMicros(micros)
                 .setBids(bids)
                 .setAsks(asks)
-                .setChecksum(checksum);
+                .setChecksum(checksum)
+                .setMisc(misc);
 
         // engage test
         String result = jsonSerializer.serializeToJson(orderBook);
 
         // verify
         long expectedExchangeDateTimeMillis = exchangeDateTime.toEpochMilli();
-        assertEquals("{\"currencyPair\":\"LTC/USD\",\"snapshot\":true,\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":[1995,4,8],\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7},\"checksum\":" + checksum + "}", result);
+        assertEquals("{\"currencyPair\":\"LTC/USD\",\"snapshot\":true,\"exchangeDatetime\":" + expectedExchangeDateTimeMillis + ",\"exchangeDate\":[1995,4,8],\"receivedMicros\":" + micros + ",\"bids\":{\"10.1\":0.5,\"10.2\":1.77,\"10.3\":0.9},\"asks\":{\"10.5\":1.89,\"10.6\":54.899,\"10.7\":21.7},\"checksum\":" + checksum + ",\"misc\":\"misc1234\"}", result);
     }
 
 }

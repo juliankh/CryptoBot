@@ -4,6 +4,7 @@ import com.cb.common.util.TimeUtils;
 import com.cb.db.DbUtils;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
+import com.cb.model.DataProvider;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
@@ -237,7 +238,8 @@ public class ObjectConverter {
                 .setExchangeDate(LocalDate.ofInstant(orderBook.getTimeStamp().toInstant(), ZoneId.systemDefault()))
                 .setReceivedMicros(krakenOrderBook.getMicroSeconds())
                 .setBids(quoteTreeMapFromLimitOrders(orderBook.getBids()))
-                .setAsks(quoteTreeMapFromLimitOrders(orderBook.getAsks()));
+                .setAsks(quoteTreeMapFromLimitOrders(orderBook.getAsks()))
+                .setMisc(DataProvider.XCHANGE_KRAKEN.name());
     }
 
     public CbOrderBook convertToCbOrderBook(KrakenOrderBook2Data krakenOrderBookData, boolean snapshot) {
@@ -251,7 +253,8 @@ public class ObjectConverter {
                 .setReceivedMicros(TimeUtils.currentMicros())
                 .setBids(quoteTreeMapFromLevels(krakenOrderBookData.getBids()))
                 .setAsks(quoteTreeMapFromLevels(krakenOrderBookData.getAsks()))
-                .setChecksum(krakenOrderBookData.getChecksum());
+                .setChecksum(krakenOrderBookData.getChecksum())
+                .setMisc(DataProvider.DIRECT_KRAKEN.name());
     }
 
     public DbKrakenOrderBook convertToDbKrakenOrderBook(XchangeKrakenOrderBook krakenOrderBook, Connection connection) {

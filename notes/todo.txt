@@ -1,25 +1,22 @@
 TODO:
 
 -misc
-    -xchange orderbook bridge
-        -log time lag between snapshot's exchange datetime and now
-        -num of snapshots received (whether snapshots from xchange or updates from direct) every minute
-    -direct orderbook bridge
-        -log whenever get a snapshot
+    -check
+        -direct orderbook bridge
+            -ever get snapshots after the initial one
+            -any req_id that doesn't match
+    -compare xchage vs direct orderbook bridges
+        -latest snapshot age time lag
+        -how often xchange orderbook bridges have checksum mismatches
+        -frequency of socket drops
+        -amount of data received (ie: num of orderbooks in redis from each source within an hour)
+        -num of snapshots received
 
-    -how to fix the constant bridge reconnections?
-        -direct websocket connection
-            -compare
-                -frequency of socket drops
-                -amount of data received
-                -check if timestamp in the received data is behind the current time by more then a configured limit, in which case alert (is that why reconnections happen?)
-                -check how often xchange orderbook bridges have checksum mistaches
-            -always get only updates after the initial snapshot?
+    -if the snapshot age log msgs show that a time delay develops (presumably because consumption of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
     -auto-restart processes after restarting computer
     -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
     -if there is no use case to use jms, then remove jms-related code
-    -if the snapshot age log msgs show that a time delay develops (presumably because concumption of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
 -ML
     -admin
         -ensure ML uses gpu processors

@@ -3,6 +3,7 @@ package com.cb.processor;
 import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
+import com.cb.model.DataProvider;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.ChecksumVerifier;
 import com.google.common.collect.Lists;
@@ -465,13 +466,15 @@ public class SnapshotMaintainerTest {
             put(222.2, 2_222.2);
             put(333.3, 3_333.3);
         }};
+        String misc = DataProvider.DIRECT_KRAKEN.name();
         CbOrderBook original = new CbOrderBook()
                 .setSnapshot(isSnapshot)
                 .setExchangeDate(exchangeDate)
                 .setExchangeDatetime(exchangeDatetime)
                 .setReceivedMicros(receivedMicros)
                 .setBids(bids)
-                .setAsks(asks);
+                .setAsks(asks)
+                .setMisc(misc);
         snapshotMaintainer.setSnapshot(original, false);
 
         // engage test
@@ -492,6 +495,7 @@ public class SnapshotMaintainerTest {
         assertEquals(original.getReceivedMicros(), copy.getReceivedMicros());
         assertEquals(original.getBids(), copy.getBids());
         assertEquals(original.getAsks(), copy.getAsks());
+        assertEquals(original.getMisc(), copy.getMisc());
     }
 
     @Test

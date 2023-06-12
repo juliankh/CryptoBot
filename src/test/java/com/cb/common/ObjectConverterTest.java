@@ -3,6 +3,7 @@ package com.cb.common;
 import com.cb.common.util.TimeUtils;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.CbOrderBook;
+import com.cb.model.DataProvider;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
@@ -602,6 +603,8 @@ public class ObjectConverterTest {
 
         assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
         assertEquals(ask1Volume, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
+
+        assertEquals(DataProvider.XCHANGE_KRAKEN.name(), result.getMisc());
     }
 
     @Test
@@ -680,6 +683,8 @@ public class ObjectConverterTest {
 
         assertEquals(checksum, result.getChecksum());
         assertEquals(CurrencyPair.BTC_USD, result.getCurrencyPair());
+
+        assertEquals(DataProvider.DIRECT_KRAKEN.name(), result.getMisc());
     }
 
     @Test
@@ -756,6 +761,8 @@ public class ObjectConverterTest {
 
         assertEquals(checksum, result.getChecksum());
         assertEquals(CurrencyPair.BTC_USDT, result.getCurrencyPair());
+
+        assertEquals(DataProvider.DIRECT_KRAKEN.name(), result.getMisc());
     }
 
     @Test

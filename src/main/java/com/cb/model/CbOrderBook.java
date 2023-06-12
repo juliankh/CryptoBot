@@ -40,6 +40,7 @@ public class CbOrderBook implements Serializable {
     private TreeMap<Double, Double> bids;
     private TreeMap<Double, Double> asks;
     private long checksum;
+    private String misc;
 
     public synchronized Spread spread() {
         if (MapUtils.isNotEmpty(bids) && MapUtils.isNotEmpty(asks)) {
