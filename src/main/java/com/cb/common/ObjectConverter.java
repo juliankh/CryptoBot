@@ -292,7 +292,7 @@ public class ObjectConverter {
     }
 
     public Map<String, Double> convertToRedisPayload(Collection<CbOrderBook> orderBooks) {
-        return orderBooks.parallelStream().collect(Collectors.toMap(jsonSerializer::serializeToJson, orderbook -> (double)(orderbook.getReceivedMicros()), (a, b)->a));
+        return orderBooks.parallelStream().collect(Collectors.toMap(jsonSerializer::serializeToJson, orderbook -> (double)(orderbook.getReceivedMicros()), (a,b)->b));
     }
 
     public List<Pair<Double, Double>> quoteList(List<LimitOrder> limitOrders) {
@@ -300,11 +300,11 @@ public class ObjectConverter {
     }
 
     public TreeMap<Double, Double> quoteTreeMapFromLimitOrders(List<LimitOrder> limitOrders) {
-        return limitOrders.parallelStream().collect(Collectors.toMap(limitOrder -> limitOrder.getLimitPrice().doubleValue(), limitOrder -> limitOrder.getOriginalAmount().doubleValue(), (a,b)->a, TreeMap::new));
+        return limitOrders.parallelStream().collect(Collectors.toMap(limitOrder -> limitOrder.getLimitPrice().doubleValue(), limitOrder -> limitOrder.getOriginalAmount().doubleValue(), (a,b)->b, TreeMap::new));
     }
 
     public TreeMap<Double, Double> quoteTreeMapFromLevels(List<KrakenOrderBookLevel> levels) {
-        return levels.parallelStream().collect(Collectors.toMap(KrakenOrderBookLevel::getPrice, KrakenOrderBookLevel::getQty, (a,b)->a, TreeMap::new));
+        return levels.parallelStream().collect(Collectors.toMap(KrakenOrderBookLevel::getPrice, KrakenOrderBookLevel::getQty, (a,b)->b, TreeMap::new));
     }
 
     @SneakyThrows

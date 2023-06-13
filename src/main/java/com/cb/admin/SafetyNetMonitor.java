@@ -77,7 +77,7 @@ public class SafetyNetMonitor {
 
     public TreeMap<String, TreeSet<String>> activeProcessAndSubProcessMap() {
         TreeMap<String, List<ProcessConfig>> activeProcessConfigMap = dbReadOnlyProvider.activeProcessConfigMap();
-        TreeMap<String, TreeSet<String>> result = activeProcessConfigMap.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().parallelStream().map(ProcessConfig::getProcessSubToken).filter(Objects::nonNull).collect(Collectors.toCollection(TreeSet::new)), (a, b)->a, TreeMap::new));
+        TreeMap<String, TreeSet<String>> result = activeProcessConfigMap.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().parallelStream().map(ProcessConfig::getProcessSubToken).filter(Objects::nonNull).collect(Collectors.toCollection(TreeSet::new)), (a,b)->b, TreeMap::new));
         return result;
     }
 

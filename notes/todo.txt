@@ -8,9 +8,9 @@ TODO:
     -compare xchage vs direct orderbook bridges
         -latest snapshot age time lag
         -how often xchange orderbook bridges have checksum mismatches
+            -check how many checksum errors within 1 hour in xchange bridge, and compare that to how long it takes for checksum error to happen in direct bridge
+        -num of snapshots received (ie: num of orderbooks in redis from each source within an hour)
         -frequency of socket drops
-        -amount of data received (ie: num of orderbooks in redis from each source within an hour)
-        -num of snapshots received
 
     -if the snapshot age log msgs show that a time delay develops (presumably because consumption of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
     -make log4j logs rollover to new log files every 24 hours and keep the past 10 log versions
