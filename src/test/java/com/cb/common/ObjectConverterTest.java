@@ -498,13 +498,15 @@ public class ObjectConverterTest {
 
         double quantity1 = 2.3;
         double quantity2 = 2.4;
-        double quantity3 = 2.5;
+        double quantity3 = 0.0;
+        double quantity4 = 2.5;
 
         KrakenOrderBookLevel level1 = new KrakenOrderBookLevel().setPrice(price1).setQty(quantity1);
         KrakenOrderBookLevel level2 = new KrakenOrderBookLevel().setPrice(price2).setQty(quantity2);
         KrakenOrderBookLevel level3 = new KrakenOrderBookLevel().setPrice(price3).setQty(quantity3);
+        KrakenOrderBookLevel level4 = new KrakenOrderBookLevel().setPrice(price3).setQty(quantity4); // this is an update of the qty for the same price as level3
 
-        List<KrakenOrderBookLevel> levels = Lists.newArrayList(level1, level2, level3);
+        List<KrakenOrderBookLevel> levels = Lists.newArrayList(level1, level2, level3, level4);
 
         // engage test
         TreeMap<Double, Double> result = objectConverter.quoteTreeMapFromLevels(levels);
@@ -512,7 +514,7 @@ public class ObjectConverterTest {
         // verify results
         List<Map.Entry<Double, Double>> resultList = Lists.newArrayList(result.entrySet());
 
-        assertEquals(levels.size(), resultList.size());
+        assertEquals(3, resultList.size()); // should have 3 items because 2 of the input levels were for the same price
 
         Map.Entry<Double, Double> resultQuote1 = resultList.get(0);
         Map.Entry<Double, Double> resultQuote2 = resultList.get(1);
@@ -522,7 +524,7 @@ public class ObjectConverterTest {
         assertEquals(quantity1, resultQuote1.getValue(), DOUBLE_COMPARE_DELTA);
 
         assertEquals(price3, resultQuote2.getKey(), DOUBLE_COMPARE_DELTA);
-        assertEquals(quantity3, resultQuote2.getValue(), DOUBLE_COMPARE_DELTA);
+        assertEquals(quantity4, resultQuote2.getValue(), DOUBLE_COMPARE_DELTA);
 
         assertEquals(price2, resultQuote3.getKey(), DOUBLE_COMPARE_DELTA);
         assertEquals(quantity2, resultQuote3.getValue(), DOUBLE_COMPARE_DELTA);
