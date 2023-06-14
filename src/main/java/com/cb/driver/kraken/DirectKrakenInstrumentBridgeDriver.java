@@ -16,7 +16,6 @@ import javax.inject.Named;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
-import java.util.concurrent.CompletableFuture;
 
 import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT;
 import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_URL;
@@ -62,10 +61,7 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
         String subscriptionString = jsonSerializer.serializeToJson(subscriptionRequest);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
         WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();
-        CompletableFuture.runAsync(() -> {
-            webSocket.sendText(subscriptionString, true);
-            TimeUtils.awaitQuietly(webSocketClient.getLatch());
-        });
+        webSocket.sendText(subscriptionString, true);
     }
 
     @Override

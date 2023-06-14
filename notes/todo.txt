@@ -1,14 +1,16 @@
 TODO:
 
 -misc
+    (after 2023-06-13 7:03pm)...
     -check
         -direct orderbook bridge
             -ever get snapshots after the initial one
             -any req_id that doesn't match
+            -reconnections -- how often because websocket closed or because no data received within some time limit
     -compare xchage vs direct orderbook bridges
         -latest snapshot age time lag
-        -how often xchange orderbook bridges have checksum mismatches
-            -check how many checksum errors within 1 hour in xchange bridge, and compare that to how long it takes for checksum error to happen in direct bridge
+        -how often have checksum mismatches
+        -num of batches processed and avg time to process a batch
         -num of snapshots received (ie: num of orderbooks in redis from each source within an hour)
         -frequency of socket drops
 
@@ -17,6 +19,7 @@ TODO:
     -auto-restart processes after restarting computer
     -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
     -if there is no use case to use jms, then remove jms-related code
+    -DirectKrakenInstrumentBridgeDriver: replace with a cron job that regularly calls the REST API and updates the db
 -ML
     -admin
         -ensure ML uses gpu processors

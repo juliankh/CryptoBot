@@ -28,7 +28,6 @@ import java.net.http.WebSocket;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import static com.cb.injection.BindingName.*;
 
@@ -91,21 +90,42 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
         WebSocket webSocket = connect();
         while (true) {
-            Instant latestReceive = webSocketClient.getLatestReceive().get();
-            if (latestReceive != null) {
-                long secsSinceLastUpdate = ChronoUnit.SECONDS.between(webSocketClient.getLatestReceive().get(), Instant.now());
-                if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
-                    String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
-                    log.warn(msg);
-                    alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
+            boolean webSocketClosed = webSocketClosed(webSocket);
+            boolean latestReceiveAgeOverLimit = latestReceiveAgeOverLimit(webSocketClient.getLatestReceive().get(), Instant.now(), maxSecsBetweenUpdates);
+            if (webSocketClosed || latestReceiveAgeOverLimit) {
+                // TODO: manually verify
+                String msg = "Will try to reconnect to websocket because " + (webSocketClosed ? "WebSocket is closed" : "no data received in over " + maxSecsBetweenUpdates + " secs");
+                log.warn(msg);
+                alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
+                if (latestReceiveAgeOverLimit) {
                     webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
-                    webSocket = connect();
                 }
-                TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
-            } else {
-                log.info("Haven't yet received orderbook data");
+                webSocket = connect();
             }
+            TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
         }
+    }
+
+    public boolean webSocketClosed(WebSocket webSocket) {
+        boolean inputClosed = webSocket.isInputClosed();
+        boolean outputClosed = webSocket.isOutputClosed();
+        if (inputClosed || outputClosed) {
+            log.warn("Input Closed? [" + inputClosed + "]; Output Closed? [" + outputClosed + "]");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean latestReceiveAgeOverLimit(Instant latestReceive, Instant timeToCompareTo, int maxSecsBetweenUpdates) {
+        if (latestReceive == null) {
+            return false;
+        }
+        long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive, timeToCompareTo);
+        if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
+            log.warn("It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs");
+            return true;
+        }
+        return false;
     }
 
     @SneakyThrows
@@ -119,10 +139,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         String subscriptionString = jsonSerializer.serializeToJson(subscription);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
         WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();
-        CompletableFuture.runAsync(() -> {
-            webSocket.sendText(subscriptionString, true);
-            TimeUtils.awaitQuietly(webSocketClient.getLatch());
-        });
+        webSocket.sendText(subscriptionString, true);
         return webSocket;
     }
 

@@ -10,15 +10,12 @@ import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Getter
 @RequiredArgsConstructor
 public class WebSocketClient implements WebSocket.Listener {
-
-    private final CountDownLatch latch = new CountDownLatch(1);
 
     private final BufferAggregator bufferAggregator;
     private final JsonProcessor jsonProcessor;
@@ -42,8 +39,19 @@ public class WebSocketClient implements WebSocket.Listener {
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
         log.error("Error", error);
-        latch.countDown();
+        cleanup();
         WebSocket.Listener.super.onError(webSocket, error);
+    }
+
+    @Override
+    public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+        log.info("Close: statusCode [" + statusCode + "], reason [" + reason + "]");
+        cleanup();
+        return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
+    }
+
+    private void cleanup() {
+        jsonProcessor.cleanup();
     }
 
     @Override
@@ -56,14 +64,6 @@ public class WebSocketClient implements WebSocket.Listener {
     public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
         log.info("Pong: [" + message + "]");
         return WebSocket.Listener.super.onPong(webSocket, message);
-    }
-
-    @Override
-    public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-        log.info("Close: statusCode [" + statusCode + "], reason [" + reason + "]");
-        latch.countDown();
-        jsonProcessor.cleanup();
-        return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 
 }
