@@ -10,7 +10,6 @@ import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Getter
@@ -21,7 +20,9 @@ public class WebSocketClient implements WebSocket.Listener {
     private final JsonProcessor jsonProcessor;
     private final int requestId;
 
-    private final AtomicReference<Instant> latestReceive = new AtomicReference<>();
+    private Instant latestReceive;
+    private Integer closeStatusCode;
+    private String closeReason;
 
     @Override
     public void onOpen(WebSocket webSocket) {
@@ -31,7 +32,7 @@ public class WebSocketClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        latestReceive.set(Instant.now());
+        latestReceive = Instant.now();
         bufferAggregator.process(data, last, jsonProcessor::process);
         return WebSocket.Listener.super.onText(webSocket, data, last);
     }
@@ -45,6 +46,8 @@ public class WebSocketClient implements WebSocket.Listener {
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
         log.info("Close: statusCode [" + statusCode + "], reason [" + reason + "]");
+        this.closeStatusCode = statusCode;
+        this.closeReason = reason;
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 

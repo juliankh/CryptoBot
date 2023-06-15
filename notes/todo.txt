@@ -1,9 +1,10 @@
 TODO:
 
 -misc
-    -handle status code 1013, see what happened to the direct processes overnight
-    (after 2023-06-13 7:03pm)...
+    (after 2023-06-14 10:15pm)...
     -check
+        -direct instrument bridge
+            -status update with null connection_id was persisted ok
         -direct orderbook bridge
             -ever get snapshots after the initial one
             -any req_id that doesn't match

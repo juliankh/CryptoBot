@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS cb.kraken_status_update
     channel varchar(256) NOT NULL,
     type varchar(256) NOT NULL,
     api_version varchar(256) NOT NULL,
-    connection_id numeric NOT NULL,
+    connection_id numeric,
     system varchar(256) NOT NULL,
     version varchar(256) NOT NULL,
     created timestamp with time zone NOT NULL,

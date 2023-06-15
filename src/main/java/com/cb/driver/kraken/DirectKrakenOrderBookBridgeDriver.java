@@ -14,7 +14,9 @@ import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequestParams;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
+import com.cb.ws.WebSocketFactory;
 import com.google.common.collect.Lists;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +24,6 @@ import org.knowm.xchange.currency.CurrencyPair;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -32,6 +32,7 @@ import java.util.Map;
 import static com.cb.injection.BindingName.*;
 
 @Slf4j
+@Setter
 public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
@@ -50,6 +51,9 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     private ChecksumCalculator checksumCalculator;
 
     @Inject
+    private WebSocketFactory webSocketFactory;
+
+    @Inject
     @Named(KRAKEN_WEBSOCKET_V2_URL)
     private String webSocketUrl;
 
@@ -57,6 +61,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
     private WebSocketClient webSocketClient;
 
+    private WebSocket webSocket;
     private CurrencyPair currencyPair;
     private int depth;
     private String driverName;
@@ -88,21 +93,27 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Override
     protected void executeCustom() {
         log.info("Max Secs Between Updates: " + maxSecsBetweenUpdates);
-        WebSocket webSocket = connect();
+        webSocket = connect();
         while (true) {
-            boolean webSocketClosed = webSocketClosed(webSocket);
-            boolean latestReceiveAgeOverLimit = latestReceiveAgeOverLimit(webSocketClient.getLatestReceive().get(), Instant.now(), maxSecsBetweenUpdates);
-            if (webSocketClosed || latestReceiveAgeOverLimit) {
-                // TODO: manually verify
-                String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed" : "no data received in over " + maxSecsBetweenUpdates + " secs");
-                log.warn(msg);
-                alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
-                if (latestReceiveAgeOverLimit) {
-                    webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
-                }
-                webSocket = connect();
-            }
+            executeIteration(Instant.now());
             TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
+        }
+    }
+
+    public void executeIteration(Instant timeToCompareTo) {
+        boolean webSocketClosed = webSocketClosed(webSocket);
+        boolean latestReceiveAgeOverLimit = latestReceiveAgeOverLimit(webSocketClient.getLatestReceive(), timeToCompareTo, maxSecsBetweenUpdates);
+        if (webSocketClosed || latestReceiveAgeOverLimit) {
+            // TODO: manually verify
+            Integer statusCode = webSocketClient.getCloseStatusCode();
+            String reason = webSocketClient.getCloseReason();
+            String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed (Status Code [" + statusCode + "], Reason [" + reason + "])" : "no data received in over " + maxSecsBetweenUpdates + " secs");
+            log.warn(msg);
+            alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
+            if (latestReceiveAgeOverLimit) {
+                webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
+            }
+            webSocket = connect();
         }
     }
 
@@ -138,7 +149,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
                         .setSymbol(Lists.newArrayList(currencyPair.toString())));
         String subscriptionString = jsonSerializer.serializeToJson(subscription);
         log.info("WebSocket Subscription: [" + subscriptionString + "]");
-        WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create(webSocketUrl), webSocketClient).join();
+        WebSocket webSocket = webSocketFactory.webSocket(webSocketUrl, webSocketClient);
         webSocket.sendText(subscriptionString, true);
         return webSocket;
     }
