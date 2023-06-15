@@ -1,6 +1,7 @@
 TODO:
 
 -misc
+    -handle status code 1013, see what happened to the direct processes overnight
     (after 2023-06-13 7:03pm)...
     -check
         -direct orderbook bridge

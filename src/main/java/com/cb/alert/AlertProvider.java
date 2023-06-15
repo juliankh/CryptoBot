@@ -139,6 +139,11 @@ public class AlertProvider {
 				message.setText(body);
 				Transport.send(message);
 			} catch (MessagingException e) {
+				/*
+				if (StringUtils.contains(e.getMessage(), "Too many login attempts")) {
+					// TODO: implement some way to temporarily turn off emails
+				}
+				*/
 				throw new RuntimeException("Problem sending alert with subject [" + subject + "]", e);
 			}
 		} catch (Exception e) {

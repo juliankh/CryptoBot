@@ -39,18 +39,16 @@ public class WebSocketClient implements WebSocket.Listener {
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
         log.error("Error", error);
-        cleanup();
         WebSocket.Listener.super.onError(webSocket, error);
     }
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
         log.info("Close: statusCode [" + statusCode + "], reason [" + reason + "]");
-        cleanup();
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 
-    private void cleanup() {
+    public void cleanup() {
         jsonProcessor.cleanup();
     }
 

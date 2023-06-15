@@ -94,7 +94,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
             boolean latestReceiveAgeOverLimit = latestReceiveAgeOverLimit(webSocketClient.getLatestReceive().get(), Instant.now(), maxSecsBetweenUpdates);
             if (webSocketClosed || latestReceiveAgeOverLimit) {
                 // TODO: manually verify
-                String msg = "Will try to reconnect to websocket because " + (webSocketClosed ? "WebSocket is closed" : "no data received in over " + maxSecsBetweenUpdates + " secs");
+                String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed" : "no data received in over " + maxSecsBetweenUpdates + " secs");
                 log.warn(msg);
                 alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
                 if (latestReceiveAgeOverLimit) {
@@ -151,6 +151,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Override
     protected void cleanup() {
         log.info("Cleaning up");
+        webSocketClient.cleanup();
         dbReadOnlyProvider.cleanup();
     }
 
