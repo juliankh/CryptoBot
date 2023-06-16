@@ -2,7 +2,7 @@ package com.cb.driver.kraken;
 
 import com.cb.common.CurrencyResolver;
 import com.cb.common.JsonSerializer;
-import com.cb.common.util.TimeUtils;
+import com.cb.common.SleepDelegate;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.MiscConfigName;
 import com.cb.driver.AbstractDriver;
@@ -15,6 +15,7 @@ import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
 import com.cb.ws.WebSocketFactory;
+import com.cb.ws.WebSocketStatusCode;
 import com.google.common.collect.Lists;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -35,7 +36,8 @@ import static com.cb.injection.BindingName.*;
 @Setter
 public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
-    private static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
+    public static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
+    public static final int THROTTLE_SLEEP_SECS = 15;
 
     @Inject
     private DbReadOnlyProvider dbReadOnlyProvider;
@@ -60,6 +62,9 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Inject
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
     private WebSocketClient webSocketClient;
+
+    @Inject
+    private SleepDelegate sleepDelegate;
 
     private WebSocket webSocket;
     private CurrencyPair currencyPair;
@@ -96,7 +101,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         webSocket = connect();
         while (true) {
             executeIteration(Instant.now());
-            TimeUtils.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
+            sleepDelegate.sleepQuietlyForSecs(SLEEP_SECS_CONNECTIVITY_CHECK);
         }
     }
 
@@ -104,8 +109,11 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         boolean webSocketClosed = webSocketClosed(webSocket);
         boolean latestReceiveAgeOverLimit = latestReceiveAgeOverLimit(webSocketClient.getLatestReceive(), timeToCompareTo, maxSecsBetweenUpdates);
         if (webSocketClosed || latestReceiveAgeOverLimit) {
-            // TODO: manually verify
             Integer statusCode = webSocketClient.getCloseStatusCode();
+            if (statusCode != null && statusCode == WebSocketStatusCode.TRY_AGAIN_LATER) {
+                log.info("Got WebSocket Close StatusCode [" + statusCode + "] which means that requests are being throttled.  Therefore will sleep for [" + THROTTLE_SLEEP_SECS + "] secs before trying to reconnect.");
+                sleepDelegate.sleepQuietlyForSecs(THROTTLE_SLEEP_SECS);
+            }
             String reason = webSocketClient.getCloseReason();
             String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed (Status Code [" + statusCode + "], Reason [" + reason + "])" : "no data received in over " + maxSecsBetweenUpdates + " secs");
             log.warn(msg);
