@@ -1,5 +1,6 @@
 package com.cb.alert;
 
+import com.cb.common.util.TimeUtils;
 import com.cb.injection.module.MainModule;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 import static com.cb.injection.BindingName.*;
 
@@ -23,6 +25,8 @@ import static com.cb.injection.BindingName.*;
 public class AlertProvider {
 
 	public static boolean DEFAULT_IS_ON = true;
+
+	private static int THROTTLE_SLEEP_MINS = 1;
 
 	@Inject
 	@Named(ALERT_EMAIL)
@@ -139,11 +143,16 @@ public class AlertProvider {
 				message.setText(body);
 				Transport.send(message);
 			} catch (MessagingException e) {
-				/*
+				log.error("Problem sending alert", e);
 				if (StringUtils.contains(e.getMessage(), "Too many login attempts")) {
-					// TODO: implement some way to temporarily turn off emails
+					CompletableFuture.runAsync(() -> {
+						log.info("Attempt to send alert is being throttled, so will temporarily turn OFF alerting for [" + THROTTLE_SLEEP_MINS + "] mins");
+						DEFAULT_IS_ON = false;
+						TimeUtils.sleepQuietlyForMins(THROTTLE_SLEEP_MINS);
+						DEFAULT_IS_ON = true;
+						log.info("Alerting is back ON");
+					});
 				}
-				*/
 				throw new RuntimeException("Problem sending alert with subject [" + subject + "]", e);
 			}
 		} catch (Exception e) {
