@@ -1,6 +1,6 @@
 package com.cb.ws;
 
-import com.cb.processor.BufferAggregator;
+import com.cb.common.BufferAggregator;
 import com.cb.processor.JsonProcessor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

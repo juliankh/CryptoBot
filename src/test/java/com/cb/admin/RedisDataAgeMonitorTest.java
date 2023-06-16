@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 public class RedisDataAgeMonitorTest {
 
     @Mock
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     @Spy
     private JsonSerializer jsonSerializer;
@@ -34,7 +34,7 @@ public class RedisDataAgeMonitorTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        Mockito.reset(alertProvider);
+        Mockito.reset(alerter);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class RedisDataAgeMonitorTest {
 
         // verify
         verify(jedis, times(0)).zpopmax(anyString());
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
@@ -68,7 +68,7 @@ public class RedisDataAgeMonitorTest {
         redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, 6, timeToCompare);
 
         // verify
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class RedisDataAgeMonitorTest {
         redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, 5, timeToCompare);
 
         // verify
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class RedisDataAgeMonitorTest {
         redisDataAgeMonitor.monitorRedisKey(jedis, redisKey, 4, timeToCompare);
 
         // verify
-        verify(alertProvider, times(1)).sendEmailAlert(anyString(), anyString());
+        verify(alerter, times(1)).sendEmailAlert(anyString(), anyString());
     }
 
     private static Tuple sampleRedisData(Instant exchangeDateTime) {

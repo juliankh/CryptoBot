@@ -1,6 +1,5 @@
 package com.cb.processor.kraken;
 
-import com.cb.common.util.GeneralUtils;
 import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.model.kraken.ws.response.instrument.KrakenInstrumentData;
@@ -16,7 +15,7 @@ import java.util.List;
 public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
 
     @Inject
-    private KrakenJsonInstrumentObjectConverter converter;
+    private KrakenJsonInstrumentObjectConverter jsonObjectConverter;
 
     public void initialize(int requestId) {
         super.initialize(requestId);
@@ -24,23 +23,15 @@ public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
 
     @Override
     public synchronized void process(String json) {
-        try {
-            converter.parse(json);
-            Class<?> objectType = converter.objectTypeParsed();
-            if (!processCommon(objectType, converter)) {
-                processCustom(objectType);
-            }
-        } catch (Exception e) {
-            log.error("Problem processing json: [" + json + "]", e);
-            throw new RuntimeException("Problem processing json: [" + GeneralUtils.truncateStringIfNecessary(json, 100) + "]", e);
-        }
+        super.process(json, jsonObjectConverter);
     }
 
+    @Override
     public void processCustom(Class<?> objectType) {
         if (objectType == KrakenSubscriptionResponseInstrument.class) {
-            processSubscriptionResponse(converter.getSubscriptionResponse());
+            processSubscriptionResponse(jsonObjectConverter.getSubscriptionResponse());
         } else if (objectType == KrakenInstrumentInfo.class) {
-            processInstrumentInfo(converter.getInstrumentInfo());
+            processInstrumentInfo(jsonObjectConverter.getInstrumentInfo());
         } else {
             throw new RuntimeException("Unknown object type parsed: [" + objectType + "]");
         }

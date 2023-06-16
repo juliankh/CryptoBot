@@ -1,6 +1,6 @@
 package com.cb.jms.common;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.util.TimeUtils;
 import com.rabbitmq.client.ConsumerShutdownSignalCallback;
 import com.rabbitmq.client.DeliverCallback;
@@ -15,7 +15,7 @@ import java.time.Instant;
 public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
 
     @Inject
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     private int numMessagesReceived = 0;
 
@@ -48,7 +48,7 @@ public abstract class AbstractJmsConsumer extends AbstractJmsComponent {
             log.info("Received Shutdown Signal for ConsumerTag [" + consumerTag + "]", e);
             cleanup();
             String msg = "JMS listener shut down for [" + destination + "]";
-            alertProvider.sendEmailAlertQuietly(msg, msg, e);
+            alerter.sendEmailAlertQuietly(msg, msg, e);
         };
     }
 

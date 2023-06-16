@@ -1,6 +1,6 @@
 package com.cb.driver;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.util.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,7 +11,7 @@ import java.time.Instant;
 public abstract class AbstractDriver {
 
 	@Inject
-	protected AlertProvider alertProvider;
+	protected Alerter alerter;
 
 	protected abstract String getDriverName();
 	protected abstract void executeCustom();
@@ -27,7 +27,7 @@ public abstract class AbstractDriver {
 			log.error(errMsg, e);
 			logProcessDuration(startTime);
 			cleanup();
-			alertProvider.sendEmailAlertQuietly(errMsg, errMsg, e);
+			alerter.sendEmailAlertQuietly(errMsg, errMsg, e);
 			throw e;
 		}
 		logProcessDuration(startTime);

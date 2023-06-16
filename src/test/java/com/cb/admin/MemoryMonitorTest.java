@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.db.DbReadOnlyProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class MemoryMonitorTest {
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Mock
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     @InjectMocks
     private MemoryMonitor memoryMonitor;
@@ -30,19 +30,19 @@ public class MemoryMonitorTest {
     @BeforeEach
     public void beforeEachTest() {
         Mockito.reset(dbReadOnlyProvider);
-        Mockito.reset(alertProvider);
+        Mockito.reset(alerter);
     }
 
     @Test
     public void alertIfAboveLimit_aboveThreshold() {
         memoryMonitor.alertIfAboveLimit(0.26, 25);
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
     public void alertIfAboveLimit_belowThreshold() {
         memoryMonitor.alertIfAboveLimit(0.24, 25);
-        verify(alertProvider, times(1)).sendEmailAlert(anyString(), anyString());
+        verify(alerter, times(1)).sendEmailAlert(anyString(), anyString());
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.model.config.ProcessConfig;
 import com.google.common.collect.Lists;
@@ -27,7 +27,7 @@ public class SafetyNetMonitorTest {
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Mock
-    private AlertProvider alertProvider;;
+    private Alerter alerter;
 
     @InjectMocks
     private SafetyNetMonitor safetyNetMonitor;
@@ -35,7 +35,7 @@ public class SafetyNetMonitorTest {
     @BeforeEach
     public void beforeEachTest() {
         Mockito.reset(dbReadOnlyProvider);
-        Mockito.reset(alertProvider);
+        Mockito.reset(alerter);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(Lists.newArrayList(), Maps.newTreeMap());
 
         // verify
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(processesDown, Maps.newTreeMap());
 
         // verify
-        verify(alertProvider, times(1)).sendEmailAlert("Some Processes are DOWN", "Processes that are DOWN:\n\tprocessDown1\n\tprocessDown2");
+        verify(alerter, times(1)).sendEmailAlert("Some Processes are DOWN", "Processes that are DOWN:\n\tprocessDown1\n\tprocessDown2");
     }
 
     @Test
@@ -76,7 +76,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(Lists.newArrayList(), errorMap);
 
         // verify
-        verify(alertProvider, times(1)).sendEmailAlert("Errors While Checking Processes Running", "Processes that had problem checking if they're up:\n\tprocessWithError1=Some Error 1\n\tprocessWithError2=Some Error 2");
+        verify(alerter, times(1)).sendEmailAlert("Errors While Checking Processes Running", "Processes that had problem checking if they're up:\n\tprocessWithError1=Some Error 1\n\tprocessWithError2=Some Error 2");
     }
 
     @Test
@@ -98,7 +98,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(processesDown, errorMap);
 
         // verify
-        verify(alertProvider, times(1)).sendEmailAlert("Some Processes are DOWN & Errors While Checking Processes Running", "Processes that are DOWN:\n\tprocessDown1\n\tprocessDown2\n\nProcesses that had problem checking if they're up:\n\tprocessWithError1=Some Error 1\n\tprocessWithError2=Some Error 2");
+        verify(alerter, times(1)).sendEmailAlert("Some Processes are DOWN & Errors While Checking Processes Running", "Processes that are DOWN:\n\tprocessDown1\n\tprocessDown2\n\nProcesses that had problem checking if they're up:\n\tprocessWithError1=Some Error 1\n\tprocessWithError2=Some Error 2");
     }
 
     @Test

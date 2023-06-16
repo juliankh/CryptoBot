@@ -1,12 +1,12 @@
 package com.cb.processor.kraken;
 
+import com.cb.common.BatchProcessor;
 import com.cb.common.ObjectConverter;
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.jms.XchangeKrakenOrderBook;
-import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
 import com.cb.processor.OrderBookDelegate;
 import lombok.extern.slf4j.Slf4j;

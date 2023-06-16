@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS cb.kraken_status_update
     connection_id numeric,
     system varchar(256) NOT NULL,
     version varchar(256) NOT NULL,
+    symbol varchar(256),
     created timestamp with time zone NOT NULL,
     CONSTRAINT kraken_status_update_pkey PRIMARY KEY (id)
 )

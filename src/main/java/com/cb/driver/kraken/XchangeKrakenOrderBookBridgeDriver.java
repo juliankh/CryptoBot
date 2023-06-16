@@ -84,7 +84,7 @@ public class XchangeKrakenOrderBookBridgeDriver extends AbstractDriver {
             if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
                 String msg = "It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs, so will try to reconnect";
                 log.warn(msg);
-                alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
+                alerter.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
                 krakenExchange.disconnect().blockingAwait();
                 subscribe(krakenExchange);
             }
@@ -107,7 +107,7 @@ public class XchangeKrakenOrderBookBridgeDriver extends AbstractDriver {
                         throwable -> {
                             String msg = "Error in Process [" + getDriverName() + "] while listening to OrderBooks: " + throwable.getMessage();
                             log.error(msg, throwable);
-                            alertProvider.sendEmailAlertQuietly(msg, msg, throwable);
+                            alerter.sendEmailAlertQuietly(msg, msg, throwable);
                         }
                 );
     }

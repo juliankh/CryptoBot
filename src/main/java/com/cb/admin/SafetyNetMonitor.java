@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.module.MainModule;
 import com.cb.model.config.ProcessConfig;
@@ -28,7 +28,7 @@ public class SafetyNetMonitor {
     private ShellCommandRunner shellCommandRunner;
 
     @Inject
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     public static void main(String[] args) {
         SafetyNetMonitor monitor = MainModule.INJECTOR.getInstance(SafetyNetMonitor.class);
@@ -132,7 +132,7 @@ public class SafetyNetMonitor {
             String subject = subjectSb.toString();
             String details = detailsSb.toString();
             log.error(details);
-            alertProvider.sendEmailAlert(subject, details);
+            alerter.sendEmailAlert(subject, details);
         }
     }
 

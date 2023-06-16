@@ -17,5 +17,6 @@ public class KrakenStatusUpdateData {
     private BigInteger connection_id;
     private String system;
     private String version;
+    private String symbol;
 
 }

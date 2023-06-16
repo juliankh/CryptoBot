@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.config.QueueMonitorConfig;
@@ -32,7 +32,7 @@ public class JmsQueueMonitor {
     private DbWriteProvider dbWriteProvider;
 
     @Inject
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     @Inject
     @Named(JMS_VHOST)
@@ -58,7 +58,7 @@ public class JmsQueueMonitor {
         if (messages > maxNumMessages) {
             String msg = "For queue [" + queue + "] the current num of messages [" + messages + "] is > limit of [" + maxNumMessages + "]";
             log.warn(msg);
-            alertProvider.sendEmailAlert(msg, msg);
+            alerter.sendEmailAlert(msg, msg);
         } else {
             log.info("For queue [" + queue + "] the current num of messages [" + messages + "] is within limit of [" + maxNumMessages + "]");
         }

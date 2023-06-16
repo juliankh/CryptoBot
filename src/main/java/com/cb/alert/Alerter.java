@@ -22,11 +22,11 @@ import static com.cb.injection.BindingName.*;
 
 @Slf4j
 @Singleton
-public class AlertProvider {
+public class Alerter {
 
 	public static boolean DEFAULT_IS_ON = true;
 
-	private static int THROTTLE_SLEEP_MINS = 1;
+	private static final int THROTTLE_SLEEP_MINS = 1;
 
 	@Inject
 	@Named(ALERT_EMAIL)
@@ -80,8 +80,8 @@ public class AlertProvider {
 
 	// DO NOT MODIFY/DELETE -- this is used by safety net driver wrapper scripts
 	public static void main(String[] args) throws IOException {
-		AlertProvider alertProvider = MainModule.INJECTOR.getInstance(AlertProvider.class);
-		alertProvider.sendEmailAlert(args[0], args[1]);
+		Alerter alerter = MainModule.INJECTOR.getInstance(Alerter.class);
+		alerter.sendEmailAlert(args[0], args[1]);
 	}
 
 	public void sendEmailAlert(String subject, String body, Throwable t) {

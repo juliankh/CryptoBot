@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.util.NumberUtils;
 import com.cb.db.DbReadOnlyProvider;
 import com.sun.management.OperatingSystemMXBean;
@@ -18,7 +18,7 @@ public class MemoryMonitor {
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Inject
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     public void monitor() {
         OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
@@ -68,7 +68,7 @@ public class MemoryMonitor {
         if (freeRatio < thresholdRatio) {
             String msg = "Free memory [" + precentFreeString + "] < threshold of [" + percentThresholdString + "]";
             log.warn(msg);
-            alertProvider.sendEmailAlert(msg, msg);
+            alerter.sendEmailAlert(msg, msg);
         } else {
             log.info("Free memory [" + precentFreeString + "] > threshold of [" + percentThresholdString + "], which is good");
         }

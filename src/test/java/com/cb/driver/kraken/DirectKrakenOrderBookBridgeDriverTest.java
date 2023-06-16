@@ -1,6 +1,6 @@
 package com.cb.driver.kraken;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
 import com.cb.common.SleepDelegate;
 import com.cb.ws.WebSocketClient;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 public class DirectKrakenOrderBookBridgeDriverTest {
 
     @Mock
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     @Mock
     private JsonSerializer jsonSerializer;
@@ -50,7 +50,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        Mockito.reset(alertProvider);
+        Mockito.reset(alerter);
         Mockito.reset(jsonSerializer);
         Mockito.reset(webSocketFactory);
         Mockito.reset(webSocketClient);
@@ -112,7 +112,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
 
         // verify
         verify(sleepDelegate, times(1)).sleepQuietlyForSecs(THROTTLE_SLEEP_SECS);
-        verify(alertProvider, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, "Will try to reconnect to WebSocket because WebSocket is closed (Status Code [" + closeStatusCode + "], Reason [" + closeReason + "])");
+        verify(alerter, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, "Will try to reconnect to WebSocket because WebSocket is closed (Status Code [" + closeStatusCode + "], Reason [" + closeReason + "])");
         verify(webSocket, never()).sendClose(anyInt(), anyString());
         verify(webSocketFactory, times(1)).webSocket(webSocketUrl, webSocketClient);
     }
@@ -152,7 +152,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
 
         // verify
         verify(sleepDelegate, never()).sleepQuietlyForSecs(anyInt());
-        verify(alertProvider, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, "Will try to reconnect to WebSocket because WebSocket is closed (Status Code [" + closeStatusCode + "], Reason [" + closeReason + "])");
+        verify(alerter, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, "Will try to reconnect to WebSocket because WebSocket is closed (Status Code [" + closeStatusCode + "], Reason [" + closeReason + "])");
         verify(webSocket, never()).sendClose(anyInt(), anyString());
         verify(webSocketFactory, times(1)).webSocket(webSocketUrl, webSocketClient);
     }
@@ -193,7 +193,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         // verify
         verify(sleepDelegate, never()).sleepQuietlyForSecs(anyInt());
         String expectedMsg = "Will try to reconnect to WebSocket because no data received in over " + maxSecsBetweenUpdates + " secs";
-        verify(alertProvider, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, expectedMsg);
+        verify(alerter, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, expectedMsg);
         verify(webSocket, times(1)).sendClose(WebSocket.NORMAL_CLOSURE, expectedMsg);
         verify(webSocketFactory, times(1)).webSocket(webSocketUrl, webSocketClient);
     }
@@ -214,7 +214,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
 
         // verify
         verify(sleepDelegate, never()).sleepQuietlyForSecs(anyInt());
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
         verify(webSocket, never()).sendClose(anyInt(), anyString());
         verify(webSocketFactory, never()).webSocket(anyString(), any(WebSocket.Listener.class));
     }

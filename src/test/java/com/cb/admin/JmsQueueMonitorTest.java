@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +17,14 @@ import static org.mockito.Mockito.*;
 public class JmsQueueMonitorTest {
 
     @Mock
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     @InjectMocks
     private JmsQueueMonitor jmsQueueMonitor;
 
     @BeforeEach
     public void beforeEachTest() {
-        Mockito.reset(alertProvider);
+        Mockito.reset(alerter);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class JmsQueueMonitorTest {
         jmsQueueMonitor.monitorQueue("doesn't matter", 4, 5);
 
         // verify
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
@@ -42,7 +42,7 @@ public class JmsQueueMonitorTest {
         jmsQueueMonitor.monitorQueue("doesn't matter", 5, 5);
 
         // verify
-        verify(alertProvider, never()).sendEmailAlert(anyString(), anyString());
+        verify(alerter, never()).sendEmailAlert(anyString(), anyString());
     }
 
     @Test
@@ -51,7 +51,7 @@ public class JmsQueueMonitorTest {
         jmsQueueMonitor.monitorQueue("doesn't matter", 6, 5);
 
         // verify
-        verify(alertProvider, times(1)).sendEmailAlert(anyString(), anyString());
+        verify(alerter, times(1)).sendEmailAlert(anyString(), anyString());
     }
 
 }

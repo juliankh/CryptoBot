@@ -117,7 +117,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
             String reason = webSocketClient.getCloseReason();
             String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed (Status Code [" + statusCode + "], Reason [" + reason + "])" : "no data received in over " + maxSecsBetweenUpdates + " secs");
             log.warn(msg);
-            alertProvider.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
+            alerter.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
             if (latestReceiveAgeOverLimit) {
                 webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
             }

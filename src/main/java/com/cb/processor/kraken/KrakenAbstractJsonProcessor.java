@@ -1,11 +1,12 @@
 package com.cb.processor.kraken;
 
+import com.cb.alert.Alerter;
 import com.cb.db.DbWriteProvider;
 import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.processor.JsonProcessor;
-import com.cb.ws.kraken.KrakenAbstractJsonObjectConverter;
+import com.cb.ws.kraken.KrakenJsonObjectConverter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -15,6 +16,9 @@ import java.util.Optional;
 
 @Slf4j
 public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
+
+    @Inject
+    protected Alerter alerter;
 
     @Inject
     protected DbWriteProvider dbWriteProvider;
@@ -30,7 +34,20 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
         return this.requestId == requestId;
     }
 
-    public boolean processCommon(Class<?> objectType, KrakenAbstractJsonObjectConverter jsonObjectConverter) {
+    public synchronized void process(String json, KrakenJsonObjectConverter jsonObjectConverter) {
+        try {
+            jsonObjectConverter.parse(json);
+            Class<?> objectType = jsonObjectConverter.objectTypeParsed();
+            if (!processCommon(objectType, jsonObjectConverter)) {
+                processCustom(objectType);
+            }
+        } catch (Exception e) {
+            log.error("Problem processing json: [" + json + "]", e);
+            alerter.sendEmailAlertQuietly("Problem processing json", json, e);
+        }
+    }
+
+    public boolean processCommon(Class<?> objectType, KrakenJsonObjectConverter jsonObjectConverter) {
         if (objectType == KrakenStatusUpdate.class) {
             KrakenStatusUpdate statusUpdate = jsonObjectConverter.getStatusUpdate();
             int numDatas = Optional.ofNullable(statusUpdate.getData()).map(List::size).orElse(0);
@@ -46,6 +63,8 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
         }
         return false;
     }
+
+    public abstract void processCustom(Class<?> objectType);
 
     public boolean processError(KrakenError error) {
         boolean requestIdMatches = requestIdMatches(error.getReq_id());

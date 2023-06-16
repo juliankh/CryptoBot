@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.util.NumberUtils;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.MiscConfigName;
@@ -19,7 +19,7 @@ public class DiskSpaceMonitor {
     private DbReadOnlyProvider dbReadOnlyProvider;
 
     @Inject
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     public void monitor() {
         File f = new File("/");
@@ -42,7 +42,7 @@ public class DiskSpaceMonitor {
         if (usableRatio < thresholdRatio) {
             String msg = "Free/usable disk space [" + precentUsableString + "] < threshold of [" + percentThresholdString + "]";
             log.warn(msg);
-            alertProvider.sendEmailAlert(msg, msg);
+            alerter.sendEmailAlert(msg, msg);
         } else {
             log.info("Free/usable disk space [" + precentUsableString + "] > threshold of [" + percentThresholdString + "], which is good");
         }

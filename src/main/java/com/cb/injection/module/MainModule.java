@@ -1,9 +1,9 @@
 package com.cb.injection.module;
 
+import com.cb.common.BufferAggregator;
 import com.cb.common.CurrencyResolver;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
-import com.cb.processor.BufferAggregator;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.KrakenChecksumCalculator;
 import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;

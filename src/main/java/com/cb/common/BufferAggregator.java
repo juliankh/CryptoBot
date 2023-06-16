@@ -1,4 +1,4 @@
-package com.cb.processor;
+package com.cb.common;
 
 import java.util.function.Consumer;
 

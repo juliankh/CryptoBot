@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.alert.AlertProvider;
+import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
 import com.cb.db.DbReadOnlyProvider;
 import com.cb.injection.module.MainModule;
@@ -29,7 +29,7 @@ public class RedisDataAgeMonitor {
     private JsonSerializer jsonSerializer;
 
     @Inject
-    private AlertProvider alertProvider;
+    private Alerter alerter;
 
     public void monitor() {
         List<RedisDataAgeMonitorConfig> configs = dbProvider.redisDataAgeMonitorConfig();
@@ -57,7 +57,7 @@ public class RedisDataAgeMonitor {
             if (minsAge > ageLimit) {
                 String msg = "For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is > limit of [" + ageLimit + "] mins";
                 log.warn(msg);
-                alertProvider.sendEmailAlert(msg, msg);
+                alerter.sendEmailAlert(msg, msg);
             } else {
                 log.info("For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is within limit of [" + ageLimit + "] mins");
             }

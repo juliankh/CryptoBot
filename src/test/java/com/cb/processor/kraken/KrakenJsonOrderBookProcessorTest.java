@@ -1,5 +1,7 @@
 package com.cb.processor.kraken;
 
+import com.cb.alert.Alerter;
+import com.cb.common.BatchProcessor;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
@@ -7,7 +9,6 @@ import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
-import com.cb.processor.BatchProcessor;
 import com.cb.processor.OrderBookDelegate;
 import com.cb.processor.SnapshotMaintainer;
 import com.cb.processor.checksum.ChecksumCalculator;
@@ -40,6 +41,9 @@ public class KrakenJsonOrderBookProcessorTest {
     private static final int REQUEST_ID = 102938;
     private static final int REQUEST_ID_DIFFERENT = 876543345;
 
+    @Mock
+    private Alerter alerter;
+
     @Spy
     private CurrencyResolver currencyResolver;
 
@@ -63,6 +67,7 @@ public class KrakenJsonOrderBookProcessorTest {
 
     @BeforeEach
     public void beforeEachTest() {
+        reset(alerter);
         reset(jsonObjectConverter);
         reset(batchProcessor);
         reset(snapshotMaintainer);
@@ -214,12 +219,15 @@ public class KrakenJsonOrderBookProcessorTest {
     @Test
     public void process_ExceptionThrown() {
         // setup
-        String json = "some json";
-        doThrow(NullPointerException.class).when(jsonObjectConverter).parse(json);
+        String json = "some json that can't be parsed";
+        NullPointerException exception = new NullPointerException();
+        doThrow(exception).when(jsonObjectConverter).parse(json);
 
-        // engage test and verify
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> processor.process(json));
-        assertEquals("Problem processing json: [" + json + "]", exception.getMessage());
+        // engage test
+        processor.process(json);
+
+        // verify
+        verify(alerter, times(1)).sendEmailAlertQuietly("Problem processing json", json, exception);
     }
 
     @Test

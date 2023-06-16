@@ -1,4 +1,4 @@
-package com.cb.processor;
+package com.cb.common;
 
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
@@ -13,7 +13,7 @@ import java.util.function.Function;
 @Slf4j
 public class BatchProcessor<T,P> {
 
-    private Integer batchSize; // using Integer instead of int so that if it's not set, a NullPointerException would be thrown
+    private Integer batchSize; // using Integer instead of int so that if it's not set, a NullPointerException would be thrown (otherwise will quietly assume batchSize of 0, which is never correct)
 
     private List<T> batch = new ArrayList<>();
     private Instant batchStart;

@@ -1,14 +1,13 @@
 package com.cb.processor.kraken;
 
+import com.cb.common.BatchProcessor;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.ObjectConverter;
-import com.cb.common.util.GeneralUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
-import com.cb.processor.BatchProcessor;
 import com.cb.processor.JedisDelegate;
 import com.cb.processor.OrderBookDelegate;
 import com.cb.processor.SnapshotMaintainer;
@@ -64,18 +63,10 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
 
     @Override
     public synchronized void process(String json) {
-        try {
-            jsonObjectConverter.parse(json);
-            Class<?> objectType = jsonObjectConverter.objectTypeParsed();
-            if (!processCommon(objectType, jsonObjectConverter)) {
-                processCustom(objectType);
-            }
-        } catch (Exception e) {
-            log.error("Problem processing json: [" + json + "]", e);
-            throw new RuntimeException("Problem processing json: [" + GeneralUtils.truncateStringIfNecessary(json, 100) + "]", e);
-        }
+        super.process(json, jsonObjectConverter);
     }
 
+    @Override
     public void processCustom(Class<?> objectType) {
         if (objectType == KrakenSubscriptionResponseOrderBook.class) {
             processSubscriptionResponse(jsonObjectConverter.getSubscriptionResponse());
