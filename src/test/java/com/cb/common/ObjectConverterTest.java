@@ -1,9 +1,9 @@
 package com.cb.common;
 
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbWriteProvider;
+import com.cb.db.WriteDao;
 import com.cb.model.CbOrderBook;
-import com.cb.model.DataProvider;
+import com.cb.model.DataOrigin;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
@@ -184,7 +184,7 @@ public class ObjectConverterTest {
                 {process2, exchange_datetime2, exchange_date2, received_micros2, highest_bid_price2, highest_bid_volume2, lowest_ask_price2, lowest_ask_volume2, bids_hash2, asks_hash2, bids2, asks2}
         };
 
-        assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2), DbWriteProvider.DB_KRAKEN_ORDER_BOOK_CONVERTER));
+        assertArrayEquals(expected, objectConverter.matrix(Lists.newArrayList(ob1, ob2), WriteDao.DB_KRAKEN_ORDER_BOOK_CONVERTER));
     }
 
     @Test
@@ -606,7 +606,7 @@ public class ObjectConverterTest {
         assertEquals(ask1Price, resultAsk3.getKey(), DOUBLE_COMPARE_DELTA);
         assertEquals(ask1Volume, resultAsk3.getValue(), DOUBLE_COMPARE_DELTA);
 
-        assertEquals(DataProvider.XCHANGE_KRAKEN.name(), result.getMisc());
+        assertEquals(DataOrigin.XCHANGE_KRAKEN.name(), result.getMisc());
     }
 
     @Test
@@ -686,7 +686,7 @@ public class ObjectConverterTest {
         assertEquals(checksum, result.getChecksum());
         assertEquals(CurrencyPair.BTC_USD, result.getCurrencyPair());
 
-        assertEquals(DataProvider.DIRECT_KRAKEN.name(), result.getMisc());
+        assertEquals(DataOrigin.DIRECT_KRAKEN.name(), result.getMisc());
     }
 
     @Test
@@ -764,7 +764,7 @@ public class ObjectConverterTest {
         assertEquals(checksum, result.getChecksum());
         assertEquals(CurrencyPair.BTC_USDT, result.getCurrencyPair());
 
-        assertEquals(DataProvider.DIRECT_KRAKEN.name(), result.getMisc());
+        assertEquals(DataOrigin.DIRECT_KRAKEN.name(), result.getMisc());
     }
 
     @Test

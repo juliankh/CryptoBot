@@ -1,6 +1,6 @@
 package com.cb.model;
 
-public enum DataProvider {
+public enum DataOrigin {
 
     XCHANGE_KRAKEN,
     DIRECT_KRAKEN;

@@ -2,7 +2,7 @@ package com.cb.driver.kraken;
 
 import com.cb.common.CurrencyResolver;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.injection.module.MainModule;
@@ -30,7 +30,7 @@ public class XchangeKrakenOrderBookBridgeDriver extends AbstractDriver {
     private static final int ORDER_BOOK_DEPTH = 500;
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
     private CurrencyResolver currencyResolver;
@@ -63,8 +63,8 @@ public class XchangeKrakenOrderBookBridgeDriver extends AbstractDriver {
         String currencyToken = currencyResolver.upperCaseToken(currencyPair, "-");
         String driverToken = argsConverter.getDriverToken();
         driverName = "Xch Kr OB Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverToken) ? "" : " " + driverToken);
-        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbReadOnlyProvider.krakenBridgeOrderBookConfig();
-        dbReadOnlyProvider.cleanup();
+        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = readOnlyDao.krakenBridgeOrderBookConfig();
+        readOnlyDao.cleanup();
         KrakenBridgeOrderBookConfig config = configMap.get(currencyPair);
         log.info("Config: " + config);
         int batchSize = config.getBatchSize();
@@ -120,7 +120,7 @@ public class XchangeKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Override
     protected void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
+        readOnlyDao.cleanup();
         processor.cleanup();
     }
 

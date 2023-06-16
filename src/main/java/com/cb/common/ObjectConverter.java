@@ -2,9 +2,9 @@ package com.cb.common;
 
 import com.cb.common.util.TimeUtils;
 import com.cb.db.DbUtils;
-import com.cb.db.DbWriteProvider;
+import com.cb.db.WriteDao;
 import com.cb.model.CbOrderBook;
-import com.cb.model.DataProvider;
+import com.cb.model.DataOrigin;
 import com.cb.model.config.*;
 import com.cb.model.config.db.*;
 import com.cb.model.kraken.db.DbKrakenOrderBook;
@@ -239,7 +239,7 @@ public class ObjectConverter {
                 .setReceivedMicros(krakenOrderBook.getMicroSeconds())
                 .setBids(quoteTreeMapFromLimitOrders(orderBook.getBids()))
                 .setAsks(quoteTreeMapFromLimitOrders(orderBook.getAsks()))
-                .setMisc(DataProvider.XCHANGE_KRAKEN.name());
+                .setMisc(DataOrigin.XCHANGE_KRAKEN.name());
     }
 
     public CbOrderBook convertToCbOrderBook(KrakenOrderBook2Data krakenOrderBookData, boolean snapshot) {
@@ -254,7 +254,7 @@ public class ObjectConverter {
                 .setBids(quoteTreeMapFromLevels(krakenOrderBookData.getBids()))
                 .setAsks(quoteTreeMapFromLevels(krakenOrderBookData.getAsks()))
                 .setChecksum(krakenOrderBookData.getChecksum())
-                .setMisc(DataProvider.DIRECT_KRAKEN.name());
+                .setMisc(DataOrigin.DIRECT_KRAKEN.name());
     }
 
     public DbKrakenOrderBook convertToDbKrakenOrderBook(XchangeKrakenOrderBook krakenOrderBook, Connection connection) {
@@ -272,8 +272,8 @@ public class ObjectConverter {
         Pair<Double, Double> highestBid = bids.get(0);
         Pair<Double, Double> lowestAsk = asks.get(0);
 
-        Array bidsArray = sqlArray(bids, DbWriteProvider.TYPE_ORDER_BOOK_QUOTE, connection);
-        Array asksArray = sqlArray(asks, DbWriteProvider.TYPE_ORDER_BOOK_QUOTE, connection);
+        Array bidsArray = sqlArray(bids, WriteDao.TYPE_ORDER_BOOK_QUOTE, connection);
+        Array asksArray = sqlArray(asks, WriteDao.TYPE_ORDER_BOOK_QUOTE, connection);
 
         DbKrakenOrderBook result = new DbKrakenOrderBook();
         result.setProcess(krakenOrderBook.getProcess());

@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Slf4j
 @Getter
-public class DbWriteProvider extends AbstractDbProvider {
+public class WriteDao extends AbstractDao {
 
     public static String TYPE_ORDER_BOOK_QUOTE = "orderbook_quote";
 

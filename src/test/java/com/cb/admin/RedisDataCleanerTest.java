@@ -1,6 +1,6 @@
 package com.cb.admin;
 
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,14 +16,14 @@ import static org.mockito.Mockito.*;
 public class RedisDataCleanerTest {
 
     @Mock
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @InjectMocks
     private RedisDataCleaner redisDataCleaner;
 
     @BeforeEach
     public void beforeEachTest() {
-        Mockito.reset(dbReadOnlyProvider);
+        Mockito.reset(readOnlyDao);
     }
 
     @Test

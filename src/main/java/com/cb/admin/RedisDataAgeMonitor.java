@@ -2,7 +2,7 @@ package com.cb.admin;
 
 import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.cb.injection.module.MainModule;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.RedisDataAgeMonitorConfig;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class RedisDataAgeMonitor {
 
     @Inject
-    private DbReadOnlyProvider dbProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
     private JsonSerializer jsonSerializer;
@@ -32,7 +32,7 @@ public class RedisDataAgeMonitor {
     private Alerter alerter;
 
     public void monitor() {
-        List<RedisDataAgeMonitorConfig> configs = dbProvider.redisDataAgeMonitorConfig();
+        List<RedisDataAgeMonitorConfig> configs = readOnlyDao.redisDataAgeMonitorConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         configs.parallelStream().forEach(config -> {
             String redisKey = config.getRedisKey();
@@ -68,7 +68,7 @@ public class RedisDataAgeMonitor {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbProvider.cleanup();
+        readOnlyDao.cleanup();
     }
 
 }

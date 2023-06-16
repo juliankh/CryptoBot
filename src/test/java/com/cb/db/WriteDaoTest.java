@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @ExtendWith(MockitoExtension.class)
-public class DbWriteProviderTest {
+public class WriteDaoTest {
 
     @InjectMocks
-    private DbWriteProvider dbWriteProvider;
+    private WriteDao writeDao;
 
     @Test
     public void numDupes() {
-        assertEquals(3, dbWriteProvider.numDupes(Lists.newArrayList(
+        assertEquals(3, writeDao.numDupes(Lists.newArrayList(
                     Lists.newArrayList(2, 2),     // 1 dupe
                     Lists.newArrayList(1, 1, 1),  // 2 dupes
                     Lists.newArrayList(3)         // 0 dupes
@@ -35,10 +35,10 @@ public class DbWriteProviderTest {
 
     @Test
     public void dupeDescription() {
-        assertEquals("# dupe ItemType1 received from upstream [0]; # of ItemType1 rows skipped insertion [0] [NONE]", dbWriteProvider.dupeDescription("ItemType1", 0, 0));
-        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [3]", dbWriteProvider.dupeDescription("ItemType1", 3, 3));
-        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [2] [DIFFERENT by (-1)] (probably due to multiple persisters running concurrently)", dbWriteProvider.dupeDescription("ItemType1", 3, 2));
-        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [5] [DIFFERENT by (2)] (probably due to multiple persisters running concurrently)", dbWriteProvider.dupeDescription("ItemType1", 3, 5));
+        assertEquals("# dupe ItemType1 received from upstream [0]; # of ItemType1 rows skipped insertion [0] [NONE]", writeDao.dupeDescription("ItemType1", 0, 0));
+        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [3]", writeDao.dupeDescription("ItemType1", 3, 3));
+        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [2] [DIFFERENT by (-1)] (probably due to multiple persisters running concurrently)", writeDao.dupeDescription("ItemType1", 3, 2));
+        assertEquals("# dupe ItemType1 received from upstream [3]; # of ItemType1 rows skipped insertion [5] [DIFFERENT by (2)] (probably due to multiple persisters running concurrently)", writeDao.dupeDescription("ItemType1", 3, 5));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class DbWriteProviderTest {
         List<DbKrakenOrderBook> convertedBatch = Lists.newArrayList(orderbook1, orderbook2, orderbook3, orderbook4, orderbook5);
 
         // engage test
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbWriteProvider.dupeOrderBooks(convertedBatch);
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = writeDao.dupeOrderBooks(convertedBatch);
 
         assertEquals(2, result.size());
         assertEquals(Sets.newHashSet(Triple.of(receivedMicros, 111, 1111), Triple.of(receivedMicros, 222, 2222)), result.keySet());
@@ -71,30 +71,30 @@ public class DbWriteProviderTest {
         List<DbKrakenOrderBook> orderbooks = Lists.newArrayList(orderbook1, orderbook2, orderbook3, orderbook4, orderbook5);
 
         // engage test
-        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = dbWriteProvider.dupeOrderBooks(orderbooks);
+        Map<Triple<Long, Integer, Integer>, List<DbKrakenOrderBook>> result = writeDao.dupeOrderBooks(orderbooks);
 
         assertEquals(0, result.size());
     }
 
     @Test
     public void checkUpsertRowCounts_NoException() {
-        assertEquals(0, dbWriteProvider.checkUpsertRowCounts(new int[]{}));
-        assertEquals(0, dbWriteProvider.checkUpsertRowCounts(new int[]{1}));
-        assertEquals(1, dbWriteProvider.checkUpsertRowCounts(new int[]{0}));
-        assertEquals(2, dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 0}));
+        assertEquals(0, writeDao.checkUpsertRowCounts(new int[]{}));
+        assertEquals(0, writeDao.checkUpsertRowCounts(new int[]{1}));
+        assertEquals(1, writeDao.checkUpsertRowCounts(new int[]{0}));
+        assertEquals(2, writeDao.checkUpsertRowCounts(new int[]{1, 0, 0}));
     }
 
     @Test
     public void checkUpsertRowCounts_Exception() {
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> dbWriteProvider.checkUpsertRowCounts(new int[]{1, 0, 2}));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> writeDao.checkUpsertRowCounts(new int[]{1, 0, 2}));
         assertEquals("1 RowCounts have value different from the expected [0 or 1] after insertion into db: 2", exception.getMessage());
     }
 
     @Test
     public void questionMarks() {
-        assertEquals("?", dbWriteProvider.questionMarks(1));
-        assertEquals("?,?", dbWriteProvider.questionMarks(2));
-        assertEquals("?,?,?,?", dbWriteProvider.questionMarks(4));
+        assertEquals("?", writeDao.questionMarks(1));
+        assertEquals("?,?", writeDao.questionMarks(2));
+        assertEquals("?,?,?,?", writeDao.questionMarks(4));
     }
 
 }

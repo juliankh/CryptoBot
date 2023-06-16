@@ -2,7 +2,7 @@ package com.cb.admin;
 
 import com.cb.common.util.NumberUtils;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.cb.injection.module.MainModule;
 import com.cb.model.config.RedisDataCleanerConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 public class RedisDataCleaner {
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     public void prune() {
-        List<RedisDataCleanerConfig> configs = dbReadOnlyProvider.redisDataCleanerConfig();
+        List<RedisDataCleanerConfig> configs = readOnlyDao.redisDataCleanerConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         configs.parallelStream().forEach(config -> {
             String redisKey = config.getRedisKey();
@@ -49,7 +49,7 @@ public class RedisDataCleaner {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
+        readOnlyDao.cleanup();
     }
 
 }

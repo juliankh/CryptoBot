@@ -6,7 +6,7 @@ import com.cb.db.kraken.KrakenTableNameResolver;
 import javax.inject.Inject;
 import java.util.Collections;
 
-public abstract class AbstractDbProvider {
+public abstract class AbstractDao {
 
     @Inject
     protected ObjectConverter objectConverter;

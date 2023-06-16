@@ -1,8 +1,8 @@
 package com.cb.admin;
 
 import com.cb.alert.Alerter;
-import com.cb.db.DbReadOnlyProvider;
-import com.cb.db.DbWriteProvider;
+import com.cb.db.ReadOnlyDao;
+import com.cb.db.WriteDao;
 import com.cb.model.config.QueueMonitorConfig;
 import com.rabbitmq.http.client.Client;
 import com.rabbitmq.http.client.domain.QueueInfo;
@@ -26,10 +26,10 @@ public class JmsQueueMonitor {
     private Client jmsClient;
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
-    private DbWriteProvider dbWriteProvider;
+    private WriteDao writeDao;
 
     @Inject
     private Alerter alerter;
@@ -39,7 +39,7 @@ public class JmsQueueMonitor {
     private String jmsVhost;
 
     public void monitor() {
-        List<QueueMonitorConfig> queueMonitorConfigs = dbReadOnlyProvider.queueMonitorConfig();
+        List<QueueMonitorConfig> queueMonitorConfigs = readOnlyDao.queueMonitorConfig();
         log.info("Configs:\n\t" + queueMonitorConfigs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         queueMonitorConfigs.parallelStream().forEach(this::monitorQueue);
     }
@@ -51,7 +51,7 @@ public class JmsQueueMonitor {
         long messages = queueInfo.getTotalMessages();
         long consumers = queueInfo.getConsumerCount();
         monitorQueue(queue, messages, maxNumMessages);
-        dbWriteProvider.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
+        writeDao.insertJmsDestinationStats(queue, Instant.now(), messages, consumers);
     }
 
     public void monitorQueue(String queue, long messages, long maxNumMessages) {
@@ -66,8 +66,8 @@ public class JmsQueueMonitor {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
-        dbWriteProvider.cleanup();
+        readOnlyDao.cleanup();
+        writeDao.cleanup();
     }
 
 }

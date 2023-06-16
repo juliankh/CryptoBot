@@ -1,8 +1,8 @@
 package com.cb.admin;
 
 import com.cb.common.util.NumberUtils;
-import com.cb.db.DbReadOnlyProvider;
-import com.cb.db.DbWriteProvider;
+import com.cb.db.ReadOnlyDao;
+import com.cb.db.WriteDao;
 import com.cb.model.config.DataCleanerConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,13 +17,13 @@ import java.util.stream.Collectors;
 public class DataCleaner {
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
-    private DbWriteProvider dbWriteProvider;
+    private WriteDao writeDao;
 
     public void prune() {
-        List<DataCleanerConfig> configs = dbReadOnlyProvider.dataCleanerConfig();
+        List<DataCleanerConfig> configs = readOnlyDao.dataCleanerConfig();
         log.info("Configs:\n\t" + configs.parallelStream().map(Object::toString).sorted().collect(Collectors.joining("\n\t")));
         configs.parallelStream().forEach(config -> {
             String table = config.getTableName();
@@ -34,14 +34,14 @@ public class DataCleaner {
     }
 
     public void pruneTable(String table, String column, int hoursLimit) {
-        long rowcount = dbWriteProvider.prune(table, column, hoursLimit);
+        long rowcount = writeDao.prune(table, column, hoursLimit);
         log.info("For table [" + table + "] pruned [" + NumberUtils.numberFormat(rowcount) + "] rows which were > [" + hoursLimit + "] hours old");
     }
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
-        dbWriteProvider.cleanup();
+        readOnlyDao.cleanup();
+        writeDao.cleanup();
     }
 
 }

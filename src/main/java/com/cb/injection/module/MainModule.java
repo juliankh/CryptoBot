@@ -2,7 +2,7 @@ package com.cb.injection.module;
 
 import com.cb.common.BufferAggregator;
 import com.cb.common.CurrencyResolver;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.KrakenChecksumCalculator;
@@ -111,8 +111,8 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Named(KRAKEN_CHECKSUM_CALCULATOR)
-    public ChecksumCalculator krakenChecksumCalculator(DbReadOnlyProvider dbReadOnlyProvider, CurrencyResolver currencyResolver) {
-        List<KrakenAssetPair> krakenAssetPairs = dbReadOnlyProvider.krakenAssetPairs();
+    public ChecksumCalculator krakenChecksumCalculator(ReadOnlyDao readOnlyDao, CurrencyResolver currencyResolver) {
+        List<KrakenAssetPair> krakenAssetPairs = readOnlyDao.krakenAssetPairs();
         Map<CurrencyPair, Pair<Integer, Integer>> precisionMap = krakenAssetPairs
                 .stream()
                 .filter(assetPair -> Currency.getAvailableCurrencyCodes().contains(assetPair.getBase()))

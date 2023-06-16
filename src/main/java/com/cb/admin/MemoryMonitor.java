@@ -2,7 +2,7 @@ package com.cb.admin;
 
 import com.cb.alert.Alerter;
 import com.cb.common.util.NumberUtils;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.sun.management.OperatingSystemMXBean;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +15,7 @@ import java.lang.management.ManagementFactory;
 public class MemoryMonitor {
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
     private Alerter alerter;
@@ -76,7 +76,7 @@ public class MemoryMonitor {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
+        readOnlyDao.cleanup();
     }
 
 }

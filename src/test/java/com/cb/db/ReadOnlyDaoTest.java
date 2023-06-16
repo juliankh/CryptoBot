@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DbReadOnlyProviderTest {
+public class ReadOnlyDaoTest {
 
     @Mock
     private Connection readConnection;
@@ -36,7 +36,7 @@ public class DbReadOnlyProviderTest {
     private QueryRunner queryRunner;
 
     @InjectMocks
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @BeforeEach
     public void beforeEachTest() {
@@ -59,8 +59,8 @@ public class DbReadOnlyProviderTest {
         when(queryRunner.query(any(Connection.class), anyString(), any(BeanListHandler.class))).thenReturn(configs);
 
         // engage test
-        List<ProcessConfig> resultActive = dbReadOnlyProvider.processConfigs(true);
-        List<ProcessConfig> resultInactive = dbReadOnlyProvider.processConfigs(false);
+        List<ProcessConfig> resultActive = readOnlyDao.processConfigs(true);
+        List<ProcessConfig> resultInactive = readOnlyDao.processConfigs(false);
 
         // verify
         ProcessConfig config1 = new ProcessConfig().setId(1).setProcessToken("ActiveProcessToken1").setProcessSubToken(null).setActive(true);
@@ -90,7 +90,7 @@ public class DbReadOnlyProviderTest {
         when(queryRunner.query(any(Connection.class), anyString(), any(BeanListHandler.class))).thenReturn(configs);
 
         // engage test
-        TreeMap<String, List<ProcessConfig>> result = dbReadOnlyProvider.activeProcessConfigMap();
+        TreeMap<String, List<ProcessConfig>> result = readOnlyDao.activeProcessConfigMap();
 
         // verify
         ProcessConfig expectedConfig1 = new ProcessConfig().setId(1).setProcessToken("ActiveProcessToken1").setProcessSubToken(null).setActive(true);

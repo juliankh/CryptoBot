@@ -1,7 +1,7 @@
 package com.cb.admin;
 
 import com.cb.alert.Alerter;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.cb.injection.module.MainModule;
 import com.cb.model.config.ProcessConfig;
 import com.google.common.collect.Sets;
@@ -22,7 +22,7 @@ public class SafetyNetMonitor {
     private static final Set<Integer> EXPECTED_EXIT_CODES = Sets.newHashSet(0, 1);
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
     private ShellCommandRunner shellCommandRunner;
@@ -76,7 +76,7 @@ public class SafetyNetMonitor {
     }
 
     public TreeMap<String, TreeSet<String>> activeProcessAndSubProcessMap() {
-        TreeMap<String, List<ProcessConfig>> activeProcessConfigMap = dbReadOnlyProvider.activeProcessConfigMap();
+        TreeMap<String, List<ProcessConfig>> activeProcessConfigMap = readOnlyDao.activeProcessConfigMap();
         TreeMap<String, TreeSet<String>> result = activeProcessConfigMap.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().parallelStream().map(ProcessConfig::getProcessSubToken).filter(Objects::nonNull).collect(Collectors.toCollection(TreeSet::new)), (a,b)->b, TreeMap::new));
         return result;
     }
@@ -138,7 +138,7 @@ public class SafetyNetMonitor {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
+        readOnlyDao.cleanup();
     }
 
 }

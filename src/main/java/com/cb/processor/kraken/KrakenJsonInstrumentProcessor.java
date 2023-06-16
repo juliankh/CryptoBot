@@ -49,9 +49,9 @@ public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
         KrakenInstrumentData data = instrumentInfo.getData();
         List<KrakenAsset> assets = data.getAssets();
         List<KrakenAssetPair> assetPairs = data.getPairs();
-        dbWriteProvider.upsertKrakenAssets(assets);
+        writeDao.upsertKrakenAssets(assets);
         log.info("Upserted [" + assets.size() + "] Kraken Assets");
-        dbWriteProvider.upsertKrakenAssetPairs(assetPairs);
+        writeDao.upsertKrakenAssetPairs(assetPairs);
         log.info("Upserted [" + assetPairs.size() + "] Kraken Asset Pairs");
     }
 

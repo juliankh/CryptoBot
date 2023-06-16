@@ -1,7 +1,7 @@
 package com.cb.admin;
 
 import com.cb.alert.Alerter;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import com.cb.model.config.ProcessConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 public class SafetyNetMonitorTest {
 
     @Mock
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Mock
     private Alerter alerter;
@@ -34,7 +34,7 @@ public class SafetyNetMonitorTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        Mockito.reset(dbReadOnlyProvider);
+        Mockito.reset(readOnlyDao);
         Mockito.reset(alerter);
     }
 
@@ -211,7 +211,7 @@ public class SafetyNetMonitorTest {
             put(token1, Lists.newArrayList(config1));
             put(token2, Lists.newArrayList(config2, config3));
         }};
-        when(dbReadOnlyProvider.activeProcessConfigMap()).thenReturn(activeProcessConfigMap);
+        when(readOnlyDao.activeProcessConfigMap()).thenReturn(activeProcessConfigMap);
 
         // engage test
         TreeMap<String, TreeSet<String>> result = safetyNetMonitor.activeProcessAndSubProcessMap();

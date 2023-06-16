@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import static com.cb.injection.BindingName.DB_READ_CONNECTION;
 
 @Slf4j
-public class DbReadOnlyProvider extends AbstractDbProvider {
+public class ReadOnlyDao extends AbstractDao {
 
     private static final BeanListHandler<DbKrakenOrderBook> BEAN_LIST_HANDLER_KRAKEN_ORDERBOOK = new BeanListHandler<>(DbKrakenOrderBook.class);
     private static final BeanListHandler<DbDataAgeMonitorConfig> BEAN_LIST_HANDLER_DATA_AGE_MONITOR_CONFIG = new BeanListHandler<>(DbDataAgeMonitorConfig.class);
@@ -54,8 +54,8 @@ public class DbReadOnlyProvider extends AbstractDbProvider {
     private QueryRunner queryRunner;
 
     public static void main(String[] args) {
-        DbReadOnlyProvider dbReadOnlyProvider = MainModule.INJECTOR.getInstance(DbReadOnlyProvider.class);
-        dbReadOnlyProvider.miscConfig().entrySet().forEach(System.out::println);
+        ReadOnlyDao readOnlyDao = MainModule.INJECTOR.getInstance(ReadOnlyDao.class);
+        readOnlyDao.miscConfig().entrySet().forEach(System.out::println);
     }
 
     public List<CbOrderBook> krakenOrderBooks(CurrencyPair currencyPair, Instant from, Instant to) {

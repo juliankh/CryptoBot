@@ -3,8 +3,8 @@ package com.cb.driver.kraken;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.JsonSerializer;
 import com.cb.common.SleepDelegate;
-import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.MiscConfigName;
+import com.cb.db.ReadOnlyDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.injection.module.MainModule;
@@ -40,7 +40,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     public static final int THROTTLE_SLEEP_SECS = 15;
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
     private CurrencyResolver currencyResolver;
@@ -84,13 +84,13 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         String currencyToken = currencyResolver.upperCaseToken(currencyPair, "-");
         String driverToken = argsConverter.getDriverToken();
         driverName = "D Kr OB Bridge (" + currencyToken + ")" + (StringUtils.isBlank(driverToken) ? "" : " " + driverToken);
-        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = dbReadOnlyProvider.krakenBridgeOrderBookConfig();
+        Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = readOnlyDao.krakenBridgeOrderBookConfig();
         KrakenBridgeOrderBookConfig config = configMap.get(currencyPair);
         log.info("Config: " + config);
         int batchSize = config.getBatchSize();
         maxSecsBetweenUpdates = config.getSecsTimeout();
-        int depth = dbReadOnlyProvider.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
-        dbReadOnlyProvider.cleanup();
+        int depth = readOnlyDao.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
+        readOnlyDao.cleanup();
         this.depth = depth;
         ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(webSocketClient.getRequestId(), currencyPair, depth, batchSize, checksumCalculator);
     }
@@ -171,7 +171,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     protected void cleanup() {
         log.info("Cleaning up");
         webSocketClient.cleanup();
-        dbReadOnlyProvider.cleanup();
+        readOnlyDao.cleanup();
     }
 
 }

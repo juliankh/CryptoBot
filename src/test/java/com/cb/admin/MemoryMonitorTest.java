@@ -1,7 +1,7 @@
 package com.cb.admin;
 
 import com.cb.alert.Alerter;
-import com.cb.db.DbReadOnlyProvider;
+import com.cb.db.ReadOnlyDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 public class MemoryMonitorTest {
 
     @Mock
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Mock
     private Alerter alerter;
@@ -29,7 +29,7 @@ public class MemoryMonitorTest {
 
     @BeforeEach
     public void beforeEachTest() {
-        Mockito.reset(dbReadOnlyProvider);
+        Mockito.reset(readOnlyDao);
         Mockito.reset(alerter);
     }
 

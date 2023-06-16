@@ -2,7 +2,7 @@ package com.cb.driver.kraken;
 
 import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
-import com.cb.db.DbWriteProvider;
+import com.cb.db.WriteDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.cb.model.kraken.ws.request.KrakenInstrumentSubscriptionRequest;
@@ -26,7 +26,7 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
     private static final String DRIVER_NAME = "Kraken Instrument Bridge";
 
     @Inject
-    private DbWriteProvider dbWriteProvider;
+    private WriteDao writeDao;
 
     @Inject
     private JsonSerializer jsonSerializer;
@@ -72,7 +72,7 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
     @Override
     protected void cleanup() {
         log.info("Cleaning up");
-        dbWriteProvider.cleanup();
+        writeDao.cleanup();
     }
 
 }

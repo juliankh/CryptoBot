@@ -1,7 +1,7 @@
 package com.cb.processor.kraken;
 
 import com.cb.alert.Alerter;
-import com.cb.db.DbWriteProvider;
+import com.cb.db.WriteDao;
 import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
@@ -21,7 +21,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
     protected Alerter alerter;
 
     @Inject
-    protected DbWriteProvider dbWriteProvider;
+    protected WriteDao writeDao;
 
     protected Instant timeOfLastHeartbeat = Instant.now();
     protected int requestId;
@@ -42,7 +42,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
                 processCustom(objectType);
             }
         } catch (Exception e) {
-            log.error("Problem processing json: [" + json + "]", e);
+            log.error("Problem processing json: [" + json + "].  Logging and sending email alert, but otherwise continuing.", e);
             alerter.sendEmailAlertQuietly("Problem processing json", json, e);
         }
     }
@@ -52,7 +52,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             KrakenStatusUpdate statusUpdate = jsonObjectConverter.getStatusUpdate();
             int numDatas = Optional.ofNullable(statusUpdate.getData()).map(List::size).orElse(0);
             log.info("Status Update with [" + numDatas + "] datas: " + statusUpdate);
-            dbWriteProvider.insertKrakenStatusUpdate(statusUpdate);
+            writeDao.insertKrakenStatusUpdate(statusUpdate);
             return true;
         } else if (objectType == KrakenHeartbeat.class) {
             timeOfLastHeartbeat = Instant.now();
@@ -78,7 +78,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
     @Override
     public void cleanup() {
         log.info("Cleaning up");
-        dbWriteProvider.cleanup();
+        writeDao.cleanup();
     }
 
 }

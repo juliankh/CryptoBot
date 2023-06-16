@@ -2,8 +2,8 @@ package com.cb.admin;
 
 import com.cb.alert.Alerter;
 import com.cb.common.util.NumberUtils;
-import com.cb.db.DbReadOnlyProvider;
 import com.cb.db.MiscConfigName;
+import com.cb.db.ReadOnlyDao;
 import com.cb.model.config.MiscConfig;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,7 +16,7 @@ import java.io.File;
 public class DiskSpaceMonitor {
 
     @Inject
-    private DbReadOnlyProvider dbReadOnlyProvider;
+    private ReadOnlyDao readOnlyDao;
 
     @Inject
     private Alerter alerter;
@@ -26,7 +26,7 @@ public class DiskSpaceMonitor {
         long totalSpace = f.getTotalSpace();
         long usableSpace = f.getFreeSpace();
         double usableRatio = usableRatio(totalSpace, usableSpace);
-        MiscConfig config = dbReadOnlyProvider.miscConfig(MiscConfigName.FREE_DISK_SPACE_THRESHOLD_PERCENT);
+        MiscConfig config = readOnlyDao.miscConfig(MiscConfigName.FREE_DISK_SPACE_THRESHOLD_PERCENT);
         double percentThreshold = config.getValue();
         alertIfAboveLimit(usableRatio, percentThreshold);
     }
@@ -50,7 +50,7 @@ public class DiskSpaceMonitor {
 
     public void cleanup() {
         log.info("Cleaning up");
-        dbReadOnlyProvider.cleanup();
+        readOnlyDao.cleanup();
     }
 
 }
