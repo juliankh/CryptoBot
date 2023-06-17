@@ -129,7 +129,7 @@ public class Alerter {
 		sendAlert(emailProperties(), subject, body, recipient, quietly);
 	}
 
-	public void sendAlert(Properties emailProperties, String subject, String body, String recipient, boolean quietly) {
+	public synchronized void sendAlert(Properties emailProperties, String subject, String body, String recipient, boolean quietly) {
 		try {
 			String hostnamePrefix = generalDelegate.hostname(5);
 			subject = hostnamePrefix + ": " + subject;

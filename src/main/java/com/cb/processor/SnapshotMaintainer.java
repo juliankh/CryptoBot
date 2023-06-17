@@ -48,6 +48,7 @@ public class SnapshotMaintainer {
             Long derivedChecksum = checksumVerifier.confirmChecksum(snapshot);
             if (derivedChecksum != null) {
                 // derivedChecksum will be non-null only if it doesn't match the one in the snapshot
+                // TODO: when checksum doesn't match, send alert and resubscribe to the websocket (also send unsubscribe msg when closing connection), but don't throw exception
                 String briefMessage = "Checksum derived [" + derivedChecksum + "] is different from the one provided in the snapshot [" + snapshot.getChecksum() + "]";
                 String previousSnapshotJson = jsonSerializer.serializeToJson(previousSnapshot);
                 String latestSnapshotJson = jsonSerializer.serializeToJson(snapshot);

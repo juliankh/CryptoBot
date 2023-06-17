@@ -4,14 +4,15 @@ TODO:
     (after 2023-06-16 2:50pm)...
     -check
         -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-16_14*
-        -direct instrument bridge
-            -status update with null connection_id was persisted ok: grep "Latest OrderBook Snapshot was generated" direct_kraken_bridge_orderbook*2023-06-16_14*
         -direct orderbook bridge
+            -was alerting needed to be turned off: grep "Attempt to send alert is being throttled" direct_kraken_bridge_orderbook*2023-06-16_14*
             -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook*2023-06-16_14*
             -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook*2023-06-16_14*
             -reconnections -- how often because websocket closed or because no data received within some time limit
-    -compare xchage vs direct orderbook bridges
+    -compare xchange vs direct orderbook bridges
         -how often have checksum mismatches
+            direct: grep "is different from the one provided in the snapshot" direct_kraken_bridge_orderbook*2023-06-12_18* | grep -i "com.cb.processor.SnapshotMaintainer"
+            xchange: grep -i "checksum does not match" xchange_kraken_bridge_orderbook*2023-06-12_18*
         -frequency of socket drops
 
     -if the snapshot age log msgs show that a time delay develops (presumably because consumption of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
