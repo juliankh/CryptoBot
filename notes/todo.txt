@@ -3,17 +3,15 @@ TODO:
 -misc
     (after 2023-06-16 2:50pm)...
     -check
+        -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-16_14*
         -direct instrument bridge
-            -status update with null connection_id was persisted ok
+            -status update with null connection_id was persisted ok: grep "Latest OrderBook Snapshot was generated" direct_kraken_bridge_orderbook*2023-06-16_14*
         -direct orderbook bridge
-            -ever get snapshots after the initial one
-            -any req_id that doesn't match
+            -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook*2023-06-16_14*
+            -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook*2023-06-16_14*
             -reconnections -- how often because websocket closed or because no data received within some time limit
     -compare xchage vs direct orderbook bridges
-        -latest snapshot age time lag
         -how often have checksum mismatches
-        -num of batches processed and avg time to process a batch
-        -num of snapshots received (ie: num of orderbooks in redis from each source within an hour)
         -frequency of socket drops
 
     -if the snapshot age log msgs show that a time delay develops (presumably because consumption of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
