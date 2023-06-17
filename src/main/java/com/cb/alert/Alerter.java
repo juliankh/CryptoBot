@@ -1,7 +1,8 @@
 package com.cb.alert;
 
-import com.cb.common.util.TimeUtils;
+import com.cb.common.GeneralDelegate;
 import com.cb.injection.module.MainModule;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -10,23 +11,19 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import javax.mail.MessagingException;
+import javax.mail.Session;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 
 import static com.cb.injection.BindingName.*;
 
 @Slf4j
+@Setter
 @Singleton
 public class Alerter {
 
-	public static boolean DEFAULT_IS_ON = true;
-
-	private static final int THROTTLE_SLEEP_MINS = 1;
+	public static final int THROTTLE_SLEEP_MINS = 1;
 
 	@Inject
 	@Named(ALERT_EMAIL)
@@ -59,6 +56,14 @@ public class Alerter {
 	@Inject
 	@Named(ALERT_SMTP_PORT)
 	private String alertSmtpPort;
+
+	@Inject
+	private AlertDelegate alertDelegate;
+
+	@Inject
+	private GeneralDelegate generalDelegate;
+
+	public boolean alertingOn = true;
 
 	/*
 	// for manual testing
@@ -121,57 +126,44 @@ public class Alerter {
 	}
 
 	public void sendAlert(String subject, String body, String recipient, boolean quietly) {
+		sendAlert(emailProperties(), subject, body, recipient, quietly);
+	}
+
+	public void sendAlert(Properties emailProperties, String subject, String body, String recipient, boolean quietly) {
 		try {
-			String hostnamePrefix = hostname(5);
+			String hostnamePrefix = generalDelegate.hostname(5);
 			subject = hostnamePrefix + ": " + subject;
-			if (!DEFAULT_IS_ON) {
+			if (!alertingOn) {
 				log.info("NOT Sending alert with subject [" + subject + "] because the Alert system is OFF");
 				return;
 			}
 			log.info("Sending alert with subject [" + subject + "]");
-			Session session = Session.getDefaultInstance(emailProperties(),
-					new Authenticator() {
-						protected PasswordAuthentication getPasswordAuthentication() {
-							return new PasswordAuthentication(alertEmail, alertPassword);
-						}
-					});
+			Session session = alertDelegate.session(emailProperties, alertEmail, alertPassword);
 			try {
-				Message message = new MimeMessage(session);
-				message.setFrom(new InternetAddress(alertEmail));
-				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
-				message.setSubject(subject);
-				message.setText(body);
-				Transport.send(message);
+				alertDelegate.send(session, alertEmail, recipient, subject, body);
 			} catch (MessagingException e) {
-				log.error("Problem sending alert", e);
-				if (StringUtils.contains(e.getMessage(), "Too many login attempts")) {
-					CompletableFuture.runAsync(() -> {
-						log.info("Attempt to send alert is being throttled, so will temporarily turn OFF alerting for [" + THROTTLE_SLEEP_MINS + "] mins");
-						DEFAULT_IS_ON = false;
-						TimeUtils.sleepQuietlyForMins(THROTTLE_SLEEP_MINS);
-						DEFAULT_IS_ON = true;
-						log.info("Alerting is back ON");
-					});
-				}
-				throw new RuntimeException("Problem sending alert with subject [" + subject + "]", e);
+				handle(e, subject);
 			}
 		} catch (Exception e) {
-			if (quietly) {
-				log.error("Problem sending alert with subject [" + subject + "].  Logging, but otherwise ignoring because the quietly flag is ON.", e);
-			} else {
-				throw e;
-			}
+			handle(e, subject, quietly);
 		}
 	}
 
-	public String hostname() {
-		return hostname(Integer.MAX_VALUE);
+	public void handle(MessagingException e, String subject) {
+		log.error("Problem sending alert", e);
+		if (StringUtils.containsIgnoreCase(e.getMessage(), "Too many login attempts")) {
+			alertDelegate.handleTooManyLoginAttempts(this, THROTTLE_SLEEP_MINS);
+		}
+		throw new RuntimeException("Problem sending alert with subject [" + subject + "]", e);
 	}
 
 	@SneakyThrows
-	public String hostname(int lengthLimit) {
-		String hostname = InetAddress.getLocalHost().getHostName();
-		return StringUtils.substring(hostname, 0, lengthLimit);
+	public void handle(Exception e, String subject, boolean quietly) {
+		if (quietly) {
+			log.error("Problem sending alert with subject [" + subject + "].  Logging, but otherwise ignoring because the quietly flag is ON.", e);
+		} else {
+			throw e;
+		}
 	}
 
 	private Properties emailProperties() {
