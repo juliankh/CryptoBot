@@ -23,7 +23,7 @@ import static com.cb.injection.BindingName.*;
 @Singleton
 public class Alerter {
 
-	public static final int THROTTLE_SLEEP_MINS = 1;
+	public static final int THROTTLE_SLEEP_MINS = 3;
 
 	@Inject
 	@Named(ALERT_EMAIL)

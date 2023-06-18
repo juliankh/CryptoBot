@@ -2,6 +2,7 @@ package com.cb.processor.kraken;
 
 import com.cb.alert.Alerter;
 import com.cb.db.WriteDao;
+import com.cb.exception.ChecksumException;
 import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
@@ -41,6 +42,8 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             if (!processCommon(objectType, jsonObjectConverter)) {
                 processCustom(objectType);
             }
+        } catch (ChecksumException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Problem processing json: [" + json + "].  Logging and sending email alert, but otherwise continuing.", e);
             alerter.sendEmailAlertQuietly("Problem processing json", json, e);

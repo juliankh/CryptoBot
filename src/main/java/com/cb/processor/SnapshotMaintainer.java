@@ -3,6 +3,7 @@ package com.cb.processor;
 import com.cb.common.JsonSerializer;
 import com.cb.common.util.GeneralUtils;
 import com.cb.common.util.NumberUtils;
+import com.cb.exception.ChecksumException;
 import com.cb.model.CbOrderBook;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.ChecksumVerifier;
@@ -48,12 +49,11 @@ public class SnapshotMaintainer {
             Long derivedChecksum = checksumVerifier.confirmChecksum(snapshot);
             if (derivedChecksum != null) {
                 // derivedChecksum will be non-null only if it doesn't match the one in the snapshot
-                // TODO: when checksum doesn't match, send alert and resubscribe to the websocket (also send unsubscribe msg when closing connection), but don't throw exception
                 String briefMessage = "Checksum derived [" + derivedChecksum + "] is different from the one provided in the snapshot [" + snapshot.getChecksum() + "]";
                 String previousSnapshotJson = jsonSerializer.serializeToJson(previousSnapshot);
                 String latestSnapshotJson = jsonSerializer.serializeToJson(snapshot);
-                log.error(briefMessage + ":\n\tPrevious Snapshot: " + previousSnapshotJson + "\n\tLatest Snapshot: " + latestSnapshotJson);
-                throw new RuntimeException(briefMessage);
+                String fullMessage = briefMessage + ":\n\tPrevious Snapshot: " + previousSnapshotJson + "\n\tLatest Snapshot: " + latestSnapshotJson;
+                throw new ChecksumException(fullMessage);
             }
         }
     }

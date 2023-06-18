@@ -2,6 +2,7 @@ package com.cb.processor;
 
 import com.cb.common.JsonSerializer;
 import com.cb.common.util.TimeUtils;
+import com.cb.exception.ChecksumException;
 import com.cb.model.CbOrderBook;
 import com.cb.model.DataOrigin;
 import com.cb.processor.checksum.ChecksumCalculator;
@@ -523,8 +524,9 @@ public class SnapshotMaintainerTest {
         when(checksumVerifier.confirmChecksum(any(CbOrderBook.class))).thenReturn(derivedChecksumDifferent);
 
         // checksum verified and doesn't match
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> snapshotMaintainer.verifyChecksumIfNecessary(orderBook, true));
-        assertEquals("Checksum derived [" + derivedChecksumDifferent + "] is different from the one provided in the snapshot [" + snapshotChecksum + "]", exception.getMessage());
+        ChecksumException exception = assertThrows(ChecksumException.class, () -> snapshotMaintainer.verifyChecksumIfNecessary(orderBook, true));
+        String expectedMessage = "Checksum derived [" + derivedChecksumDifferent + "] is different from the one provided in the snapshot [" + snapshotChecksum + "]" + ":\n\tPrevious Snapshot: null\n\tLatest Snapshot: " + jsonSerializer.serializeToJson(orderBook);
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     private <K,V> void assertMapNotSame(Map<K,V> original, Map<K,V> copy) {
