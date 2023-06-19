@@ -31,7 +31,7 @@ public class WebSocketClient implements WebSocket.Listener {
     }
 
     @Override
-    public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
+    public synchronized CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         latestReceive = Instant.now();
         bufferAggregator.process(data, last, jsonProcessor::process);
         return WebSocket.Listener.super.onText(webSocket, data, last);
