@@ -105,7 +105,7 @@ public class XchangeKrakenOrderBookBridgeDriver extends AbstractDriver {
                             processor.process(orderBook, currencyPair, getDriverName());
                         },
                         throwable -> {
-                            String msg = "Error in Process [" + getDriverName() + "] while listening to OrderBooks: " + throwable.getMessage();
+                            String msg = "Error in [" + getDriverName() + "] while listening to OrderBooks: " + throwable.getMessage();
                             log.error(msg, throwable);
                             alerter.sendEmailAlertQuietly(msg, msg, throwable);
                         }

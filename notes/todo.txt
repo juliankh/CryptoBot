@@ -1,8 +1,8 @@
 TODO:
 
 -misc
-    -send unsubscribe msg when closing connection
     -DirectKrakenInstrumentBridgeDriver: replace with a cron job that regularly calls the REST API and updates the db
+    -send unsubscribe msg when closing connection
 
     (after 2023-06-18 4:50pm)...
     -check

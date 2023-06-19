@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class KrakenAbstractJsonProcessorTest {
 
+    private static final String DRIVER_NAME = "driver name 345";
     private static final int REQUEST_ID = 102938;
     private static final int REQUEST_ID_DIFFERENT = 876543345;
 
@@ -35,7 +36,7 @@ public class KrakenAbstractJsonProcessorTest {
     public void beforeEachTest() {
         Mockito.reset(alerter);
         Mockito.reset(jsonObjectConverter);
-        processor.initialize(REQUEST_ID);
+        processor.initialize(DRIVER_NAME, REQUEST_ID);
     }
 
     @Test
@@ -81,7 +82,7 @@ public class KrakenAbstractJsonProcessorTest {
 
         // engage test and verify
         assertDoesNotThrow(() -> processor.process(json));
-        verify(alerter, times(1)).sendEmailAlertQuietly("Problem processing json", json, exception);
+        verify(alerter, times(1)).sendEmailAlertQuietly(DRIVER_NAME + ": Problem w/json", json, exception);
     }
 
 }

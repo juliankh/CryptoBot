@@ -17,8 +17,8 @@ public class KrakenJsonInstrumentProcessor extends KrakenAbstractJsonProcessor {
     @Inject
     private KrakenJsonInstrumentObjectConverter jsonObjectConverter;
 
-    public void initialize(int requestId) {
-        super.initialize(requestId);
+    public void initialize(String driverName, int requestId) {
+        super.initialize(driverName, requestId);
     }
 
     @Override

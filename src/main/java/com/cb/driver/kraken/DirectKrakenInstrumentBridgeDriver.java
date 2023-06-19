@@ -46,7 +46,7 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
     }
 
     public void initialize() {
-        ((KrakenJsonInstrumentProcessor)webSocketClient.getJsonProcessor()).initialize(webSocketClient.getRequestId());
+        ((KrakenJsonInstrumentProcessor)webSocketClient.getJsonProcessor()).initialize(getDriverName(), webSocketClient.getRequestId());
     }
 
     @Override

@@ -24,10 +24,12 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
     @Inject
     protected WriteDao writeDao;
 
+    protected String driverName;
     protected Instant timeOfLastHeartbeat = Instant.now();
     protected int requestId;
 
-    public void initialize(int requestId) {
+    public void initialize(String driverName, int requestId) {
+        this.driverName = driverName;
         this.requestId = requestId;
     }
 
@@ -46,7 +48,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             throw e;
         } catch (Exception e) {
             log.error("Problem processing json: [" + json + "].  Logging and sending email alert, but otherwise continuing.", e);
-            alerter.sendEmailAlertQuietly("Problem processing json", json, e);
+            alerter.sendEmailAlertQuietly(driverName + ": Problem w/json", json, e);
         }
     }
 

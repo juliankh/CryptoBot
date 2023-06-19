@@ -92,7 +92,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         int depth = readOnlyDao.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
         readOnlyDao.cleanup();
         this.depth = depth;
-        ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(webSocketClient.getRequestId(), currencyPair, depth, batchSize, checksumCalculator);
+        ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(getDriverName(), webSocketClient.getRequestId(), currencyPair, depth, batchSize, checksumCalculator);
     }
 
     @Override

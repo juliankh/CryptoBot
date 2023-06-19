@@ -49,8 +49,8 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
 
     private CurrencyPair currencyPair;
 
-    public void initialize(int requestId, CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
-        super.initialize(requestId);
+    public void initialize(String driverName, int requestId, CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
+        super.initialize(driverName, requestId);
         this.currencyPair = currencyPair;
         snapshotMaintainer.initialize(depth, checksumCalculator);
         batchProcessor.initialize(batchSize);
