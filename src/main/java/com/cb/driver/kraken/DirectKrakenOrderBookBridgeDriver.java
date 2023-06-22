@@ -149,6 +149,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @SneakyThrows
     private WebSocket connect() {
+        webSocketClient.reset();
         KrakenOrderBookSubscriptionRequest subscription = new KrakenOrderBookSubscriptionRequest()
                 .setReq_id(webSocketClient.getRequestId())
                 .setParams(new KrakenOrderBookSubscriptionRequestParams()

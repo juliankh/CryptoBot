@@ -57,7 +57,11 @@ public final class TimeUtils {
     }
 
     public static String durationMessage(Instant start, Instant end) {
-        return durationMessage(end.toEpochMilli() - start.toEpochMilli());
+        long durationMillis = end.toEpochMilli() - start.toEpochMilli();
+        if (durationMillis < 0) {
+            throw new RuntimeException("Duration should be non-negative, but is [" + durationMillis + "] when comparing Start Date [" + start + "] and End Date [" + end + "]");
+        }
+        return durationMessage(durationMillis);
     }
 
     public static String durationMessage(long millisDuration) {

@@ -117,7 +117,7 @@ public class SafetyNetMonitor {
             StringBuilder detailsSb = new StringBuilder();
             if (CollectionUtils.isNotEmpty(processesNotRunning)) {
                 subjectSb.append("Some Processes are DOWN");
-                detailsSb.append("Processes that are DOWN:\n\t").append(processesNotRunning.parallelStream().sorted().collect(Collectors.joining("\n\t")));
+                detailsSb.append("Processes that are DOWN:\n\n").append(processesNotRunning.parallelStream().sorted().collect(Collectors.joining("\n")));
             }
             if (MapUtils.isNotEmpty(processesWithProblemChecking)) {
                 if (!subjectSb.isEmpty()) {
@@ -127,7 +127,7 @@ public class SafetyNetMonitor {
                 if (!detailsSb.isEmpty()) {
                     detailsSb.append("\n\n");
                 }
-                detailsSb.append("Processes that had problem checking if they're up:\n\t").append(processesWithProblemChecking.entrySet().parallelStream().map(Objects::toString).sorted().collect(Collectors.joining("\n\t")));
+                detailsSb.append("Processes that had problem checking if they're up:\n\n").append(processesWithProblemChecking.entrySet().parallelStream().map(Objects::toString).sorted().collect(Collectors.joining("\n")));
             }
             String subject = subjectSb.toString();
             String details = detailsSb.toString();

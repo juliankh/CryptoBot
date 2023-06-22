@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.util.List;
 
+// TODO: add process column (ie "Direct Kraken OB (BTC-USDT) 05") to here and in db
 @Getter
 @Setter
 @Accessors(chain = true)

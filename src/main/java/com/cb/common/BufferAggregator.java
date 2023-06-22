@@ -10,8 +10,12 @@ public class BufferAggregator {
         sb.append(data);
         if (last) {
             consumer.accept(sb.toString());
-            sb = new StringBuilder();
+            reset();
         }
+    }
+
+    public void reset() {
+        sb = new StringBuilder();
     }
 
 }

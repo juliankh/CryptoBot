@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 
 import static com.cb.common.util.NumberUtils.DOUBLE_COMPARE_DELTA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class TimeUtilsTest {
@@ -34,10 +35,19 @@ public class TimeUtilsTest {
     }
 
     @Test
-    public void durationMessage_StartEnd() {
+    public void durationMessage_StartEnd_NoException() {
         Instant start = Instant.now();
         Instant end = start.plus(15 * TimeUtils.MINUTE + 6 * TimeUtils.SECOND + 543, ChronoUnit.MILLIS);
         assertEquals("0 days 0:15:06.543", TimeUtils.durationMessage(start, end));
+    }
+
+    @Test
+    public void durationMessage_StartEnd_Exception() {
+        Instant start = Instant.now();
+        long durationMillis = 15 * TimeUtils.MINUTE + 6 * TimeUtils.SECOND + 543;
+        Instant end = start.minus(durationMillis, ChronoUnit.MILLIS);
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> TimeUtils.durationMessage(start, end));
+        assertEquals("Duration should be non-negative, but is [" + -durationMillis + "] when comparing Start Date [" + start + "] and End Date [" + end + "]", exception.getMessage());
     }
 
     @Test

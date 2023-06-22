@@ -51,6 +51,10 @@ public class WebSocketClient implements WebSocket.Listener {
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 
+    public void reset() {
+        bufferAggregator.reset();
+    }
+
     public void cleanup() {
         jsonProcessor.cleanup();
     }

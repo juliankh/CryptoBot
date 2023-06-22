@@ -58,7 +58,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(processesDown, Maps.newTreeMap());
 
         // verify
-        verify(alerter, times(1)).sendEmailAlert("Some Processes are DOWN", "Processes that are DOWN:\n\tprocessDown1\n\tprocessDown2");
+        verify(alerter, times(1)).sendEmailAlert("Some Processes are DOWN", "Processes that are DOWN:\n\nprocessDown1\nprocessDown2");
     }
 
     @Test
@@ -76,7 +76,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(Lists.newArrayList(), errorMap);
 
         // verify
-        verify(alerter, times(1)).sendEmailAlert("Errors While Checking Processes Running", "Processes that had problem checking if they're up:\n\tprocessWithError1=Some Error 1\n\tprocessWithError2=Some Error 2");
+        verify(alerter, times(1)).sendEmailAlert("Errors While Checking Processes Running", "Processes that had problem checking if they're up:\n\nprocessWithError1=Some Error 1\nprocessWithError2=Some Error 2");
     }
 
     @Test
@@ -98,7 +98,7 @@ public class SafetyNetMonitorTest {
         safetyNetMonitor.alertIfNecessary(processesDown, errorMap);
 
         // verify
-        verify(alerter, times(1)).sendEmailAlert("Some Processes are DOWN & Errors While Checking Processes Running", "Processes that are DOWN:\n\tprocessDown1\n\tprocessDown2\n\nProcesses that had problem checking if they're up:\n\tprocessWithError1=Some Error 1\n\tprocessWithError2=Some Error 2");
+        verify(alerter, times(1)).sendEmailAlert("Some Processes are DOWN & Errors While Checking Processes Running", "Processes that are DOWN:\n\nprocessDown1\nprocessDown2\n\nProcesses that had problem checking if they're up:\n\nprocessWithError1=Some Error 1\nprocessWithError2=Some Error 2");
     }
 
     @Test

@@ -4,7 +4,7 @@ TODO:
     -DirectKrakenInstrumentBridgeDriver: replace with a cron job that regularly calls the REST API and updates the db
     -send unsubscribe msg when closing connection
 
-    (after 2023-06-19 2:35pm)...
+    (after 2023-06-19 3:25pm)...
     -check
         -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-16_14*
         -direct orderbook bridge
