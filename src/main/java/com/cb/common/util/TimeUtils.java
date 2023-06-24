@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 @Slf4j
@@ -119,6 +120,19 @@ public final class TimeUtils {
         double queryRate = TimeUtils.ratePerSecond(start, end, result.size());
         log.info(action + " [" + NumberUtils.numberFormat(result.size()) + "] of [" + itemType + "] took [" + TimeUtils.durationMessage(start, end) + "] at rate of [" + NumberUtils.numberFormat(queryRate) + "/sec]");
         return result;
+    }
+
+    public static void loopForeverAsync(Runnable runnable, int sleepSecs) {
+        CompletableFuture.runAsync(() -> {
+            loopForever(runnable, sleepSecs);
+        });
+    }
+
+    public static void loopForever(Runnable runnable, int sleepSecs) {
+        while (true) {
+            runnable.run();
+            TimeUtils.sleepQuietlyForSecs(sleepSecs);
+        }
     }
 
 }

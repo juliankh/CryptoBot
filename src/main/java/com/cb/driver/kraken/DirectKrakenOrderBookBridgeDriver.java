@@ -36,7 +36,7 @@ import static com.cb.injection.BindingName.*;
 @Setter
 public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
-    public static final int SLEEP_SECS_CONNECTIVITY_CHECK = 2;
+    public static final int SLEEP_SECS_CONNECTIVITY_CHECK = 8;
     public static final int THROTTLE_SLEEP_SECS = 15;
 
     @Inject
@@ -149,7 +149,6 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @SneakyThrows
     private WebSocket connect() {
-        webSocketClient.reset();
         KrakenOrderBookSubscriptionRequest subscription = new KrakenOrderBookSubscriptionRequest()
                 .setReq_id(webSocketClient.getRequestId())
                 .setParams(new KrakenOrderBookSubscriptionRequestParams()

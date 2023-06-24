@@ -27,6 +27,7 @@ public class WebSocketClient implements WebSocket.Listener {
     @Override
     public void onOpen(WebSocket webSocket) {
         log.info("Opening WebSocket");
+        reset();
         WebSocket.Listener.super.onOpen(webSocket);
     }
 
