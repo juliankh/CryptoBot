@@ -3,6 +3,8 @@ package com.cb.driver.kraken;
 import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
 import com.cb.common.SleepDelegate;
+import com.cb.injection.provider.WebSocketClientProvider;
+import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
 import com.cb.ws.WebSocketFactory;
 import com.cb.ws.WebSocketStatusCode;
@@ -37,13 +39,16 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     private WebSocketFactory webSocketFactory;
 
     @Mock
-    private WebSocketClient webSocketClient;
+    private WebSocketClientProvider webSocketClientProvider;
 
     @Mock
     private SleepDelegate sleepDelegate;
 
     @Mock
     private CurrencyPair currencyPair;
+
+    @Mock
+    private KrakenJsonOrderBookProcessor krakenJsonOrderBookProcessor;
 
     @InjectMocks
     private DirectKrakenOrderBookBridgeDriver driver;
@@ -53,7 +58,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         Mockito.reset(alerter);
         Mockito.reset(jsonSerializer);
         Mockito.reset(webSocketFactory);
-        Mockito.reset(webSocketClient);
+        Mockito.reset(webSocketClientProvider);
         Mockito.reset(sleepDelegate);
         Mockito.reset(currencyPair);
     }
@@ -92,6 +97,11 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         String driverName = "Test Driver";
         driver.setDriverName(driverName);
 
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+
+        when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
+
         Instant timeToCompareTo = Instant.now();
         Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1);
         when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
@@ -106,6 +116,8 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         when(currencyPair.toString()).thenReturn(currencyPairString);
 
         when(webSocketFactory.webSocket(webSocketUrl, webSocketClient)).thenReturn(webSocket);
+
+        driver.setWebSocketClient(webSocketClient);
 
         // engage test
         driver.executeIteration(timeToCompareTo);
@@ -132,6 +144,11 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         String driverName = "Test Driver";
         driver.setDriverName(driverName);
 
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+
+        when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
+
         Instant timeToCompareTo = Instant.now();
         Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1);
         when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
@@ -146,6 +163,8 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         when(currencyPair.toString()).thenReturn(currencyPairString);
 
         when(webSocketFactory.webSocket(webSocketUrl, webSocketClient)).thenReturn(webSocket);
+
+        driver.setWebSocketClient(webSocketClient);
 
         // engage test
         driver.executeIteration(timeToCompareTo);
@@ -172,6 +191,11 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         String driverName = "Test Driver";
         driver.setDriverName(driverName);
 
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+
+        when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
+
         Instant timeToCompareTo = Instant.now();
         Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates + 1);
         when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
@@ -187,6 +211,8 @@ public class DirectKrakenOrderBookBridgeDriverTest {
 
         when(webSocketFactory.webSocket(webSocketUrl, webSocketClient)).thenReturn(webSocket);
 
+        driver.setWebSocketClient(webSocketClient);
+
         // engage test
         driver.executeIteration(timeToCompareTo);
 
@@ -201,6 +227,8 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     @Test
     public void executeIteration_WebSocketOpen_LatestReceiveAgeWithinLimit() {
         // setup
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+
         int maxSecsBetweenUpdates = 25;
         driver.setMaxSecsBetweenUpdates(maxSecsBetweenUpdates);
         WebSocket webSocket = mockWebSocket(false, false);
@@ -208,6 +236,8 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         Instant timeToCompareTo = Instant.now();
         Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1);
         when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
+
+        driver.setWebSocketClient(webSocketClient);
 
         // engage test
         driver.executeIteration(timeToCompareTo);

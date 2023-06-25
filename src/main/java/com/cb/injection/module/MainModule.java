@@ -2,12 +2,12 @@ package com.cb.injection.module;
 
 import com.cb.common.BufferAggregator;
 import com.cb.common.CurrencyResolver;
+import com.cb.common.util.GeneralUtils;
 import com.cb.db.ReadOnlyDao;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.KrakenChecksumCalculator;
 import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
-import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
 import com.cb.property.CryptoProperties;
 import com.cb.ws.WebSocketClient;
 import com.google.inject.AbstractModule;
@@ -30,7 +30,6 @@ import javax.inject.Named;
 import java.sql.DriverManager;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.cb.injection.BindingName.*;
@@ -125,20 +124,9 @@ public class MainModule extends AbstractModule {
     }
 
     @Provides
-    @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
-    public WebSocketClient krakenOrderBookWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonOrderBookProcessor orderBookProcessor) {
-        return new WebSocketClient(bufferAggregator, orderBookProcessor, newRandomRequestId());
-    }
-
-    @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
     public WebSocketClient krakenInstrumentWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonInstrumentProcessor instrumentProcessor) {
-        return new WebSocketClient(bufferAggregator, instrumentProcessor, newRandomRequestId());
-    }
-
-    private static int newRandomRequestId() {
-        Random random = new Random();
-        return Math.abs(random.nextInt());
+        return new WebSocketClient(bufferAggregator, instrumentProcessor, GeneralUtils.newRandomInt());
     }
 
 }

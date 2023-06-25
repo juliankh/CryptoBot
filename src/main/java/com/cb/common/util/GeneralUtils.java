@@ -3,8 +3,15 @@ package com.cb.common.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.NavigableMap;
+import java.util.Random;
 
 public class GeneralUtils {
+
+    private static final Random RANDOM = new Random();
+
+    public static int newRandomInt() {
+        return Math.abs(RANDOM.nextInt());
+    }
 
     public static <K,V> void pruneNavigableMap(NavigableMap<K,V> map, int limit) {
         while (map.size() > limit) {

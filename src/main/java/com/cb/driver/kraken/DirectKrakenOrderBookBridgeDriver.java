@@ -8,6 +8,7 @@ import com.cb.db.ReadOnlyDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.injection.module.MainModule;
+import com.cb.injection.provider.WebSocketClientProvider;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequest;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequestParams;
@@ -30,7 +31,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
-import static com.cb.injection.BindingName.*;
+import static com.cb.injection.BindingName.KRAKEN_CHECKSUM_CALCULATOR;
+import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_URL;
 
 @Slf4j
 @Setter
@@ -59,16 +61,23 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Named(KRAKEN_WEBSOCKET_V2_URL)
     private String webSocketUrl;
 
+    /* TODO: remove
     @Inject
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
     private WebSocketClient webSocketClient;
+     */
+
+    @Inject
+    private WebSocketClientProvider webSocketClientProvider;
 
     @Inject
     private SleepDelegate sleepDelegate;
 
     private WebSocket webSocket;
+    private WebSocketClient webSocketClient;
     private CurrencyPair currencyPair;
     private int depth;
+    private int batchSize;
     private String driverName;
     private int maxSecsBetweenUpdates;
 
@@ -79,6 +88,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     }
 
     public void initialize(String[] args) {
+        log.info("Initializing Driver");
         KrakenOrderBookBridgeArgsConverter argsConverter = new KrakenOrderBookBridgeArgsConverter(args);
         currencyPair = argsConverter.getCurrencyPair();
         String currencyToken = currencyResolver.upperCaseToken(currencyPair, "-");
@@ -87,11 +97,17 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         Map<CurrencyPair, KrakenBridgeOrderBookConfig> configMap = readOnlyDao.krakenBridgeOrderBookConfig();
         KrakenBridgeOrderBookConfig config = configMap.get(currencyPair);
         log.info("Config: " + config);
-        int batchSize = config.getBatchSize();
+        batchSize = config.getBatchSize();
         maxSecsBetweenUpdates = config.getSecsTimeout();
         int depth = readOnlyDao.miscConfig(MiscConfigName.KRAKEN_ORDER_BOOK_DEPTH).intValue();
         readOnlyDao.cleanup();
         this.depth = depth;
+        initializeWebSocketClient();
+    }
+
+    public void initializeWebSocketClient() {
+        log.info("Initializing WebSocketClient");
+        webSocketClient = webSocketClientProvider.get();
         ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(getDriverName(), webSocketClient.getRequestId(), currencyPair, depth, batchSize, checksumCalculator);
     }
 
@@ -119,8 +135,11 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
             log.warn(msg);
             alerter.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
             if (latestReceiveAgeOverLimit) {
+                log.info("Will try to close WebSocket");
                 webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
+                log.info("Request to close WebSocket sent");
             }
+            initializeWebSocketClient();
             webSocket = connect();
         }
     }
