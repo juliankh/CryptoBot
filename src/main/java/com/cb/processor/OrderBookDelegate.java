@@ -27,6 +27,7 @@ public class OrderBookDelegate {
         }
     }
 
+    // TODO: include age limit and throw exception if over the limit (force websocket restart), if the channel status is not either online or post_only
     public void checkOrderBookAge(Instant exchangeDateTime, Instant timeToCompareTo) {
         if (exchangeDateTime == null) {
             log.info("Latest OrderBook Snapshot and/or ExchangeDateTime hasn't been set yet");

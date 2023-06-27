@@ -61,12 +61,6 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     @Named(KRAKEN_WEBSOCKET_V2_URL)
     private String webSocketUrl;
 
-    /* TODO: remove
-    @Inject
-    @Named(KRAKEN_WEBSOCKET_V2_CLIENT_ORDER_BOOK)
-    private WebSocketClient webSocketClient;
-     */
-
     @Inject
     private WebSocketClientProvider webSocketClientProvider;
 

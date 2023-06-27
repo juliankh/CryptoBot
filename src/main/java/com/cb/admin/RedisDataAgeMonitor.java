@@ -50,9 +50,8 @@ public class RedisDataAgeMonitor {
             Tuple oldest = jedis.zpopmax(redisKey);
             String jsonOldest = oldest.getElement();
             CbOrderBook oldestOrderBook = jsonSerializer.deserializeFromJson(jsonOldest, CbOrderBook.class);
-
-
             Instant exchangeDatetime = oldestOrderBook.getExchangeDatetime();
+            checkExchangeDatetime(exchangeDatetime, oldestOrderBook, jsonOldest);
             long minsAge = ChronoUnit.MINUTES.between(exchangeDatetime, timeToCompare);
             if (minsAge > ageLimit) {
                 String msg = "For RedisKey [" + redisKey + "] the last item is [" + minsAge + "] mins old, which is > limit of [" + ageLimit + "] mins";
@@ -63,6 +62,15 @@ public class RedisDataAgeMonitor {
             }
         } else {
             log.warn("Redis Key [" + redisKey + "] doesn't exist");
+        }
+    }
+
+    // TODO: unit test
+    public void checkExchangeDatetime(Instant exchangeDatetime, CbOrderBook snapshot, String snapshotJson) {
+        if (exchangeDatetime == null) {
+            String errMsg = "Encountered a snapshot in Redis that has null exchangeDatetime";
+            log.error(errMsg + "\n\nSnapshot: " + snapshot + "\n\nJson: " + snapshotJson);
+            throw new RuntimeException(errMsg + ". Check logs.");
         }
     }
 

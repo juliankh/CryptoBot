@@ -123,6 +123,7 @@ public class MainModule extends AbstractModule {
         return checksumCalculator;
     }
 
+    // TODO: remove
     @Provides
     @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
     public WebSocketClient krakenInstrumentWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonInstrumentProcessor instrumentProcessor) {

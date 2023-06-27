@@ -61,7 +61,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             return true;
         } else if (objectType == KrakenHeartbeat.class) {
             timeOfLastHeartbeat = Instant.now();
-            //log.debug("Hearbeat: " + jsonObjectConverter.getHeartbeat());
+            //log.debug("Heartbeat: " + jsonObjectConverter.getHeartbeat());
             return true;
         } else if (objectType == KrakenError.class) {
             processError(jsonObjectConverter.getError());

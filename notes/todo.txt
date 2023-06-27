@@ -3,18 +3,20 @@ TODO:
 -misc
     -DirectKrakenInstrumentBridgeDriver: replace with a cron job that regularly calls the REST API and updates the db
     -send unsubscribe msg when closing connection
-
-    (after 2023-06-19 3:25pm)...
     -check
-        -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-16_14*
+        -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-25_00-01*
         -direct orderbook bridge
-            -was alerting needed to be turned off: grep "Attempt to send alert is being throttled" direct_kraken_bridge_orderbook*2023-06-16_14*
-            -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook*2023-06-16_14*
-            -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook*2023-06-16_14*
-            -reconnections -- how often because websocket closed or because no data received within some time limit
+            -was alerting needed to be turned off: grep "Attempt to send alert is being throttled" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -reconnections: grep "Will try to reconnect to WebSocket because" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -throttles: grep "which means that requests are being throttled" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -snapshot age: grep "Latest OrderBook Snapshot was generated" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -any alerts: grep "Sending alert with subject" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -time taken to insert into Redis: grep "Inserting into Redis" direct_kraken_bridge_orderbook*2023-06-25_00-01*
     -compare xchange vs direct orderbook bridges
         -how often have checksum mismatches
-            direct: grep "is different from the one provided in the snapshot" direct_kraken_bridge_orderbook*2023-06-12_18*
+            direct: grep "is different from the one provided in the snapshot" direct_kraken_bridge_orderbook*2023-06-25_00-01*
             xchange: grep -i "checksum does not match" xchange_kraken_bridge_orderbook*2023-06-12_18*
         -frequency of socket drops
 
