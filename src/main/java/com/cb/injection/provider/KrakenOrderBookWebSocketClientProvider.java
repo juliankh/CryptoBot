@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 @Slf4j
-public class WebSocketClientProvider implements Provider<WebSocketClient> {
+public class KrakenOrderBookWebSocketClientProvider implements Provider<WebSocketClient> {
 
     @Inject
     private KrakenJsonOrderBookProcessor krakenJsonOrderBookProcessor;

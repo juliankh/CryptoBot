@@ -8,7 +8,7 @@ import com.cb.db.ReadOnlyDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.injection.module.MainModule;
-import com.cb.injection.provider.WebSocketClientProvider;
+import com.cb.injection.provider.KrakenOrderBookWebSocketClientProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequest;
@@ -66,7 +66,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
     private String webSocketUrl;
 
     @Inject
-    private WebSocketClientProvider webSocketClientProvider;
+    private KrakenOrderBookWebSocketClientProvider krakenOrderBookWebSocketClientProvider;
 
     @Inject
     private SleepDelegate sleepDelegate;
@@ -108,7 +108,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     public void initializeWebSocketClient() {
         log.info("Initializing WebSocketClient");
-        webSocketClient = webSocketClientProvider.get();
+        webSocketClient = krakenOrderBookWebSocketClientProvider.get();
         ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).initialize(getDriverName(), webSocketClient.getRequestId(), currencyPair, depth, batchSize, checksumCalculator);
     }
 

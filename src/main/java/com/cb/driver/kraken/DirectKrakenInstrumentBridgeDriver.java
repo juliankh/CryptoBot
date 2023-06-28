@@ -5,6 +5,7 @@ import com.cb.common.util.TimeUtils;
 import com.cb.db.WriteDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
+import com.cb.injection.provider.KrakenInstrumentWebSocketClientProvider;
 import com.cb.model.kraken.ws.request.KrakenInstrumentSubscriptionRequest;
 import com.cb.processor.kraken.json.KrakenJsonInstrumentProcessor;
 import com.cb.ws.WebSocketClient;
@@ -17,7 +18,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 
-import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT;
 import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_URL;
 
 @Slf4j
@@ -36,7 +36,8 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
     private String webSocketUrl;
 
     @Inject
-    @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
+    private KrakenInstrumentWebSocketClientProvider krakenInstrumentWebSocketClientProvider;
+
     private WebSocketClient webSocketClient;
 
     public static void main(String[] args) {
@@ -46,13 +47,15 @@ public class DirectKrakenInstrumentBridgeDriver extends AbstractDriver {
     }
 
     public void initialize() {
+        log.info("Initializing WebSocketClient");
+        webSocketClient = krakenInstrumentWebSocketClientProvider.get();
         ((KrakenJsonInstrumentProcessor)webSocketClient.getJsonProcessor()).initialize(getDriverName(), webSocketClient.getRequestId());
     }
 
     @Override
     protected void executeCustom() {
         connect();
-        TimeUtils.sleepQuietlyForever();
+        TimeUtils.sleepQuietlyForSecs(20);
     }
 
     @SneakyThrows

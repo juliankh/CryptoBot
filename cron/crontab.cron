@@ -1,3 +1,5 @@
+*/21 * * * *  sleep 5;  source ~/.crypto_bot_profile;$CRYPTO_BOT_BIN_SCRIPT_DIR/direct_kraken_bridge_instrument.sh  # every 21 minutes
+
 ###################################################################################
 # monitoring
 ###################################################################################

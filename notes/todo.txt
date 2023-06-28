@@ -4,20 +4,23 @@ TODO:
     -DirectKrakenInstrumentBridgeDriver: replace with a cron job that regularly calls the REST API and updates the db
     -send unsubscribe msg when closing connection
     -check
-        -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-25_00-01*
+        -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-27_23*
         -direct orderbook bridge
-            -was alerting needed to be turned off: grep "Attempt to send alert is being throttled" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -reconnections: grep "Will try to reconnect to WebSocket because" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -throttles: grep "which means that requests are being throttled" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -snapshot age: grep "Latest OrderBook Snapshot was generated" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -any alerts: grep "Sending alert with subject" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            -time taken to insert into Redis: grep "Inserting into Redis" direct_kraken_bridge_orderbook*2023-06-25_00-01*
+            -was alerting needed to be turned off: grep "Attempt to send alert is being throttled" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -reconnections: grep "Will try to reconnect to WebSocket because" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -throttles: grep "which means that requests are being throttled" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -snapshot age: grep "latest OrderBook Snapshot is older then" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -any alerts: grep "Sending alert with subject" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -time taken to insert into Redis: grep "Inserting into Redis" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            -channel status non-online
+                -grep "data stream expected" direct_kraken_bridge_orderbook_*2023-06-27_23* | grep -v '\[online\]' | grep -v "not set yet"
+                -SELECT * FROM cb.kraken_status_update where system != 'online' order by created desc;
     -compare xchange vs direct orderbook bridges
         -how often have checksum mismatches
-            direct: grep "is different from the one provided in the snapshot" direct_kraken_bridge_orderbook*2023-06-25_00-01*
-            xchange: grep -i "checksum does not match" xchange_kraken_bridge_orderbook*2023-06-12_18*
+            direct: grep "is different from the one provided in the snapshot" direct_kraken_bridge_orderbook_*2023-06-27_23*
+            xchange: grep -i "checksum does not match" xchange_kraken_bridge_orderbook*2023-06-27_23*
         -frequency of socket drops
 
     -if the snapshot age log msgs show that a time delay develops (presumably because consumption of orderbook data is slower then the rate at which data is sent by the exchange), then look into optimizing the checksum algorithm
@@ -25,6 +28,7 @@ TODO:
     -auto-restart processes after restarting computer
     -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
     -if there is no use case to use jms, then remove jms-related code
+    -change instrument bridge to use rest instead of websocket
 -ML
     -admin
         -ensure ML uses gpu processors

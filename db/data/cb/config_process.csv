@@ -58,7 +58,6 @@
 58,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 08",false
 59,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 09",false
 60,"XchangeKrakenOrderBookBridgeDriver","SOL-USD 10",false
-61,"DirectKrakenInstrumentBridgeDriver",,true
 71,"DirectKrakenOrderBookBridgeDriver","ATOM-USD 01",true
 72,"DirectKrakenOrderBookBridgeDriver","ATOM-USD 02",true
 73,"DirectKrakenOrderBookBridgeDriver","ATOM-USD 03",true

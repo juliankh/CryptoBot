@@ -4,7 +4,7 @@ import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
 import com.cb.common.SleepDelegate;
 import com.cb.common.util.TimeUtils;
-import com.cb.injection.provider.WebSocketClientProvider;
+import com.cb.injection.provider.KrakenOrderBookWebSocketClientProvider;
 import com.cb.model.CbOrderBook;
 import com.cb.processor.kraken.KrakenOrderBookDelegate;
 import com.cb.processor.kraken.json.KrakenJsonOrderBookProcessor;
@@ -43,7 +43,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     private WebSocketFactory webSocketFactory;
 
     @Mock
-    private WebSocketClientProvider webSocketClientProvider;
+    private KrakenOrderBookWebSocketClientProvider krakenOrderBookWebSocketClientProvider;
 
     @Mock
     private SleepDelegate sleepDelegate;
@@ -65,7 +65,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         Mockito.reset(alerter);
         Mockito.reset(jsonSerializer);
         Mockito.reset(webSocketFactory);
-        Mockito.reset(webSocketClientProvider);
+        Mockito.reset(krakenOrderBookWebSocketClientProvider);
         Mockito.reset(sleepDelegate);
         Mockito.reset(currencyPair);
         Mockito.reset(krakenJsonOrderBookProcessor);
@@ -96,7 +96,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         driver.setDriverName(driverName);
 
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
-        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
 
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
 
@@ -141,7 +141,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         driver.setDriverName(driverName);
 
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
-        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
 
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
 
@@ -186,7 +186,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         driver.setDriverName(driverName);
 
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
-        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
 
         when(orderBookDelegate.orderBookStale(any(Supplier.class), any(Supplier.class), anyInt(), any(Instant.class))).thenReturn(true);
 
@@ -252,7 +252,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     public void latestOrderBookExchangeDateTimeSupplier_SnapshotNull() {
         // setup
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
-        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
         when(krakenJsonOrderBookProcessor.latestOrderBookSnapshot()).thenReturn(null);
         driver.initializeWebSocketClient();
@@ -265,7 +265,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     public void latestOrderBookExchangeDateTimeSupplier_SnapshotNotNull_ExchangeDateTimeNull() {
         // setup
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
-        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
         when(krakenJsonOrderBookProcessor.latestOrderBookSnapshot()).thenReturn(new CbOrderBook().setExchangeDatetime(null));
         driver.initializeWebSocketClient();
@@ -278,7 +278,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     public void latestOrderBookExchangeDateTimeSupplier_SnapshotNotNull_ExchangeDateTimeNotNull() {
         // setup
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
-        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
         Instant exchangeDateTime = TimeUtils.instant(1999, Month.MARCH, 27, 10, 37, 15);
         when(krakenJsonOrderBookProcessor.latestOrderBookSnapshot()).thenReturn(new CbOrderBook().setExchangeDatetime(exchangeDateTime));

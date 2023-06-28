@@ -1,15 +1,11 @@
 package com.cb.injection.module;
 
-import com.cb.common.BufferAggregator;
 import com.cb.common.CurrencyResolver;
-import com.cb.common.util.GeneralUtils;
 import com.cb.db.ReadOnlyDao;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.KrakenChecksumCalculator;
-import com.cb.processor.kraken.json.KrakenJsonInstrumentProcessor;
 import com.cb.property.CryptoProperties;
-import com.cb.ws.WebSocketClient;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -123,13 +119,6 @@ public class MainModule extends AbstractModule {
         KrakenChecksumCalculator checksumCalculator = new KrakenChecksumCalculator();
         checksumCalculator.initialize(precisionMap);
         return checksumCalculator;
-    }
-
-    // TODO: remove
-    @Provides
-    @Named(KRAKEN_WEBSOCKET_V2_CLIENT_INSTRUMENT)
-    public WebSocketClient krakenInstrumentWebSocketClient(BufferAggregator bufferAggregator, KrakenJsonInstrumentProcessor instrumentProcessor) {
-        return new WebSocketClient(bufferAggregator, instrumentProcessor, GeneralUtils.newRandomInt());
     }
 
 }
