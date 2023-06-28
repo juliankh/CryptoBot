@@ -3,6 +3,7 @@ package com.cb.processor.kraken;
 import com.cb.alert.Alerter;
 import com.cb.exception.ChecksumException;
 import com.cb.model.kraken.ws.response.KrakenError;
+import com.cb.processor.kraken.json.KrakenJsonOrderBookProcessor;
 import com.cb.ws.kraken.KrakenJsonOrderBookObjectConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.cb.processor.kraken;
+package com.cb.processor.kraken.json;
 
 import com.cb.common.BatchProcessor;
 import com.cb.common.CurrencyResolver;
@@ -9,7 +9,6 @@ import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
 import com.cb.processor.JedisDelegate;
-import com.cb.processor.OrderBookDelegate;
 import com.cb.processor.SnapshotMaintainer;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.ws.kraken.KrakenJsonOrderBookObjectConverter;
@@ -17,11 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.currency.CurrencyPair;
 
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @Slf4j
 public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
@@ -44,9 +41,6 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
     @Inject
     private JedisDelegate jedisDelegate;
 
-    @Inject
-    private OrderBookDelegate orderBookDelegate;
-
     private CurrencyPair currencyPair;
 
     public void initialize(String driverName, int requestId, CurrencyPair currencyPair, int depth, int batchSize, ChecksumCalculator checksumCalculator) {
@@ -54,11 +48,6 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
         this.currencyPair = currencyPair;
         snapshotMaintainer.initialize(depth, checksumCalculator);
         batchProcessor.initialize(batchSize);
-        orderBookDelegate.engageLatestOrderBookAgeMonitor(latestOrderBookExchangeDateTimeSupplier());
-    }
-
-    public Supplier<Instant> latestOrderBookExchangeDateTimeSupplier() {
-        return () -> Optional.ofNullable(snapshotMaintainer.getSnapshot()).map(CbOrderBook::getExchangeDatetime).orElse(null);
     }
 
     @Override
@@ -145,6 +134,10 @@ public class KrakenJsonOrderBookProcessor extends KrakenAbstractJsonProcessor {
                 snapshot,
                 (List<CbOrderBook> orderbooks) -> new KrakenBatch<>(currencyPair, orderbooks),
                 jedisDelegate::insertBatch);
+    }
+
+    public CbOrderBook latestOrderBookSnapshot() {
+        return snapshotMaintainer.getSnapshot();
     }
 
     @Override

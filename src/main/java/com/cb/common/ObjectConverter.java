@@ -134,11 +134,11 @@ public class ObjectConverter {
 
     public List<DbKrakenStatusUpdate> convertToDbKrakenStatusUpdates(KrakenStatusUpdate update) {
         return update.getData().parallelStream().map(data -> new DbKrakenStatusUpdate()
-                .setChannel(update.getChannel())
+                .setChannel(update.getChannel().name())
                 .setType(update.getType())
                 .setApi_version(data.getApi_version())
                 .setConnection_id(data.getConnection_id())
-                .setSystem(data.getSystem())
+                .setSystem(data.getSystem().name())
                 .setVersion(data.getVersion())).toList();
     }
 

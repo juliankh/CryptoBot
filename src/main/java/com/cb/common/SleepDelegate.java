@@ -5,7 +5,7 @@ import com.cb.common.util.TimeUtils;
 public class SleepDelegate {
 
     public void sleepQuietlyForSecs(int secs) {
-        TimeUtils.sleepQuietlyForMillis(secs);
+        TimeUtils.sleepQuietlyForSecs(secs);
     }
 
     public void sleepQuietlyForMins(int mins) {

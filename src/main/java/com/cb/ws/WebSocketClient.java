@@ -20,7 +20,7 @@ public class WebSocketClient implements WebSocket.Listener {
     private final JsonProcessor jsonProcessor;
     private final int requestId;
 
-    private Instant latestReceive;
+    private Instant latestReceive; // TODO: if decide to proceed with direct bridges and discard the xchange bridges, then remove this field
     private Integer closeStatusCode;
     private String closeReason;
 

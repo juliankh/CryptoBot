@@ -17,6 +17,8 @@ import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookLevel;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdateData;
+import com.cb.processor.kraken.channel_status.KrakenChannel;
+import com.cb.processor.kraken.channel_status.KrakenChannelStatus;
 import com.cb.test.EqualsUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
@@ -361,17 +363,17 @@ public class ObjectConverterTest {
     @Test
     public void convertToDbKrakenStatusUpdates() {
         // setup data
-        String channel = "channelA";
+        KrakenChannel channel = KrakenChannel.book;
         String type = "typeA";
 
         String api_version1 = "api_version1";
         BigInteger connection_id1 = BigInteger.valueOf(123);
-        String system1 = "system1";
+        KrakenChannelStatus system1 = KrakenChannelStatus.online;
         String version1 = "version1";
 
         String api_version2 = "api_version2";
         BigInteger connection_id2 = BigInteger.valueOf(456);
-        String system2 = "system2";
+        KrakenChannelStatus system2 = KrakenChannelStatus.maintenance;
         String version2 = "version2";
 
         KrakenStatusUpdateData data1 = new KrakenStatusUpdateData().setApi_version(api_version1).setConnection_id(connection_id1).setSystem(system1).setVersion(version1);
@@ -387,19 +389,19 @@ public class ObjectConverterTest {
         assertEquals(2, resultList.size());
 
         DbKrakenStatusUpdate result1 = resultList.get(0);
-        assertEquals(channel, result1.getChannel());
+        assertEquals(channel.name(), result1.getChannel());
         assertEquals(type, result1.getType());
         assertEquals(api_version1, result1.getApi_version());
         assertEquals(connection_id1, result1.getConnection_id());
-        assertEquals(system1, result1.getSystem());
+        assertEquals(system1.name(), result1.getSystem());
         assertEquals(version1, result1.getVersion());
 
         DbKrakenStatusUpdate result2 = resultList.get(1);
-        assertEquals(channel, result2.getChannel());
+        assertEquals(channel.name(), result2.getChannel());
         assertEquals(type, result2.getType());
         assertEquals(api_version2, result2.getApi_version());
         assertEquals(connection_id2, result2.getConnection_id());
-        assertEquals(system2, result2.getSystem());
+        assertEquals(system2.name(), result2.getSystem());
         assertEquals(version2, result2.getVersion());
     }
 

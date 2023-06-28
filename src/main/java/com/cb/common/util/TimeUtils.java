@@ -130,7 +130,12 @@ public final class TimeUtils {
 
     public static void loopForever(Runnable runnable, int sleepSecs) {
         while (true) {
-            runnable.run();
+            try {
+                runnable.run();
+            } catch (Exception e) {
+                log.error("Problem while trying to execute a runnable while looping forever", e);
+                throw e;
+            }
             TimeUtils.sleepQuietlyForSecs(sleepSecs);
         }
     }

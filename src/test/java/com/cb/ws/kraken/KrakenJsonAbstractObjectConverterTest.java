@@ -5,6 +5,8 @@ import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdateData;
+import com.cb.processor.kraken.channel_status.KrakenChannel;
+import com.cb.processor.kraken.channel_status.KrakenChannelStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -71,14 +73,14 @@ public class KrakenJsonAbstractObjectConverterTest {
 
         KrakenStatusUpdate statusUpdate = converter.getStatusUpdate();
 
-        assertEquals("status", statusUpdate.getChannel());
+        assertSame(KrakenChannel.status, statusUpdate.getChannel());
         assertEquals("update", statusUpdate.getType());
         assertEquals(1, statusUpdate.getData().size());
 
         KrakenStatusUpdateData updateData = statusUpdate.getData().get(0);
         assertEquals("v2", updateData.getApi_version());
         assertEquals(new BigInteger("10878232658551185331"), updateData.getConnection_id());
-        assertEquals("online", updateData.getSystem());
+        assertSame(KrakenChannelStatus.online, updateData.getSystem());
         assertEquals("2.0.0", updateData.getVersion());
     }
 

@@ -1,4 +1,4 @@
-package com.cb.encryption;
+package com.cb.common;
 
 import com.cb.injection.module.CryptoBotPropertiesModule;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;

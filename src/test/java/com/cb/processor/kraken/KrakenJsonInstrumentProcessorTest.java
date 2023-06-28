@@ -2,6 +2,7 @@ package com.cb.processor.kraken;
 
 import com.cb.alert.Alerter;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseInstrument;
+import com.cb.processor.kraken.json.KrakenJsonInstrumentProcessor;
 import com.cb.ws.kraken.KrakenJsonInstrumentObjectConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.cb.processor.kraken;
+package com.cb.processor.kraken.json;
 
 import com.cb.alert.Alerter;
 import com.cb.db.WriteDao;
@@ -7,6 +7,7 @@ import com.cb.model.kraken.ws.response.KrakenError;
 import com.cb.model.kraken.ws.response.KrakenHeartbeat;
 import com.cb.model.kraken.ws.response.status.KrakenStatusUpdate;
 import com.cb.processor.JsonProcessor;
+import com.cb.processor.kraken.channel_status.KrakenChannelStatus;
 import com.cb.ws.kraken.KrakenJsonObjectConverter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +28,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
     protected String driverName;
     protected Instant timeOfLastHeartbeat = Instant.now();
     protected int requestId;
+    protected KrakenChannelStatus channelStatus;
 
     public void initialize(String driverName, int requestId) {
         this.driverName = driverName;
@@ -58,6 +60,7 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             int numDatas = Optional.ofNullable(statusUpdate.getData()).map(List::size).orElse(0);
             log.info("Status Update with [" + numDatas + "] datas: " + statusUpdate);
             writeDao.insertKrakenStatusUpdate(statusUpdate);
+            statusUpdate.getData().forEach(data -> channelStatus = data.getSystem());
             return true;
         } else if (objectType == KrakenHeartbeat.class) {
             timeOfLastHeartbeat = Instant.now();
@@ -78,6 +81,10 @@ public abstract class KrakenAbstractJsonProcessor implements JsonProcessor {
             throw new RuntimeException("Got error from Kraken: " + error);
         }
         return true;
+    }
+
+    public KrakenChannelStatus currentChannelStatus() {
+        return channelStatus;
     }
 
     @Override

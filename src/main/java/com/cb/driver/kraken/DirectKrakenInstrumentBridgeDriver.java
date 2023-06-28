@@ -6,7 +6,7 @@ import com.cb.db.WriteDao;
 import com.cb.driver.AbstractDriver;
 import com.cb.injection.module.MainModule;
 import com.cb.model.kraken.ws.request.KrakenInstrumentSubscriptionRequest;
-import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
+import com.cb.processor.kraken.json.KrakenJsonInstrumentProcessor;
 import com.cb.ws.WebSocketClient;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.cb.processor.kraken;
+package com.cb.processor.kraken.json;
 
 import com.cb.model.kraken.ws.response.instrument.KrakenAsset;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;

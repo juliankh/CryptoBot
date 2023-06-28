@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.function.Supplier;
 
+// TODO: if decide to proceed with direct bridges and discard the xchange bridges, then remove this class
 @Slf4j
 public class OrderBookDelegate {
 
@@ -16,7 +17,6 @@ public class OrderBookDelegate {
         TimeUtils.loopForeverAsync(() -> latestOrderBookAgeMonitorIteration(exchangeDateTimeSupplier), SLEEP_SECS_BETWEEN_SNAPSHOT_AGE_CHECK);
     }
 
-    // TODO: unit test
     public void latestOrderBookAgeMonitorIteration(Supplier<Instant> exchangeDateTimeSupplier) {
         try {
             Instant latestSnapshotExchangeDateTime = exchangeDateTimeSupplier.get();
@@ -27,7 +27,6 @@ public class OrderBookDelegate {
         }
     }
 
-    // TODO: include age limit and throw exception if over the limit (force websocket restart), if the channel status is not either online or post_only
     public void checkOrderBookAge(Instant exchangeDateTime, Instant timeToCompareTo) {
         if (exchangeDateTime == null) {
             log.info("Latest OrderBook Snapshot and/or ExchangeDateTime hasn't been set yet");

@@ -65,7 +65,6 @@ public class RedisDataAgeMonitor {
         }
     }
 
-    // TODO: unit test
     public void checkExchangeDatetime(Instant exchangeDatetime, CbOrderBook snapshot, String snapshotJson) {
         if (exchangeDatetime == null) {
             String errMsg = "Encountered a snapshot in Redis that has null exchangeDatetime";

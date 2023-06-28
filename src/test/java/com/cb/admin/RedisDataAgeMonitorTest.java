@@ -17,6 +17,7 @@ import redis.clients.jedis.resps.Tuple;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -103,6 +104,14 @@ public class RedisDataAgeMonitorTest {
 
         // verify
         verify(alerter, times(1)).sendEmailAlert(anyString(), anyString());
+    }
+
+    @Test
+    public void checkExchangeDatetime() {
+        assertDoesNotThrow(() -> redisDataAgeMonitor.checkExchangeDatetime(Instant.now(), null, null));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> redisDataAgeMonitor.checkExchangeDatetime(null, null, null));
+        assertEquals("Encountered a snapshot in Redis that has null exchangeDatetime. Check logs.", exception.getMessage());
     }
 
     private static Tuple sampleRedisData(Instant exchangeDateTime) {

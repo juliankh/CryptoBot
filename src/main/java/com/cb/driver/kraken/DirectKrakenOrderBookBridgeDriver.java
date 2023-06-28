@@ -9,11 +9,14 @@ import com.cb.driver.AbstractDriver;
 import com.cb.driver.kraken.args.KrakenOrderBookBridgeArgsConverter;
 import com.cb.injection.module.MainModule;
 import com.cb.injection.provider.WebSocketClientProvider;
+import com.cb.model.CbOrderBook;
 import com.cb.model.config.KrakenBridgeOrderBookConfig;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequest;
 import com.cb.model.kraken.ws.request.KrakenOrderBookSubscriptionRequestParams;
 import com.cb.processor.checksum.ChecksumCalculator;
-import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
+import com.cb.processor.kraken.KrakenOrderBookDelegate;
+import com.cb.processor.kraken.channel_status.KrakenChannelStatus;
+import com.cb.processor.kraken.json.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
 import com.cb.ws.WebSocketFactory;
 import com.cb.ws.WebSocketStatusCode;
@@ -28,8 +31,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.net.http.WebSocket;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static com.cb.injection.BindingName.KRAKEN_CHECKSUM_CALCULATOR;
 import static com.cb.injection.BindingName.KRAKEN_WEBSOCKET_V2_URL;
@@ -66,6 +70,9 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     @Inject
     private SleepDelegate sleepDelegate;
+
+    @Inject
+    private KrakenOrderBookDelegate orderBookDelegate;
 
     private WebSocket webSocket;
     private WebSocketClient webSocketClient;
@@ -117,18 +124,18 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     public void executeIteration(Instant timeToCompareTo) {
         boolean webSocketClosed = webSocketClosed(webSocket);
-        boolean latestReceiveAgeOverLimit = latestReceiveAgeOverLimit(webSocketClient.getLatestReceive(), timeToCompareTo, maxSecsBetweenUpdates);
-        if (webSocketClosed || latestReceiveAgeOverLimit) {
+        boolean orderBookStale = orderBookDelegate.orderBookStale(latestOrderBookExchangeDateTimeSupplier(), channelStatusSupplier(), maxSecsBetweenUpdates, timeToCompareTo);
+        if (webSocketClosed || orderBookStale) {
             Integer statusCode = webSocketClient.getCloseStatusCode();
             if (statusCode != null && statusCode == WebSocketStatusCode.TRY_AGAIN_LATER) {
                 log.info("Got WebSocket Close StatusCode [" + statusCode + "] which means that requests are being throttled.  Therefore will sleep for [" + THROTTLE_SLEEP_SECS + "] secs before trying to reconnect.");
                 sleepDelegate.sleepQuietlyForSecs(THROTTLE_SLEEP_SECS);
             }
             String reason = webSocketClient.getCloseReason();
-            String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed (Status Code [" + statusCode + "], Reason [" + reason + "])" : "no data received in over " + maxSecsBetweenUpdates + " secs");
+            String msg = "Will try to reconnect to WebSocket because " + (webSocketClosed ? "WebSocket is closed (Status Code [" + statusCode + "], Reason [" + reason + "])" : "latest OrderBook Snapshot is older then " + maxSecsBetweenUpdates + " secs");
             log.warn(msg);
             alerter.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
-            if (latestReceiveAgeOverLimit) {
+            if (orderBookStale) {
                 log.info("Will try to close WebSocket");
                 webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
                 log.info("Request to close WebSocket sent");
@@ -138,23 +145,23 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
         }
     }
 
+    public Supplier<Instant> latestOrderBookExchangeDateTimeSupplier() {
+        return () -> Optional.ofNullable(latestOrderBook()).map(CbOrderBook::getExchangeDatetime).orElse(null);
+    }
+
+    private CbOrderBook latestOrderBook() {
+        return ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).latestOrderBookSnapshot();
+    }
+
+    public Supplier<KrakenChannelStatus> channelStatusSupplier() {
+        return () -> ((KrakenJsonOrderBookProcessor)webSocketClient.getJsonProcessor()).currentChannelStatus();
+    }
+
     public boolean webSocketClosed(WebSocket webSocket) {
         boolean inputClosed = webSocket.isInputClosed();
         boolean outputClosed = webSocket.isOutputClosed();
         if (inputClosed || outputClosed) {
             log.warn("Input Closed? [" + inputClosed + "]; Output Closed? [" + outputClosed + "]");
-            return true;
-        }
-        return false;
-    }
-
-    public boolean latestReceiveAgeOverLimit(Instant latestReceive, Instant timeToCompareTo, int maxSecsBetweenUpdates) {
-        if (latestReceive == null) {
-            return false;
-        }
-        long secsSinceLastUpdate = ChronoUnit.SECONDS.between(latestReceive, timeToCompareTo);
-        if (secsSinceLastUpdate > maxSecsBetweenUpdates) {
-            log.warn("It's been [" + secsSinceLastUpdate + "] secs since data was last received, which is above the threshold of [" + maxSecsBetweenUpdates + "] secs");
             return true;
         }
         return false;

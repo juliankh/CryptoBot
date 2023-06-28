@@ -3,8 +3,11 @@ package com.cb.driver.kraken;
 import com.cb.alert.Alerter;
 import com.cb.common.JsonSerializer;
 import com.cb.common.SleepDelegate;
+import com.cb.common.util.TimeUtils;
 import com.cb.injection.provider.WebSocketClientProvider;
-import com.cb.processor.kraken.KrakenJsonOrderBookProcessor;
+import com.cb.model.CbOrderBook;
+import com.cb.processor.kraken.KrakenOrderBookDelegate;
+import com.cb.processor.kraken.json.KrakenJsonOrderBookProcessor;
 import com.cb.ws.WebSocketClient;
 import com.cb.ws.WebSocketFactory;
 import com.cb.ws.WebSocketStatusCode;
@@ -19,11 +22,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.net.http.WebSocket;
 import java.time.Instant;
+import java.time.Month;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import static com.cb.driver.kraken.DirectKrakenOrderBookBridgeDriver.THROTTLE_SLEEP_SECS;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +54,9 @@ public class DirectKrakenOrderBookBridgeDriverTest {
     @Mock
     private KrakenJsonOrderBookProcessor krakenJsonOrderBookProcessor;
 
+    @Mock
+    private KrakenOrderBookDelegate orderBookDelegate;
+
     @InjectMocks
     private DirectKrakenOrderBookBridgeDriver driver;
 
@@ -61,6 +68,8 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         Mockito.reset(webSocketClientProvider);
         Mockito.reset(sleepDelegate);
         Mockito.reset(currencyPair);
+        Mockito.reset(krakenJsonOrderBookProcessor);
+        Mockito.reset(orderBookDelegate);
     }
 
     @Test
@@ -69,17 +78,6 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         assertTrue(driver.webSocketClosed(mockWebSocket(true, false)));
         assertTrue(driver.webSocketClosed(mockWebSocket(false, true)));
         assertFalse(driver.webSocketClosed(mockWebSocket(false, false)));
-    }
-
-    @Test
-    public void latestReceiveAgeOverLimit() {
-        int maxSecsBetweenUpdates = 60;
-        Instant timeToCompareTo = Instant.now();
-
-        assertFalse(driver.latestReceiveAgeOverLimit(null, timeToCompareTo, maxSecsBetweenUpdates));
-        assertFalse(driver.latestReceiveAgeOverLimit(timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1), timeToCompareTo, maxSecsBetweenUpdates));
-        assertFalse(driver.latestReceiveAgeOverLimit(timeToCompareTo.minusSeconds(maxSecsBetweenUpdates), timeToCompareTo, maxSecsBetweenUpdates));
-        assertTrue(driver.latestReceiveAgeOverLimit(timeToCompareTo.minusSeconds(maxSecsBetweenUpdates + 1), timeToCompareTo, maxSecsBetweenUpdates));
     }
 
     @Test
@@ -103,8 +101,6 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
 
         Instant timeToCompareTo = Instant.now();
-        Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1);
-        when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
 
         int closeStatusCode = WebSocketStatusCode.TRY_AGAIN_LATER;
         when(webSocketClient.getCloseStatusCode()).thenReturn(closeStatusCode);
@@ -150,8 +146,6 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
 
         Instant timeToCompareTo = Instant.now();
-        Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1);
-        when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
 
         int closeStatusCode = WebSocketStatusCode.SERVER_ERROR;
         when(webSocketClient.getCloseStatusCode()).thenReturn(closeStatusCode);
@@ -194,11 +188,12 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
         when(webSocketClientProvider.get()).thenReturn(webSocketClient);
 
+        when(orderBookDelegate.orderBookStale(any(Supplier.class), any(Supplier.class), anyInt(), any(Instant.class))).thenReturn(true);
+
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
 
-        Instant timeToCompareTo = Instant.now();
-        Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates + 1);
-        when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
+        Instant timeToCompareTo_DoesNotMatter = Instant.now();
+
         when(webSocketClient.getCloseStatusCode()).thenReturn(null);
         when(webSocketClient.getCloseReason()).thenReturn(null);
 
@@ -214,11 +209,11 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         driver.setWebSocketClient(webSocketClient);
 
         // engage test
-        driver.executeIteration(timeToCompareTo);
+        driver.executeIteration(timeToCompareTo_DoesNotMatter);
 
         // verify
         verify(sleepDelegate, never()).sleepQuietlyForSecs(anyInt());
-        String expectedMsg = "Will try to reconnect to WebSocket because no data received in over " + maxSecsBetweenUpdates + " secs";
+        String expectedMsg = "Will try to reconnect to WebSocket because latest OrderBook Snapshot is older then " + maxSecsBetweenUpdates + " secs";
         verify(alerter, times(1)).sendEmailAlertQuietly("Reconn - " + driverName, expectedMsg);
         verify(webSocket, times(1)).sendClose(WebSocket.NORMAL_CLOSURE, expectedMsg);
         verify(webSocketFactory, times(1)).webSocket(webSocketUrl, webSocketClient);
@@ -234,9 +229,6 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         WebSocket webSocket = mockWebSocket(false, false);
         driver.setWebSocket(webSocket);
         Instant timeToCompareTo = Instant.now();
-        Instant latestReceive = timeToCompareTo.minusSeconds(maxSecsBetweenUpdates - 1);
-        when(webSocketClient.getLatestReceive()).thenReturn(latestReceive);
-
         driver.setWebSocketClient(webSocketClient);
 
         // engage test
@@ -254,6 +246,46 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         when(websocket.isInputClosed()).thenReturn(inputClosed);
         when(websocket.isOutputClosed()).thenReturn(outputClosed);
         return websocket;
+    }
+
+    @Test
+    public void latestOrderBookExchangeDateTimeSupplier_SnapshotNull() {
+        // setup
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
+        when(krakenJsonOrderBookProcessor.latestOrderBookSnapshot()).thenReturn(null);
+        driver.initializeWebSocketClient();
+
+        // engage test and verify
+        assertNull(driver.latestOrderBookExchangeDateTimeSupplier().get());
+    }
+
+    @Test
+    public void latestOrderBookExchangeDateTimeSupplier_SnapshotNotNull_ExchangeDateTimeNull() {
+        // setup
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
+        when(krakenJsonOrderBookProcessor.latestOrderBookSnapshot()).thenReturn(new CbOrderBook().setExchangeDatetime(null));
+        driver.initializeWebSocketClient();
+
+        // engage test and verify
+        assertNull(driver.latestOrderBookExchangeDateTimeSupplier().get());
+    }
+
+    @Test
+    public void latestOrderBookExchangeDateTimeSupplier_SnapshotNotNull_ExchangeDateTimeNotNull() {
+        // setup
+        WebSocketClient webSocketClient = mock(WebSocketClient.class);
+        when(webSocketClientProvider.get()).thenReturn(webSocketClient);
+        when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
+        Instant exchangeDateTime = TimeUtils.instant(1999, Month.MARCH, 27, 10, 37, 15);
+        when(krakenJsonOrderBookProcessor.latestOrderBookSnapshot()).thenReturn(new CbOrderBook().setExchangeDatetime(exchangeDateTime));
+        driver.initializeWebSocketClient();
+
+        // engage test and verify
+        assertEquals(exchangeDateTime, driver.latestOrderBookExchangeDateTimeSupplier().get());
     }
 
 }

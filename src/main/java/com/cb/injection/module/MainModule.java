@@ -7,7 +7,7 @@ import com.cb.db.ReadOnlyDao;
 import com.cb.model.kraken.ws.response.instrument.KrakenAssetPair;
 import com.cb.processor.checksum.ChecksumCalculator;
 import com.cb.processor.checksum.KrakenChecksumCalculator;
-import com.cb.processor.kraken.KrakenJsonInstrumentProcessor;
+import com.cb.processor.kraken.json.KrakenJsonInstrumentProcessor;
 import com.cb.property.CryptoProperties;
 import com.cb.ws.WebSocketClient;
 import com.google.inject.AbstractModule;
@@ -42,6 +42,8 @@ public class MainModule extends AbstractModule {
     @Override
     protected void configure() {
         CryptoProperties cryptoProperties = CryptoBotPropertiesModule.INJECTOR.getInstance(CryptoProperties.class);
+
+        // TODO: make a separate module for dbDao, and use it here (like with CryptoBotPropertiesModule) to set configs into named bindings, such that java components would be able to use config values as injected values instead of instead of manually needing to use initialize(...) methods
 
         bindConstant().annotatedWith(Names.named(DB_CONNECTION_URL)).to(cryptoProperties.dbConnectionUrl());
         bindConstant().annotatedWith(Names.named(DB_READ_USER)).to(cryptoProperties.readDbUser());

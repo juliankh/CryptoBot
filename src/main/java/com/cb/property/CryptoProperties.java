@@ -1,6 +1,6 @@
 package com.cb.property;
 
-import com.cb.encryption.EncryptionProcessor;
+import com.cb.common.EncryptionProcessor;
 import com.cb.injection.module.CryptoBotPropertiesModule;
 import lombok.SneakyThrows;
 

@@ -3,15 +3,14 @@ package com.cb.processor.kraken;
 import com.cb.alert.Alerter;
 import com.cb.common.BatchProcessor;
 import com.cb.common.CurrencyResolver;
-import com.cb.common.util.TimeUtils;
 import com.cb.model.CbOrderBook;
 import com.cb.model.kraken.KrakenBatch;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBook2Data;
 import com.cb.model.kraken.ws.response.orderbook.KrakenOrderBookInfo;
 import com.cb.model.kraken.ws.response.subscription.KrakenSubscriptionResponseOrderBook;
-import com.cb.processor.OrderBookDelegate;
 import com.cb.processor.SnapshotMaintainer;
 import com.cb.processor.checksum.ChecksumCalculator;
+import com.cb.processor.kraken.json.KrakenJsonOrderBookProcessor;
 import com.cb.ws.kraken.KrakenJsonOrderBookObjectConverter;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +23,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.Month;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,7 +56,7 @@ public class KrakenJsonOrderBookProcessorTest {
     private SnapshotMaintainer snapshotMaintainer;
 
     @Mock
-    private OrderBookDelegate orderBookDelegate;
+    private KrakenOrderBookDelegate orderBookDelegate;
 
     @Mock
     private ChecksumCalculator checksumCalculator;
@@ -230,34 +227,6 @@ public class KrakenJsonOrderBookProcessorTest {
 
         // verify
         verify(alerter, times(1)).sendEmailAlertQuietly(DRIVER_NAME + ": Problem w/json", json, exception);
-    }
-
-    @Test
-    public void latestOrderBookExchangeDateTimeSupplier_SnapshotNull() {
-        // setup
-        when(snapshotMaintainer.getSnapshot()).thenReturn(null);
-
-        // engage test and verify
-        assertNull(processor.latestOrderBookExchangeDateTimeSupplier().get());
-    }
-
-    @Test
-    public void latestOrderBookExchangeDateTimeSupplier_SnapshotNotNull_ExchangeDateTimeNull() {
-        // setup
-        when(snapshotMaintainer.getSnapshot()).thenReturn(new CbOrderBook().setExchangeDatetime(null));
-
-        // engage test and verify
-        assertNull(processor.latestOrderBookExchangeDateTimeSupplier().get());
-    }
-
-    @Test
-    public void latestOrderBookExchangeDateTimeSupplier_SnapshotNotNull_ExchangeDateTimeNotNull() {
-        // setup
-        Instant exchangeDateTime = TimeUtils.instant(1999, Month.MARCH, 27, 10, 37, 15);
-        when(snapshotMaintainer.getSnapshot()).thenReturn(new CbOrderBook().setExchangeDatetime(exchangeDateTime));
-
-        // engage test and verify
-        assertEquals(exchangeDateTime, processor.latestOrderBookExchangeDateTimeSupplier().get());
     }
 
 }
