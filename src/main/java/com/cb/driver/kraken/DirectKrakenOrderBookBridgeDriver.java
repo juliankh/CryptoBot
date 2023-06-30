@@ -137,7 +137,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
             alerter.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
             if (orderBookStale) {
                 log.info("Will try to close WebSocket");
-                webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join();
+                webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join(); // TODO: what's the difference between close or unsubscribe msg?
                 log.info("Request to close WebSocket sent");
             }
             initializeWebSocketClient();

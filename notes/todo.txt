@@ -1,7 +1,8 @@
 TODO:
 
 -misc
-    -send unsubscribe msg when closing connection
+    -check how data from direct bridges look: are most snapshots look the same (since coming from multiple websocket instances), or still great majority of them are different (like what was with xchange bridges)?
+
     -check
         -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-28_12*
         -direct orderbook bridge
@@ -28,6 +29,7 @@ TODO:
     -see how to make the assembled jar smaller (without unnecessary libs) so that the build runs faster
     -if there is no use case to use jms, then remove jms-related code
     -change instrument bridge to use rest instead of websocket
+    -send unsubscribe msg when closing connection
 -ML
     -admin
         -ensure ML uses gpu processors
