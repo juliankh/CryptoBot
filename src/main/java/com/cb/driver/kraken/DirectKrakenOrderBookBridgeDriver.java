@@ -3,6 +3,7 @@ package com.cb.driver.kraken;
 import com.cb.common.CurrencyResolver;
 import com.cb.common.JsonSerializer;
 import com.cb.common.SleepDelegate;
+import com.cb.common.util.GeneralUtils;
 import com.cb.db.MiscConfigName;
 import com.cb.db.ReadOnlyDao;
 import com.cb.driver.AbstractDriver;
@@ -137,7 +138,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
             alerter.sendEmailAlertQuietly("Reconn - " + getDriverName(), msg);
             if (orderBookStale) {
                 log.info("Will try to close WebSocket");
-                webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join(); // TODO: what's the difference between close or unsubscribe msg?
+                GeneralUtils.runQuietly(() -> webSocket.sendClose(WebSocket.NORMAL_CLOSURE, msg).join()); // TODO: what's the difference between close or unsubscribe msg?
                 log.info("Request to close WebSocket sent");
             }
             initializeWebSocketClient();

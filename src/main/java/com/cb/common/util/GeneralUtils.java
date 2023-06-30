@@ -1,10 +1,13 @@
 package com.cb.common.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.NavigableMap;
 import java.util.Random;
+import java.util.concurrent.Callable;
 
+@Slf4j
 public class GeneralUtils {
 
     private static final Random RANDOM = new Random();
@@ -31,6 +34,14 @@ public class GeneralUtils {
             return s;
         }
         return StringUtils.truncate(s, length) + postfix;
+    }
+
+    public static void runQuietly(Callable<?> c) {
+        try {
+            c.call();
+        } catch (Exception e) {
+            log.error("Error when trying to 'quietly' call a callable.  Logging, but otherwise continuing.", e);
+        }
     }
 
 }

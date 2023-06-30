@@ -75,4 +75,13 @@ public class GeneralUtilsTest {
         assertEquals("123...", GeneralUtils.truncateStringIfNecessary("12345", 3));
     }
 
+    @Test
+    public void runQuietly() {
+        assertDoesNotThrow(() -> GeneralUtils.runQuietly(GeneralUtilsTest::someMethodThatThrowsException));
+    }
+
+    private static Object someMethodThatThrowsException() {
+        throw new RuntimeException("some error");
+    }
+
 }
