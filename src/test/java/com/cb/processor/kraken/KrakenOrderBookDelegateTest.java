@@ -19,11 +19,11 @@ public class KrakenOrderBookDelegateTest {
     private KrakenOrderBookDelegate delegate;
 
     @Test
-    public void orderBookAge() {
-        Instant exchangeDateTime = TimeUtils.instant(2015, Month.NOVEMBER, 25, 10, 30, 39);
+    public void age() {
+        Instant instant = TimeUtils.instant(2015, Month.NOVEMBER, 25, 10, 30, 39);
         Instant timeToCompareTo = TimeUtils.instant(2015, Month.NOVEMBER, 25, 10, 30, 45);
-        assertNull(delegate.orderBookAge(null, timeToCompareTo));
-        assertEquals(6, delegate.orderBookAge(exchangeDateTime, timeToCompareTo));
+        assertNull(delegate.age(null, timeToCompareTo));
+        assertEquals(6, delegate.age(instant, timeToCompareTo));
     }
 
     @Test
@@ -38,6 +38,13 @@ public class KrakenOrderBookDelegateTest {
         assertFalse(delegate.orderBookStale(null, channelStatus_DoesNotMatter, 11L, 10));
 
         assertTrue(delegate.orderBookStale(true, channelStatus_DoesNotMatter, 11L, 10));
+    }
+
+    @Test
+    public void ageString() {
+        assertEquals("not set yet", delegate.ageString(null));
+        assertEquals("123", delegate.ageString(123L));
+        assertEquals("123123", delegate.ageString(123123L));
     }
 
 }

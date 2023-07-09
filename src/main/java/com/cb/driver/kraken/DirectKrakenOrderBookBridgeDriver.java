@@ -125,7 +125,7 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     public void executeIteration(Instant timeToCompareTo) {
         boolean webSocketClosed = webSocketClosed(webSocket);
-        boolean orderBookStale = orderBookDelegate.orderBookStale(latestOrderBookExchangeDateTimeSupplier(), channelStatusSupplier(), maxSecsBetweenUpdates, timeToCompareTo);
+        boolean orderBookStale = orderBookDelegate.orderBookStale(latestOrderBookExchangeDateTimeSupplier(), latestOrderBookReceivedDateTimeSupplier(), channelStatusSupplier(), maxSecsBetweenUpdates, timeToCompareTo);
         if (webSocketClosed || orderBookStale) {
             Integer statusCode = webSocketClient.getCloseStatusCode();
             if (statusCode != null && statusCode == WebSocketStatusCode.TRY_AGAIN_LATER) {
@@ -148,6 +148,10 @@ public class DirectKrakenOrderBookBridgeDriver extends AbstractDriver {
 
     public Supplier<Instant> latestOrderBookExchangeDateTimeSupplier() {
         return () -> Optional.ofNullable(latestOrderBook()).map(CbOrderBook::getExchangeDatetime).orElse(null);
+    }
+
+    public Supplier<Instant> latestOrderBookReceivedDateTimeSupplier() {
+        return () -> webSocketClient.getLatestReceive();
     }
 
     private CbOrderBook latestOrderBook() {

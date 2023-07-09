@@ -2,10 +2,12 @@ TODO:
 
 -misc
     -check how data from direct bridges look: are most snapshots look the same (since coming from multiple websocket instances), or still great majority of them are different (like what was with xchange bridges)?
+    -monitor for stale processes: check that log for a process was updated not more than some configured amt of time ago
 
     -check
         -any exceptions at all: grep -i exception *kraken_bridge_orderbook*2023-06-28_12*
         -direct orderbook bridge
+            -when get alert about orderbook snapshot being beyond age threshold, compare the logged latest exchangeDatetime and the latestReceive time
             -was alerting needed to be turned off: grep "Attempt to send alert is being throttled" direct_kraken_bridge_orderbook_*2023-06-28_12*
             -ever get snapshots after the initial one: grep "Received OrderBook Snapshot" direct_kraken_bridge_orderbook_*2023-06-28_12*
             -any req_id that doesn't match: grep "Request ID returned" direct_kraken_bridge_orderbook_*2023-06-28_12*

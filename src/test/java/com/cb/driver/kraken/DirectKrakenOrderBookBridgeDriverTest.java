@@ -188,7 +188,7 @@ public class DirectKrakenOrderBookBridgeDriverTest {
         WebSocketClient webSocketClient = mock(WebSocketClient.class);
         when(krakenOrderBookWebSocketClientProvider.get()).thenReturn(webSocketClient);
 
-        when(orderBookDelegate.orderBookStale(any(Supplier.class), any(Supplier.class), anyInt(), any(Instant.class))).thenReturn(true);
+        when(orderBookDelegate.orderBookStale(any(Supplier.class), any(Supplier.class), any(Supplier.class), anyInt(), any(Instant.class))).thenReturn(true);
 
         when(webSocketClient.getJsonProcessor()).thenReturn(krakenJsonOrderBookProcessor);
 
